@@ -1,0 +1,139 @@
+* {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.horiz-warp {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.vert-warp {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+
+.horiz-center {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.box {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 5px 5px 10px rgba(50, 50, 50, 0.5);
+}
+
+.vert-center {
+    display: flex;
+    align-items: center;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.text-hidden {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.horiz {
+    display: flex;
+}
+
+.horiz-sb {
+    display: flex;
+    justify-content: space-between;
+}
+
+.horiz-sa {
+    display: flex;
+    justify-content: space-around;
+}
+
+.horiz-se {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.vert {
+    display: flex;
+    flex-direction: column;
+}
+
+.luka-title {
+    color: black;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.luka-button {
+    width: 80px;
+    height: 40px;
+    background: transparent;
+    border: 2px solid white;
+    display: flex;
+    font-weight: bold;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.luka-button:hover {
+    border: 2px solid orangered;
+    transition: .1s;
+}
+
+.luka-button:active {
+    box-shadow: orangered;
+    transform: translate(0,5px);
+}
+
+.mask-background {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.24);
+    transition: .5s;
+}
+
+.loading {
+    width: 150px;
+    height: 40px;
+    position: fixed;
+    background: rgb(195, 195, 195);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 2%;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+.luka-input {
+    background: transparent;
+    border: 0 solid black;
+    border-bottom: 2px solid black;
+    outline: none;
+    height: 35px;
+}

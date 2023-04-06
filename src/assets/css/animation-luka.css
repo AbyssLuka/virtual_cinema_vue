@@ -1,0 +1,79 @@
+.list-animation-in {
+    animation: listAnimationIn .5s forwards;
+}
+
+.list-animation-out {
+    animation: listAnimationOut .5s forwards;
+}
+
+@keyframes listAnimationIn {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes listAnimationOut {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* function listAnimation() {
+     const boxs = document.querySelectorAll(".anime-post-item") as unknown as HTMLDivElement[];           //获取列表项
+     try {
+         let sumTime = 0;
+         let boxSumHeight = 0;
+         boxs.forEach((box) => {
+             setTimeout(() => {
+                 box.classList.add("list-animation");
+             }, sumTime);
+             boxSumHeight += box.offsetHeight;
+             if (boxSumHeight > listContainer.value.offsetHeight) {
+                 throw new Error();                                                  //利用error和try跳出forEach循环
+             }
+             sumTime += 50;                                                          //延迟播放
+         });
+     } catch (e) {
+         //
+     }
+
+     listContainer.value.addEventListener("scroll", () => {                                //监听列表容器scroll事件
+         boxs.forEach((box) => {
+             let rect = box.getBoundingClientRect();
+             let offsetHeight = window.innerHeight;
+             if (rect.y > offsetHeight) {                                            //从下方超出容器
+                 box.classList.remove("list-animation");
+                 box.classList.add("list-animation-reverse");
+             } else {
+                 if (rect.y < -rect.height) {                                        //上方超出容器
+                     box.classList.remove("list-animation");
+                     box.classList.add("list-animation-reverse");
+                 } else {                                                            //容器内
+                     box.classList.add("list-animation");
+                     box.classList.remove("list-animation-reverse");
+                 }
+             }
+         });
+     });
+
+ }*/
+
+/*    function replaceAnimation(animation: string, replace: string) {
+     let sumTime = 0;
+     const boxs = document.querySelectorAll(".anime-post-item");           //获取列表项
+     boxs.forEach((box) => {
+         setTimeout(() => {
+             if (box.classList.contains(animation)) {
+                 box.classList.remove(animation);
+                 box.classList.add(replace);
+             }
+         }, sumTime);
+         sumTime += 50;                                                          //延迟播放
+     });
+ }*/
