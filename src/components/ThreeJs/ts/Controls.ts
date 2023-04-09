@@ -34,56 +34,76 @@ export class Controls {
         this.playerVelocity = new Vector3();
         this.playerDirection = new Vector3();
         this.controls = new PointerLockControls(camera, dom);
-        document.addEventListener("keydown", (event) => {
+        const keydownFunc = (event) => {
             this.keyAny_Status[event.code as Type_KeyCode] = true;
             if (this.playerOnFloor && this.keyAny_Status.Space) {
                 // 跳跃
                 this.playerVelocity.y = 15;
             }
-        });
-        document.addEventListener("keyup", (event) => {
+        };
+        const keyupFunc = (event) => {
             this.keyAny_Status[event.code as Type_KeyCode] = false;
-        });
+        };
+        this.funcList.push({type: "keydown", func: keydownFunc});
+        this.funcList.push({type: "keyup", func: keyupFunc});
+        document.addEventListener("keydown", keydownFunc);
+        document.addEventListener("keyup", keyupFunc);
     }
 
     //键盘时间监听
     public addKeydownEventListener(keyCode: string | string[], callback: (code: KeyboardEvent) => void) {
-        document.addEventListener("keydown", (event) => {
+        const keydownFunc = (event) => {
             if (keyCode instanceof Array && keyCode.includes(event.code as Type_KeyCode)) {
                 callback(event);
             } else if (event.code === keyCode) {
                 callback(event);
             }
-        });
+        };
+        this.funcList.push({type: "keydown", func: keydownFunc});
+        document.addEventListener(" ", keydownFunc);
     }
 
     // 鼠标点击事件监听
     public addMousedownEventListener(button: number, callback: (code: MouseEvent) => void) {
-        document.addEventListener("mousedown", (event) => {
+        const mousedownFunc = (event) => {
             if (button === event.button) {
                 callback(event);
             }
+        };
+        this.funcList.push({type: "mousedown", func: mousedownFunc});
+        document.addEventListener("mousedown", mousedownFunc);
+    }
+
+    private funcList: { type: string, func: ((...any) => void) }[] = [];
+
+    //销毁监听器
+    public dispose() {
+        this.funcList.forEach((item) => {
+            document.removeEventListener(item.type, item.func);
         });
     }
 
     //物品栏循环
     public loopNumber(maxLen: number, index: number, callback: (index: number) => void) {
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        document.addEventListener("mousewheel", (event: any) => {
+        const mousewheelFunc = (event: any) => {
             if (!this.controls.isLocked || event.ctrlKey) return;
             // 1 2 3 4 5 6 7 8 9 10 ... n-2 n-1 n循环
-            if (event.wheelDelta < 0) {
+            if (event.deltaY < 0) {
                 //右移 超过10 回到 最小
                 index %= maxLen;
                 index += 1;
-            } else if (event.wheelDelta > 0) {
+            } else if (event.deltaY > 0) {
                 // 左移 小于0 回到 最大
                 index += (maxLen - 2);
                 index %= maxLen;
                 index += 1;
             }
             callback(index);
-        });
+        };
+        this.funcList.push({type: "mousewheel", func: mousewheelFunc});
+        document.addEventListener("mousewheel", mousewheelFunc);
     }
 
     //指针锁
@@ -97,7 +117,7 @@ export class Controls {
         const result = worldOctree.capsuleIntersect(this.playerCollider);
         this.playerOnFloor = false;
         if (result) {
-            // y大于零在地面否则相反
+            // y大于零在地面 否则相反
             this.playerOnFloor = result.normal.y > 0;
             // 空中碰撞
             if (!this.playerOnFloor) {
@@ -128,7 +148,6 @@ export class Controls {
         this.playerDirection.cross(this.camera.up);
         return this.playerDirection;
     }
-
 
     //更新角色
     private updatePlayer(deltaTime: number, worldOctree: Octree) {

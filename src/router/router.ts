@@ -4,9 +4,6 @@ const routes = [
     {
         path: "/",
         name: "IndexView",
-        meta: {
-            requireAuth: true,
-        },
         component: () => import("@/view/IndexView.vue"),
         children: [
             {
@@ -42,6 +39,9 @@ const routes = [
             {
                 path: "/user",
                 name: "UserOptionView",
+                meta: {
+                    requireAuth: true,
+                },
                 component: () => import("@/view/UserOptionView.vue"),
                 children: [
                     {
@@ -70,20 +70,17 @@ const router = createRouter({
     routes: routes
 });
 
-// router.beforeEach((to,from,next)=>{
-//     if (to.matched.some(res => res.meta.requireAuth)){
-//         console.log(localStorage.getItem("username"));
-//         if (localStorage.getItem("username")){
-//             next();
-//         }else {
-//             next({
-//                 path:"/login",
-//                 query:{redirect:to.fullPath}
-//             });
-//         }
-//     }else {
-//         next()
-//     }
-// });
+router.beforeEach((to, from, next) => {
+    if (to.matched.some(res => res.meta.requireAuth)) {
+        const token = localStorage.getItem("token");
+        if (token !== null && token !== "") {
+            next();
+        } else {
+            next({path: "/login", query: {redirect: to.fullPath}});
+        }
+    } else {
+        next()
+    }
+});
 
 export default router;

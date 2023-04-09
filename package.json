@@ -7,6 +7,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "vue-tsc": "vue-tsc --noEmit --skipLibCheck",
     "vue-tsc-build": "vue-tsc --noEmit --skipLibCheck && vue-cli-service build",
     "lint": "vue-cli-service lint"
   },

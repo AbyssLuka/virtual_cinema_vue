@@ -68,9 +68,10 @@
     import api from "@/request/api";
     import regular from "@/global/regular";
     import {reactive, onMounted} from "vue";
-    import {useRouter} from "vue-router";
+    import {useRouter,useRoute} from "vue-router";
 
     const router = useRouter();
+    const route = useRoute();
 
     interface I_LoginResData {
         code: number,
@@ -106,15 +107,14 @@
 
     async function login() {
         let flag: boolean = regular.username.test(state.loginData.userName);
-        flag && showTips("用户名必须4~16位英文+数字！", 3000);
+        flag || showTips("用户名必须4~16位英文+数字！", 3000);
         if (!flag) return;
         flag = regular.password.test(state.loginData.passWord);
-        flag && showTips("密码必须8~16位英文+数字！", 3000);
+        flag || showTips("密码必须8~16位英文+数字！", 3000);
         if (!flag) return;
         flag = regular.code.test(state.loginData.code);
-        flag && showTips("验证码输入错误！", 3000);
+        flag || showTips("验证码输入错误！", 3000);
         if (!flag) return;
-        if (flag) return;
 
         let reData: I_LoginResData = await api.loginApi(
             state.loginData.userName,
@@ -122,7 +122,8 @@
             state.loginData.code
         ) as unknown as I_LoginResData;
         if (reData.code === 200) {
-            await router.push("/user/option")
+            route.query.redirect || await router.push("/");
+            route.query.redirect && await router.push(route.query.redirect.toString());
         } else {
             showTips(reData.msg, 3000)
         }

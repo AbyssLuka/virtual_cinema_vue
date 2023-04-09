@@ -52,7 +52,7 @@
     import PaginationModule from "@/components/module/PaginationModule.vue";
     import ImageList from "@/components/module/ImageList.vue";
     import {fileTypeList} from "@/global/global"
-    import {reactive, onMounted, nextTick, watch} from "vue";
+    import {reactive, onMounted, nextTick, watch,onBeforeUnmount} from "vue";
     import {useRoute, useRouter} from "vue-router";
     import {I_Detail_, I_Pageable, I_ResData} from "@/global/interface";
 
@@ -116,11 +116,11 @@
     function toDetail(uuid: string) {
         router.push({
             name: "AnimeDetailView",
-            query: {
-                data: uuid,
-            }
+            query: {data: uuid,}
         })
     }
+
+    let loopFuncId = 0;
 
     //请求动漫列表
     async function getAnimePostData(page: number | string) {
@@ -135,10 +135,10 @@
                 if (!resData.data) return;
                 state.animeList.push(resData.data.content[count++]);
                 if (count >= resData.data.content.length) {
-                    clearInterval(loop)
+                    clearInterval(loopFuncId);
                 }
             };
-            const loop = setInterval(loopFun, 100);
+            loopFuncId = setInterval(loopFun, 100) as unknown as number;
             if (resData.data.pageable) {
                 state.pageable.page = resData.data.pageable.page;
                 state.pageable.size = resData.data.pageable.size;
@@ -152,6 +152,10 @@
             query: {keyword: state.keyword, page: page,}
         });
     }
+
+    onBeforeUnmount(()=>{
+        clearInterval(loopFuncId);
+    });
 </script>
 
 <style scoped>
@@ -272,7 +276,7 @@
     .anime-item {
         width: 100%;
         overflow-x: hidden;
-        background: white;
+        background: rgba(255,255,255,.5);
         box-shadow: 3px 3px 3px rgba(50, 50, 50, 0.5);
         backdrop-filter: blur(10px);
         transform: translateX(-100%);

@@ -57,6 +57,7 @@
     import {PhysicalWorld} from "@/components/ThreeJs/ts/PhysicalWorld";
     import {TVControl} from "@/components/ThreeJs/ts/TVControl";
     import {RayDetect} from "@/components/ThreeJs/ts/RayDetect";
+    import {Mesh, Object3D} from "three";
 
     interface I_VueData {
         videoUrl: string,
@@ -192,16 +193,20 @@
         scene.add(roomGroup);
 
         createTVControl();
-        await createDVDBox();//创建DVD
-        await createDisplay();//创建显示器
+        //创建DVD
+        await createDVDBox();
+        //创建显示器
+        await createDisplay();
 
         const grid = new THREE.GridHelper(100, 20, 0xFF0000, 0xFFFFFF);//网格辅助线
         grid.position.set(0, -5, 0);
         scene.add(grid);
-
-        renderContainer.value.appendChild(render.domElement);// 添加画布至DOM树
-        cameraClass.resizeCamera(renderContainer.value, render);//初始化摄影机
-        controlsClass.controlsLock(continueGame.value);//指针锁
+        // 添加画布至DOM树
+        renderContainer.value.appendChild(render.domElement);
+        //初始化摄影机
+        cameraClass.resizeCamera(renderContainer.value, render);
+        //指针锁
+        controlsClass.controlsLock(continueGame.value);
 
         worldOctree.fromGraphNode(scene);
 
@@ -210,7 +215,8 @@
         css2DRenderer.setSize(renderContainer.value.clientWidth, renderContainer.value.clientHeight);
         css2DRenderer.domElement.style.position = 'absolute';
         css2DRenderer.domElement.style.top = '0px';
-        renderContainer.value.appendChild(css2DRenderer.domElement);// 添加画布至DOM树
+        // 添加画布至DOM树
+        renderContainer.value.appendChild(css2DRenderer.domElement);
 
     }
 
@@ -258,6 +264,7 @@
         });
     }
 
+    //拾取物品
     function pickUp() {
         if (!controls.isLocked) return;
         rayDetect.firstMesh(worldRayObjects, (intersectObject) => {
@@ -278,6 +285,7 @@
         });
     }
 
+    //创建DVD盒子
     function createDVDBox() {
         let timeout = -1000;
         for (let i = 0; i < videoFileList.length; i++) {
@@ -296,6 +304,7 @@
         }
     }
 
+    //创建显示器
     async function createDisplay() {
         const displayBox = await new Display(displayVideo.value as HTMLVideoElement).create({
             position: new THREE.Vector3(0, 4, -24),
@@ -324,6 +333,7 @@
         worldRayObjects.push(displayBox);
     }
 
+    //创建显示器的遥控器
     function createTVControl() {
         const tvControlClass = new TVControl(TVControlVue, displayVideo.value as HTMLVideoElement);
         roleGoodsCamera.add(tvControlClass.getCSS2D());
@@ -349,11 +359,13 @@
 
     //计时器
     const clock = new THREE.Clock();
-    //渲染函数
+    //渲染函数ID
+    let requestAnimationFrameId = 0;
+
     const renderLoopFun = () => {
         let delta = clock.getDelta();
         //每一帧调用
-        requestAnimationFrame(renderLoopFun);
+        requestAnimationFrameId = requestAnimationFrame(renderLoopFun);
         //刷新物理碰撞线框
         cannonDebugger.update();
         //刷新物理世界
@@ -392,8 +404,24 @@
         //销毁
         gui.destroy();
         StatsClass.destroy();
+        controlsClass.dispose();
         window.removeEventListener("resize", windowResizeFun);
+        clearScene();
     });
+
+    //释放资源
+    function clearScene() {
+        scene.traverse((child: Object3D) => {
+            if (child.type === "Mesh" && child instanceof Mesh) {
+                child.material.dispose && child.material.dispose();
+                child.geometry && child.geometry.dispose();
+            }
+        });
+        cancelAnimationFrame(requestAnimationFrameId);
+        render.forceContextLoss();
+        render.dispose();
+        scene.clear();
+    }
 
 </script>
 
