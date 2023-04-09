@@ -60,7 +60,7 @@ export class Controls {
             }
         };
         this.funcList.push({type: "keydown", func: keydownFunc});
-        document.addEventListener(" ", keydownFunc);
+        document.addEventListener("keydown", keydownFunc);
     }
 
     // 鼠标点击事件监听
