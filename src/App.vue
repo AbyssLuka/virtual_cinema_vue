@@ -1,11 +1,14 @@
 <template>
     <div id="app">
         <router-view/>
+<!--        <cursor-osu></cursor-osu>-->
     </div>
 </template>
 
+
 <script setup lang="ts">
     import {onBeforeMount} from "vue";
+    // import CursorOsu from "@/components/module/Cursor.vue";
 
     onBeforeMount(() => {
         console.log(

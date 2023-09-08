@@ -30,12 +30,10 @@
         path: string,
     }
 
-    interface vueData {
+    const state = reactive<{
         breadCrumbs: I_BreadCrumbs[],
         comicList: I_Detail_[],
-    }
-
-    const state: vueData = reactive({
+    }>({
         comicList: [],
         breadCrumbs: [
             {title: "第一章", path: ""},

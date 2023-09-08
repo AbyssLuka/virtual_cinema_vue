@@ -81,6 +81,7 @@ export class Controls {
         this.funcList.forEach((item) => {
             document.removeEventListener(item.type, item.func);
         });
+        this.controls.dispose();
     }
 
     //物品栏循环

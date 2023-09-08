@@ -12,11 +12,17 @@
     let cursorBox = ref();
     let revolve = ref();
     let cursor = ref();
+
     onMounted(() => {
+        document.body.style.cursor = "none";
         let top = 0, left = 0;
         window.addEventListener("mousemove", (event) => {
             top = event.y - cursorBox.value.clientWidth / 2;
             left = event.x - cursorBox.value.clientHeight / 2;
+            if (cursorBox.value.style.top !== top && cursorBox.value.style.left !== left) {
+                cursorBox.value.style.top = top + "px";
+                cursorBox.value.style.left = left + "px";
+            }
         });
 
         window.addEventListener("mousedown", (event) => {
@@ -41,12 +47,12 @@
             revolve.value.style.width = 20 + "px";
             revolve.value.style.height = 20 + "px";
         });
-        setInterval(() => {
-            if (cursorBox.value.style.top !== top && cursorBox.value.style.left !== left) {
-                cursorBox.value.style.top = top + "px";
-                cursorBox.value.style.left = left + "px";
-            }
-        }, 20)
+        // setInterval(() => {
+        //     if (cursorBox.value.style.top !== top && cursorBox.value.style.left !== left) {
+        //         cursorBox.value.style.top = top + "px";
+        //         cursorBox.value.style.left = left + "px";
+        //     }
+        // }, 20)
     });
 </script>
 

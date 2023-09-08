@@ -4,7 +4,6 @@ import {baseUrl} from "@/global/global";
 const instance = axios.create({
     baseURL: baseUrl,
     timeout: 10000,
-
 });
 
 instance.interceptors.request.use(config => {

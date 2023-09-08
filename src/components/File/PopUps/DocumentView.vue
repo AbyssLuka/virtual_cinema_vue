@@ -13,12 +13,11 @@
     import util from "@/util/util";
     import {baseUrl} from "@/global/global";
     import {reactive, defineProps, watch,withDefaults} from "vue";
+    import {I_File} from "@/global/interface";
 
-    interface I_VueData {
+    const state = reactive<{
         fileInfoLineList: string[]
-    }
-
-    const state: I_VueData = reactive({
+    }>({
         fileInfoLineList: [],
     });
     const props = withDefaults(defineProps<{
@@ -29,15 +28,15 @@
         openDocument(newData);
     }, {immediate: true});
 
-    interface I_File {
-        fileName: string,
-        fileSize?: string,
-        fileType: string,
-        fileUuid: string,
-        icon?: string,
-        lastEditTime?: string,
-        parentFolder: string
-    }
+    // interface I_File {
+    //     fileName: string,
+    //     fileSize?: string,
+    //     fileType: string,
+    //     fileUuid: string,
+    //     icon?: string,
+    //     lastEditTime?: string,
+    //     parentFolder: string
+    // }
 
     function openDocument(docObj: I_File) {
         // let captions = subsrt.parse(util.loadFile(baseUrl+"/file/"+docObj["fileUuid"]), {verbose: true});

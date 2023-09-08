@@ -49,7 +49,23 @@
     import createPopUps from "@/util/createPopUps";
     import {useRoute, useRouter} from "vue-router";
 
-    const state: I_VueData = reactive({
+    const state = reactive<{
+        fileTypeList: typeof fileTypeList,
+        fileList: I_File[],
+        title: string,
+        info: string,
+        currentPlay: {
+            index: number,
+            name: string,
+            url: string,
+        },
+        subtitle: string | undefined,
+        collectInfo: {
+            status: boolean,
+            text: string,
+        },
+        menuList: I_MenuList[],
+    }>({
         fileTypeList: fileTypeList,
         fileList: [],
         title: "",
@@ -70,24 +86,6 @@
     interface I_MenuList {
         icon: string,
         active: () => void;
-    }
-
-    interface I_VueData {
-        fileTypeList: typeof fileTypeList,
-        fileList: I_File[],
-        title: string,
-        info: string,
-        currentPlay: {
-            index: number,
-            name: string,
-            url: string,
-        },
-        subtitle: string | undefined,
-        collectInfo: {
-            status: boolean,
-            text: string,
-        },
-        menuList: I_MenuList[],
     }
 
     onMounted(() => {
@@ -168,7 +166,6 @@
         } else {
             state.collectInfo.text = "收藏";
             state.collectInfo.status = false;
-
         }
     }
 
@@ -208,7 +205,8 @@
         let subtitle = await api.subtitleApi(videoUuid);
         state.subtitle = await util.assToVtt(subtitle, "URL");
         if (!state.subtitle || state.subtitle === "") {
-            alert("没有字幕");
+            // alert("没有字幕");
+            console.log("没有字幕")
         }
     }
 </script>

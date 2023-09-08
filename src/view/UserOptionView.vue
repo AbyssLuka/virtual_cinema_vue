@@ -22,7 +22,11 @@
     const router = useRouter();
     const route = useRoute();
 
-    const state = reactive({
+    const state = reactive<{
+        profileUrl: string,
+        BreadCrumbsInList: { title: string, path: string }[],
+        defaultIndex: number,
+    }>({
         profileUrl: "",
         BreadCrumbsInList: [
             {title: "设置", path: "/user/option"},

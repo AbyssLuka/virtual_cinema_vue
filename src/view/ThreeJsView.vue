@@ -18,9 +18,11 @@
                 <h1 class="continue" onclick="window.close()">退出</h1>
             </div>
         </div>
-        <video id="three-display-video" ref="displayVideo"
+        <video id="three-display-video"
+               ref="displayVideo"
                v-show="state.displayVideoShow"
-               controls class="video-debug"
+               controls
+               class="video-debug"
                crossorigin="anonymous"
                :src="state.videoUrl">
             <track :src="state.subtitleUrl">
@@ -59,7 +61,7 @@
     import {RayDetect} from "@/components/ThreeJs/ts/RayDetect";
     import {Mesh, Object3D} from "three";
 
-    interface I_VueData {
+    const state = reactive<{
         videoUrl: string,
         pauseViewShow: boolean,
         subtitle: string,
@@ -70,9 +72,7 @@
         detectShow: boolean,
         emptyObject3D: THREE.Object3D,
         displayVideoShow: boolean,
-    }
-
-    const state: I_VueData = reactive({
+    }>({
         videoUrl: "",
         pauseViewShow: true,
         subtitle: "",
@@ -347,10 +347,11 @@
                 watch(() => state.roleGoodsIndex, () => {
                     tvControlClass.visible(false);
                 });
-                tvControlClass.visible(show ? show : !tvControlClass.isVisible());
+                // 打开GUI时关闭视角转动
+                let visible = show ? show : !tvControlClass.isVisible();
+                tvControlClass.visible(visible);
             }
         });
-
         scene.add(mesh);
         worldRayObjects.push(mesh)
     }

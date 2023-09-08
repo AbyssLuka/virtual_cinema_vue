@@ -18,16 +18,14 @@
         defaultIndex: number,
     }
 
-    interface I_VueData {
+    const state = reactive<{
         imageUrl: string,
         imageTitle: string,
         index: number,
         imageList: I_File[],
         nextImageStatus: boolean,
         preImageStatus: boolean,
-    }
-
-    const state: I_VueData = reactive({
+    }>({
         imageUrl: "",
         imageTitle: "",
         index: 0,

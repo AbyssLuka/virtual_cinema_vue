@@ -105,7 +105,7 @@
 
 .luka-button:active {
     box-shadow: orangered;
-    transform: translate(0,5px);
+    transform: translate(0, 5px);
 }
 
 .mask-background {

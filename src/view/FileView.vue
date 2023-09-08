@@ -46,17 +46,15 @@
     import {reactive, onMounted} from "vue";
     import {I_File, I_ResData,I_TreeNode} from "@/global/interface";
 
-    interface I_VueData {
+    const state = reactive<{
         directoryAndFileList: I_File[][];
         fileTypeList: typeof fileTypeList,
         pathList: I_File[],
         loading: boolean,
         popPusIsShow: false,
         treeObject: I_TreeNode,
-        keyword: "",
-    }
-
-    const state: I_VueData = reactive({
+        keyword: string,
+    }>({
         directoryAndFileList: [[], []],
         fileTypeList,
         pathList: [],

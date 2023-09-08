@@ -12,10 +12,6 @@
 <script setup lang="ts">
     import {reactive, defineProps, watch, onMounted, withDefaults} from "vue";
 
-    interface I_VueData {
-        selectedIndex: number
-    }
-
     interface I_BreadCrumbsItem {
         title: string,
         path: string,
@@ -37,7 +33,9 @@
         defaultIndex: 0,
     });
 
-    const state: I_VueData = reactive({
+    const state = reactive<{
+        selectedIndex: number
+    }>({
         selectedIndex: -1,
     });
 

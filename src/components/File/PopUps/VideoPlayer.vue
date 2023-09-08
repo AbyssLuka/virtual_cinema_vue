@@ -37,14 +37,13 @@
     import {defineProps, reactive, watch, ref, onMounted, onBeforeMount} from "vue";
     import {I_File, I_ResData, I_Video} from "@/global/interface";
 
-    interface I_VueData {
+
+    const state = reactive<{
         videoUrl: string,
         videoTitle: string,
         cover: string,
         ass: typeof ASS | null,
-    }
-
-    const state: I_VueData = reactive({
+    }>({
         videoUrl: "",
         videoTitle: "--",
         cover: "",

@@ -53,6 +53,8 @@ const createPopUps = <T>(component: ComponentOptionsMixin, props: I_Props<T>) =>
                 submitCallback,
                 cencelCallback,
                 fullScreen,
+                width: props.width ? props.width : "",
+                height: props.height ? props.height : "",
                 title: title,
                 popUpsId: props.popUpsId,
             });
@@ -79,6 +81,9 @@ const createPopUps = <T>(component: ComponentOptionsMixin, props: I_Props<T>) =>
 
         //窗体缩放
         const fullScreen = (status: boolean) => {
+            // if (status === undefined || status == null) {
+            //     status = false;
+            // }
             const popupsWindowId = "popups-window-".concat(props.popUpsId as string);
             const fullScreenId = "full-screen-".concat(props.popUpsId as string);
             const popupsWindow: HTMLElement = document.getElementById(popupsWindowId) as HTMLElement;

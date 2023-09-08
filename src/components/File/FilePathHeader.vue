@@ -18,7 +18,6 @@
     import {defineProps, withDefaults} from "vue";
     import {I_File} from "@/global/interface";
 
-
     const props = withDefaults(defineProps<{
         pathList: I_File[],
         pathClick?: (item: I_File | null, index: number) => void,

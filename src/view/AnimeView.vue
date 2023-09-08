@@ -52,12 +52,13 @@
     import PaginationModule from "@/components/module/PaginationModule.vue";
     import ImageList from "@/components/module/ImageList.vue";
     import {fileTypeList} from "@/global/global"
-    import {reactive, onMounted, nextTick, watch,onBeforeUnmount} from "vue";
+    import {reactive, onMounted, nextTick, watch, onBeforeUnmount} from "vue";
     import {useRoute, useRouter} from "vue-router";
     import {I_Detail_, I_Pageable, I_ResData} from "@/global/interface";
 
-    interface I_VueData {
-        pageable: {                             //分页
+
+    const state = reactive<{
+        pageable: {
             page: number,
             size: number,
             total: number,
@@ -65,15 +66,13 @@
         fileTypeList: typeof fileTypeList,
         keyword: string,
         animeList: I_Detail_[],
-        hoverInfo: {                            //列表项悬浮
+        hoverInfo: {
             title: string,
             clicks: number,
             info: string,
             createTime: string,
         }
-    }
-
-    const state: I_VueData = reactive({
+    }>({
         pageable: {                             //分页
             page: 0,
             size: 1,
@@ -153,7 +152,7 @@
         });
     }
 
-    onBeforeUnmount(()=>{
+    onBeforeUnmount(() => {
         clearInterval(loopFuncId);
     });
 </script>
@@ -276,7 +275,7 @@
     .anime-item {
         width: 100%;
         overflow-x: hidden;
-        background: rgba(255,255,255,.5);
+        background: rgba(255, 255, 255, .5);
         box-shadow: 3px 3px 3px rgba(50, 50, 50, 0.5);
         backdrop-filter: blur(10px);
         transform: translateX(-100%);

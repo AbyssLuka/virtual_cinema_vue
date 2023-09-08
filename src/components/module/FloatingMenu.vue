@@ -34,14 +34,11 @@
     import {reactive, defineProps, onMounted, watch} from "vue";
     import {useRoute} from "vue-router";
 
-
-    interface I_VueData {
+    const state = reactive<{
         profileUrl: string,
         mobile: boolean,
         routePath: string,
-    }
-
-    const state: I_VueData = reactive({
+    }>({
         profileUrl: "",
         mobile: false,
         routePath: "",

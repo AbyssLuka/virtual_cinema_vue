@@ -14,13 +14,11 @@
 </template>
 
 <script setup lang="ts">
-    import {defineProps, withDefaults, reactive, onMounted} from "vue";
+    import {defineProps, withDefaults, reactive, onMounted, onBeforeUnmount} from "vue";
 
-    interface I_VueData {
+    const state = reactive<{
         fullscreen: boolean,
-    }
-
-    const state: I_VueData = reactive({
+    }>({
         fullscreen: false,
     });
 
@@ -38,6 +36,7 @@
         popUpsId: string,
         //更新窗口大小回调函数
         fullScreen?: (status?: boolean) => void,
+        isFullscreen:()=>boolean
         popUpsClick?: (id: string) => void,
     }>(), {
         //标题
@@ -56,17 +55,19 @@
         windowMove();
     });
 
+    let bar: HTMLDivElement | null = null;
+    let mousedownFunc: ((e: MouseEvent) => void) | null = null;
+
     //窗口拖动
     function windowMove() {
         //窗口标题栏
         let barId: string = "popups-bar-".concat(props.popUpsId as string);
-        let bar: HTMLElement = document.getElementById(barId) as HTMLElement;
+        bar = document.getElementById(barId) as HTMLDivElement;
         //窗口
         let windowId: string = "popups-window-".concat(props.popUpsId as string);
         let window: HTMLElement = document.getElementById(windowId) as HTMLElement;
 
-        //鼠标按下
-        bar.onmousedown = function (e: MouseEvent): void {
+        mousedownFunc = (e: MouseEvent): void => {
             // 阻止跳转
             e.preventDefault();
             //鼠标位置
@@ -75,7 +76,7 @@
             let left: number = e.clientX - distX;
             let top: number = e.clientY - distY;
             //鼠标拖动
-            document.onmousemove = function (e: MouseEvent): void {
+            const mousemoveFunc = (e: MouseEvent): void => {
                 //鼠标移动位置
                 left = e.clientX - distX;
                 top = e.clientY - distY;
@@ -92,23 +93,29 @@
                     top = document.documentElement.clientHeight
                 }
 
-            };
-            // 拖动时设置窗口位置
-            const beginLoop = setInterval(() => {
                 if (+window.style.left != left && +window.style.top != top) {
                     //设置窗口位置
                     window.style.left = left + "px";
                     window.style.top = top + "px";
                 }
-            }, 5);
-
-            document.onmouseup = function (): void {
-                // 销毁setInterval
-                clearInterval(beginLoop);
-                document.onmousemove = document.onmouseup = null;
             };
-        }
+            document.addEventListener("mousemove", mousemoveFunc);
+
+            //销毁
+            const mouseupFunc = (): void => {
+                document.removeEventListener("mousemove", mousemoveFunc);
+                document.removeEventListener("mouseup", mouseupFunc);
+            };
+            document.addEventListener("mouseup", mouseupFunc);
+        };
+        //鼠标按下
+        bar.addEventListener("mousedown", mousedownFunc);
     }
+
+    //销毁
+    onBeforeUnmount(() => {
+        bar && mousedownFunc && bar.removeEventListener("mousedown", mousedownFunc);
+    });
 
     // //窗口被点击后移动到最上层
     // function popUpsClick(): void {

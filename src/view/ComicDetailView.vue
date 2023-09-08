@@ -33,12 +33,10 @@
     import api from "@/request/api";
     import {I_Detail_, I_ResData} from "@/global/interface";
 
-    interface vueData {
+    const state = reactive<{
         comicObj: I_Detail_,
         cover: string,
-    }
-
-    const state: vueData = reactive({
+    }>({
         comicObj: {
             id: -1,
             clicks: -1,
