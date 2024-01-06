@@ -92,11 +92,11 @@ export class Controls {
             if (!this.controls.isLocked || event.ctrlKey) return;
             // 1 2 3 4 5 6 7 8 9 10 ... n-2 n-1 n循环
             if (event.deltaY < 0) {
-                //右移 超过10 回到 最小
+                //右移 超过n 回到 1
                 index %= maxLen;
                 index += 1;
             } else if (event.deltaY > 0) {
-                // 左移 小于0 回到 最大
+                // 左移 小于1 回到 n
                 index += (maxLen - 2);
                 index %= maxLen;
                 index += 1;
@@ -145,7 +145,7 @@ export class Controls {
         this.camera.getWorldDirection(this.playerDirection);
         this.playerDirection.y = 0;
         this.playerDirection.normalize();
-        //方向变换(-pi/2) // 例 (1,0,0) => (0,0,-1) x和y交换,并正负取反符号
+        //叉乘
         this.playerDirection.cross(this.camera.up);
         return this.playerDirection;
     }

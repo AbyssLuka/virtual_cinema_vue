@@ -28,7 +28,9 @@
     });
     onMounted(async () => {
         let reData: I_ResData<I_Pageable> = await api.collectListApi(1, 10) as unknown as I_ResData<I_Pageable>;
-        state.collectList = reData.data.content;
+        if (reData.data){
+            state.collectList = reData.data.content;
+        }
     });
 
     function toDetail(uuid: string) {

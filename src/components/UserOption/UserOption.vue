@@ -55,8 +55,9 @@
 
     onMounted(async () => {
         let userInfo: I_ResData<I_UserInfo> = await api.userInfoApi() as unknown as I_ResData<I_UserInfo>;
-        console.log(userInfo)
-        state.userData = userInfo.data;
+        if (userInfo.data){
+            state.userData = userInfo.data;
+        }
     });
 
     async function updatePassword() {
@@ -88,6 +89,7 @@
     .info-item {
         transform: translate(35px, 0);
         overflow: hidden;
+        width: calc(100% - 35%);
     }
 
     .button {

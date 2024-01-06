@@ -25,27 +25,56 @@ module.exports = defineConfig({
         //     }
         // }
     },
-    configureWebpack: {
-        resolve: {
-            extensions: [".ts", ".tsx", ".js", ".json"],
-        },
-        module: {
-            rules: [
-                {
-                    test: /\.ts$/,
-                    exclude: /node_modules/,
-                    enforce: 'pre',
-                    loader: 'tslint-loader'
-                },
-                {
-                    test: /\.tsx?$/,
-                    loader: 'ts-loader',
-                    exclude: /node_modules/,
-                    options: {
-                        appendTsSuffixTo: [/\.vue$/],
-                    }
-                },
-            ]
-        },
+    chainWebpack: (config) => {
+        config.resolve.extensions
+            .add(".ts")
+            .add(".tsx")
+            .add(".js")
+            .add(".json");
+        config.module
+            .rule("ts")
+            .exclude
+            .add(/node_modules/)
+            .end()
+            .test(/\.tsx?$/)
+            .use("ts-loader")
+            .loader("ts-loader")
+            .options({
+                appendTsSuffixTo: [/\.vue$/]
+            })
+            .end()
+
+            .rule("tsl")
+            .exclude
+            .add(/node_modules/)
+            .end()
+            .test(/\.ts$/)
+            .pre()
+            .use("tslint-loader")
+            .loader("tslint-loader")
+            .end();
     },
+    // configureWebpack: {
+    //     resolve: {
+    //         extensions: [".ts", ".tsx", ".js", ".json"],
+    //     },
+    //     module: {
+    //         rules: [
+    //             {
+    //                 test: /\.ts$/,
+    //                 exclude: /node_modules/,
+    //                 enforce: 'pre',
+    //                 loader: 'tslint-loader'
+    //             },
+    //             {
+    //                 test: /\.tsx?$/,
+    //                 loader: 'ts-loader',
+    //                 exclude: /node_modules/,
+    //                 options: {
+    //                     appendTsSuffixTo: [/\.vue$/],
+    //                 }
+    //             },
+    //         ]
+    //     },
+    // },
 });
