@@ -35,8 +35,6 @@
     import {reactive, onMounted} from "vue";
     import {useRouter} from "vue-router";
 
-    import {I_ResData, I_UserInfo} from "@/global/interface";
-
     const state = reactive({
         updPwd: {
             pwd: "",
@@ -54,7 +52,7 @@
 
 
     onMounted(async () => {
-        let userInfo: I_ResData<I_UserInfo> = await api.userInfoApi() as unknown as I_ResData<I_UserInfo>;
+        let userInfo = await api.userInfoApi();
         if (userInfo.data){
             state.userData = userInfo.data;
         }
@@ -71,7 +69,7 @@
         }
         let username = state.userData.username;
         let password = state.updPwd.pwd;
-        let reData: I_ResData<null> = await api.updatePasswordApi(username, password) as unknown as I_ResData<null>;
+        let reData = await api.updatePasswordApi({username, password,code:""});
         if (reData.code === 200) {
             state.updPwd.pwd = "";
             state.updPwd.repeat = "";

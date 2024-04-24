@@ -1,4 +1,4 @@
-# luka-r18-vue
+# webgl_virtual_cinema
 
 ## Project setup
 ```

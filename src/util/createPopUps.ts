@@ -1,6 +1,13 @@
-import {createVNode, render} from "vue"
+import {
+    // ComponentOptionsBase,
+    Component,
+    // ComponentOptionsMixin,
+    // ComponentPublicInstance,
+    createVNode,
+    render,
+    VNode
+} from "vue";
 import PopUps from "@/util/PopUps.vue";
-import {VNode, ComponentOptionsMixin} from "@vue/runtime-core";
 
 interface I_Props<T> {
     data: T,
@@ -10,7 +17,8 @@ interface I_Props<T> {
     height?: string,
 }
 
-const createPopUps = <T>(component: ComponentOptionsMixin, props: I_Props<T>) => {
+
+const createPopUps = <T>(component: Component, props: I_Props<T>) => {
     let div: HTMLElement;
     const windowClass = "pop-ups-obj-";
     const windowId: string = windowClass.concat(props.popUpsId);
@@ -41,7 +49,7 @@ const createPopUps = <T>(component: ComponentOptionsMixin, props: I_Props<T>) =>
             resolve("");
         };
 
-        const cencelCallback = () => {
+        const cancelCallback = () => {
             render(null, div);
             document.body.removeChild(div);
             reject("取消");
@@ -51,7 +59,7 @@ const createPopUps = <T>(component: ComponentOptionsMixin, props: I_Props<T>) =>
         const updateTitle = (title: string) => {
             const vnode: VNode = createVNode(PopUps, {
                 submitCallback,
-                cencelCallback,
+                cancelCallback,
                 fullScreen,
                 width: props.width ? props.width : "",
                 height: props.height ? props.height : "",
@@ -119,7 +127,7 @@ const createPopUps = <T>(component: ComponentOptionsMixin, props: I_Props<T>) =>
         //渲染窗体模板虚拟节点
         const windowTemplate = createVNode(PopUps, {
             submitCallback,
-            cencelCallback,
+            cancelCallback,
             fullScreen,
             popUpsClick,
             title: props.title,

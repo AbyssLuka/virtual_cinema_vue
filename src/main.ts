@@ -1,6 +1,6 @@
 import {createApp} from 'vue';
 
-import router from "@/router/router";
+import router from "@/router";
 import store from "@/store";
 
 import "@/assets/css/element-luka.css";

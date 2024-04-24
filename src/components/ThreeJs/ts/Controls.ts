@@ -1,7 +1,8 @@
 import {PointerLockControls} from "three/examples/jsm/controls/PointerLockControls";
-import {PerspectiveCamera, Vector3} from "three";
+import {Euler, PerspectiveCamera, Quaternion, Vector3} from "three";
 import {Capsule} from "three/examples/jsm/math/Capsule";
 import {Octree} from "three/examples/jsm/math/Octree";
+import * as CANNON from "cannon-es"
 
 type Type_KeyCode = "KeyQ" | "KeyW" | "KeyE" | "KeyR" | "KeyT" | "KeyY" | "KeyU" | "KeyI" | "KeyO" | "KeyP" |
     "KeyA" | "KeyS" | "KeyD" | "KeyF" | "KeyG" | "KeyH" | "KeyJ" | "KeyK" | "KeyL" | "KeyZ" | "KeyX" | "KeyC" |
@@ -9,11 +10,12 @@ type Type_KeyCode = "KeyQ" | "KeyW" | "KeyE" | "KeyR" | "KeyT" | "KeyY" | "KeyU"
     "Digit6" | "Digit7" | "Digit8" | "Digit9" | "Digit0";
 
 export class Controls {
-    private readonly camera: PerspectiveCamera;
+    private camera: PerspectiveCamera;
     private readonly controls: PointerLockControls;
     private readonly playerCollider: Capsule;
-    private readonly playerVelocity;
-    private readonly playerDirection;
+    private readonly playerVelocity: Vector3;
+    private readonly playerDirection: Vector3;
+    private readonly playerBody: CANNON.Body;
     private playerOnFloor = false;
     private GRAVITY = 30;
     private keyAny_Status = {
@@ -28,31 +30,56 @@ export class Controls {
         this.camera = camera;
         const start = new Vector3().copy(camera.position);
         const end = new Vector3().copy(camera.position);
-        end.y += 3;
+        end.y += 2;
         //角色体积
         this.playerCollider = new Capsule(start, end, 1);
         this.playerVelocity = new Vector3();
         this.playerDirection = new Vector3();
         this.controls = new PointerLockControls(camera, dom);
-        const keydownFunc = (event) => {
+        const cylinder = new CANNON.Cylinder(1, 1, 6, 20);
+
+        this.playerBody = new CANNON.Body({
+            mass: 45,
+            shape: cylinder,
+            position: camera.position as unknown as CANNON.Vec3,
+            allowSleep: false,
+        });
+
+        const keydownFunc = (event: KeyboardEvent) => {
             this.keyAny_Status[event.code as Type_KeyCode] = true;
             if (this.playerOnFloor && this.keyAny_Status.Space) {
                 // 跳跃
                 this.playerVelocity.y = 15;
             }
         };
-        const keyupFunc = (event) => {
+        const keyupFunc = (event: KeyboardEvent) => {
             this.keyAny_Status[event.code as Type_KeyCode] = false;
         };
         this.funcList.push({type: "keydown", func: keydownFunc});
         this.funcList.push({type: "keyup", func: keyupFunc});
         document.addEventListener("keydown", keydownFunc);
         document.addEventListener("keyup", keyupFunc);
+
+        this.controls.addEventListener('change', () => {
+            this.allowRotate && this.camera.rotation.copy(this.tempCameraRotation);
+        });
+    }
+
+    private allowRotate = false;
+    private tempCameraRotation: Euler = new Euler();
+
+    public lockAngle(status: boolean) {
+        this.tempCameraRotation = this.camera.rotation.clone();
+        this.allowRotate = status;
+    }
+
+    public getPlayerBody() {
+        return this.playerBody;
     }
 
     //键盘时间监听
     public addKeydownEventListener(keyCode: string | string[], callback: (code: KeyboardEvent) => void) {
-        const keydownFunc = (event) => {
+        const keydownFunc = (event: KeyboardEvent) => {
             if (keyCode instanceof Array && keyCode.includes(event.code as Type_KeyCode)) {
                 callback(event);
             } else if (event.code === keyCode) {
@@ -65,7 +92,7 @@ export class Controls {
 
     // 鼠标点击事件监听
     public addMousedownEventListener(button: number, callback: (code: MouseEvent) => void) {
-        const mousedownFunc = (event) => {
+        const mousedownFunc = (event: MouseEvent) => {
             if (button === event.button) {
                 callback(event);
             }
@@ -81,34 +108,33 @@ export class Controls {
         this.funcList.forEach((item) => {
             document.removeEventListener(item.type, item.func);
         });
+        this.controls.disconnect();
         this.controls.dispose();
     }
 
     //物品栏循环
     public loopNumber(maxLen: number, index: number, callback: (index: number) => void) {
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mousewheelFunc = (event: any) => {
+        const mousewheelFunc = (event: WheelEvent) => {
             if (!this.controls.isLocked || event.ctrlKey) return;
             // 1 2 3 4 5 6 7 8 9 10 ... n-2 n-1 n循环
             if (event.deltaY < 0) {
-                //右移 超过n 回到 1
+                //左移 超过n 回到 1
                 index %= maxLen;
                 index += 1;
             } else if (event.deltaY > 0) {
-                // 左移 小于1 回到 n
+                // 右移 小于1 回到 n
                 index += (maxLen - 2);
                 index %= maxLen;
                 index += 1;
             }
             callback(index);
         };
-        this.funcList.push({type: "mousewheel", func: mousewheelFunc});
-        document.addEventListener("mousewheel", mousewheelFunc);
+        this.funcList.push({type: "wheel", func: mousewheelFunc});
+        document.addEventListener("wheel", mousewheelFunc);
     }
 
     //指针锁
-    public isLocked() {
+    get isLocked() {
         return this.controls.isLocked;
     }
 
@@ -169,6 +195,13 @@ export class Controls {
         this.playerCollisions(worldOctree);
         // 更新控制器和相机位置
         this.controls.getObject().position.copy(this.playerCollider.end);
+
+        const x = this.playerCollider.start.x;
+        const y = this.playerCollider.start.y + 2;
+        const z = this.playerCollider.start.z;
+
+        this.playerBody.position.set(x, y, z);
+        this.playerBody.quaternion.set(0, 0, 0, 1);
     }
 
     public create() {
@@ -178,7 +211,7 @@ export class Controls {
     //指针锁
     public controlsLock(dom: HTMLElement) {
         let setTime: number | null | ReturnType<typeof setTimeout> = 0;
-        dom.addEventListener("click", async () => {
+        dom.addEventListener("click", () => {
             if (setTime != null) clearTimeout(setTime as number);
             //延迟1.25s锁定指针，防止报错
             setTime = setTimeout(() => {
@@ -196,56 +229,47 @@ export class Controls {
             //计算移动距离
             const speedDelta = delta * (this.playerOnFloor ? 50 : 15) * quicken;
             //移动
-            if (this.keyAny_Status.KeyA) this.playerVelocity.add(this.getSideVector().multiplyScalar(-speedDelta));
-            if (this.keyAny_Status.KeyD) this.playerVelocity.add(this.getSideVector().multiplyScalar(speedDelta));
-            if (this.keyAny_Status.KeyW) this.playerVelocity.add(this.getForwardVector().multiplyScalar(speedDelta));
-            if (this.keyAny_Status.KeyS) this.playerVelocity.add(this.getForwardVector().multiplyScalar(-speedDelta));
+            if (this.keyAny_Status.KeyA)
+                this.playerVelocity.add(
+                    this.getSideVector().multiplyScalar(-speedDelta)
+                );
+            if (this.keyAny_Status.KeyD)
+                this.playerVelocity.add(
+                    this.getSideVector().multiplyScalar(speedDelta)
+                );
+            if (this.keyAny_Status.KeyW)
+                this.playerVelocity.add(
+                    this.getForwardVector().multiplyScalar(speedDelta)
+                );
+            if (this.keyAny_Status.KeyS)
+                this.playerVelocity.add(
+                    this.getForwardVector().multiplyScalar(-speedDelta)
+                );
+            if (this.keyAny_Status.KeyA ||
+                this.keyAny_Status.KeyD ||
+                this.keyAny_Status.KeyW ||
+                this.keyAny_Status.KeyS) {
+                this.playerStatus = "run";
+            } else {
+                this.playerStatus = "stand";
+            }
         }
     }
+
+    private playerStatus: "run" | "stand" | "jump" = "stand";
+
+    public getPosition(): Vector3 {
+        const x = this.playerCollider.start.x;
+        const y = this.playerCollider.start.y;
+        const z = this.playerCollider.start.z;
+        return new Vector3().set(x, y - 1, z);
+    }
+
+    get rotation(): Quaternion {
+        return this.camera.quaternion;
+    }
+
+    get playerState(): string {
+        return this.playerStatus;
+    }
 }
-
-
-/* //移动控制器
-    private velocity = new Vector3();
-    private direction = new Vector3();
-if (this.controls.isLocked) {
-    this.velocity.x -= this.velocity.x * 10.0 * delta;
-    this.velocity.z -= this.velocity.z * 10.0 * delta;
-    this.direction.z = Number(this.keyW_Status) - Number(this.keyS_Status);
-    this.direction.x = Number(this.keyD_Status) - Number(this.keyA_Status);
-    if (this.keyA_Status || this.keyD_Status) this.velocity.x -= this.direction.x * 400.0 * delta;
-    if (this.keyW_Status || this.keyS_Status) this.velocity.z -= this.direction.z * 400.0 * delta;
-    this.direction.normalize(); // 确保各个方向的一致运动
-    //下面两个&&是判断是否有moveRight。如果有就执行。不然没加载完毕，就循环执行会报错
-    // controls && controls.moveRight(-velocity.x * delta);
-    // controls && controls.moveForward(-velocity.z * delta);
-
-    //加速级别
-    this.quicken = this.keyShift_Status ? 0.6 : 0.3;
-    //计算移动距离
-    const rightDistance = -this.velocity.x * delta * this.quicken;
-    const forwardDistance = -this.velocity.z * delta * this.quicken;
-    //设置最终移动值
-    if (this.keyA_Status || this.keyD_Status) this.controls.moveRight(rightDistance);
-    if (this.keyW_Status || this.keyS_Status) this.controls.moveForward(forwardDistance);
-}*/
-/*physicalObjects.forEach((e: { mesh: THREE.Mesh | THREE.PerspectiveCamera, body: CANNON.Body }) => {
-           if (this.camera === e.mesh) {
-               // e.body.quaternion.y = e.mesh.quaternion.y;                      //跟随相机y轴旋转
-               e.body.angularFactor.copy(new CANNON.Vec3(0, 0, 0));    //防止碰撞刚体旋转
-               if (this.keyA_Status || this.keyD_Status || this.keyW_Status || this.keyS_Status) {
-                   e.body.position.z = e.mesh.position.z;
-                   e.body.position.x = e.mesh.position.x;
-                   e.mesh.position.y = e.body.position.y;//移动时相机受到重力影响
-               } else {
-                   e.mesh.position.copy(e.body.position as unknown as Vector3);//非移动时受到所有重力影响
-               }
-               if (this.keySpace_Status) {
-                   e.body.velocity.set(0, 10, 0);//跳跃
-               }
-               e.body.angularVelocity.set(0, -1, 0);
-           } else {
-               e.mesh.position.copy(e.body.position as unknown as Vector3);
-               e.mesh.quaternion.copy(e.body.quaternion as unknown as typeof e.mesh.quaternion);
-           }
-       });*/

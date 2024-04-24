@@ -88,18 +88,23 @@
 .luka-button {
     width: 80px;
     height: 40px;
-    background: transparent;
-    border: 2px solid white;
+    /*background: transparent;*/
+    /*border: 2px solid white;*/
     display: flex;
     font-weight: bold;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     user-select: none;
+    border: 0;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(5px);
+    margin: 0 20px;
 }
 
 .luka-button:hover {
-    border: 2px solid orangered;
+    /*border: 2px solid orangered;*/
+    background: rgba(255,255,255,0.5);
     transition: .1s;
 }
 

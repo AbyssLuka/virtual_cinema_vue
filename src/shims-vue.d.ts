@@ -8,10 +8,6 @@
 declare module '*.js';
 declare module 'subsrt';
 declare module 'assjs';
-declare module '@types/three';
-declare module '@types/dat.gui';
-declare module '@types/gsap';
-declare module '@types/connon';
 
 declare module '*.vue' {
     import {ComponentOptions} from "vue";
@@ -20,5 +16,5 @@ declare module '*.vue' {
 }
 
 interface Window {
-    dropWindow?: (id:string)=>void;
+    dropWindow?: (id: string) => void;
 }

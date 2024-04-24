@@ -1,64 +1,67 @@
-import {I_ResData, I_Video} from "@/global/interface";
 import api from "@/request/api";
 import * as CANNON from "cannon-es";
-import * as THREE from "three";
+import {BoxGeometry, Mesh, MeshBasicMaterial, TextureLoader} from "three";
 
 interface I_Option {
+    videoUuid: string,
     position: CANNON.Vec3,
     name?: string,
     type?: string,
     active: () => void,
+    infoList?: string[],
 }
 
 export class DVD_Box {
-    private readonly videoUuid: string;
+    private readonly option: I_Option;
 
-    constructor(videoUuid: string) {
-        this.videoUuid = videoUuid;
+    constructor(option: I_Option) {
+        this.option = option;
     }
 
-    public async create(option: I_Option): Promise<{ mesh: THREE.Mesh, body: CANNON.Body }> {
+    public async create(callback: (mesh: Mesh, body: CANNON.Body) => void) {
         //创建DVD盒子
-        const videoInfo: I_ResData<I_Video> = await api.videoApi(this.videoUuid) as unknown as I_ResData<I_Video>;
+        const videoInfo = await api.videoApi(this.option.videoUuid);
+        if (!videoInfo.data) return;
         const DVDCubeMesh = await DVD_Box.createDVDCube(videoInfo.data.cover);
         const DVDCubeShape = new CANNON.Box(new CANNON.Vec3(1 / 2, 1.5 / 2, 0.2 / 2));
         const DVDCubeBody = new CANNON.Body({
             mass: 1,
             shape: DVDCubeShape,
-            position: option.position, //位置
+            position: this.option.position, //位置
         });
         DVDCubeMesh.name = videoInfo.data.videoName;
         DVDCubeMesh.name = videoInfo.data.videoName;
-        if (option.name) DVDCubeMesh.userData.name = option.name;
-        if (option.type) DVDCubeMesh.userData.type = option.type;
-        DVDCubeMesh.userData.active = option.active;
+        DVDCubeMesh.userData.name = this.option.name;
+        DVDCubeMesh.userData.type = this.option.type;
+        DVDCubeMesh.userData.infoList = this.option.infoList;
+        DVDCubeMesh.userData.active = this.option.active;
         DVDCubeMesh.userData.videoUuid = videoInfo.data.videoUuid;
-        return {mesh: DVDCubeMesh, body: DVDCubeBody}
+        callback(DVDCubeMesh, DVDCubeBody);
     }
 
     private static async createDVDCube(imageUuid: string) {
         //创建盒子
-        const cubeGeometry = new THREE.BoxGeometry(1, 1.5, 0.1);
+        const cubeGeometry = new BoxGeometry(1, 1.5, 0.1);
         if (imageUuid) {
 
             //材质图片
             const url: string = await api.imageObjUrl(imageUuid) as string;
             //创建纹理
-            const cubeCoverTexture = new THREE.TextureLoader().load(
+            const cubeCoverTexture = new TextureLoader().load(
                 url, function (texture) {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.47, 1);
                     texture.offset.set(0.265, 0);
                 }
             );
-            const cubeBackCoverTexture = new THREE.TextureLoader().load(
+            const cubeBackCoverTexture = new TextureLoader().load(
                 url, function (texture) {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.47, 1);
                     texture.offset.set(-0.265, 0);
                 }
             );
-            const cubeLeftCoverTexture = new THREE.TextureLoader().load(
+            const cubeLeftCoverTexture = new TextureLoader().load(
                 url, function (texture) {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.06, 1);
@@ -66,17 +69,17 @@ export class DVD_Box {
             );
 
             //创建材质
-            const cubeCoveMaterial = new THREE.MeshBasicMaterial({map: cubeCoverTexture,});
-            const cubeBackMaterial = new THREE.MeshBasicMaterial({map: cubeBackCoverTexture,});
-            const cubeLeftMaterial = new THREE.MeshBasicMaterial({map: cubeLeftCoverTexture,});
-            const blackMaterial = new THREE.MeshBasicMaterial({color: 0x606060,});
+            const cubeCoveMaterial = new MeshBasicMaterial({map: cubeCoverTexture,});
+            const cubeBackMaterial = new MeshBasicMaterial({map: cubeBackCoverTexture,});
+            const cubeLeftMaterial = new MeshBasicMaterial({map: cubeLeftCoverTexture,});
+            const blackMaterial = new MeshBasicMaterial({color: 0x606060,});
             const materials = [blackMaterial, cubeLeftMaterial, blackMaterial, blackMaterial, cubeCoveMaterial, cubeBackMaterial];
             //创建物体
 
-            return new THREE.Mesh(cubeGeometry, materials);
+            return new Mesh(cubeGeometry, materials);
         } else {
-            const blackMaterial = new THREE.MeshBasicMaterial({color: 0x606060,});
-            return new THREE.Mesh(cubeGeometry, blackMaterial);
+            const blackMaterial = new MeshBasicMaterial({color: 0x606060,});
+            return new Mesh(cubeGeometry, blackMaterial);
         }
     }
 }

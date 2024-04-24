@@ -38,7 +38,6 @@ export interface I_File {
     fileUuid: string,
     icon?: string,
     lastEditTime?: string,
-    parentFolder: string
 }
 
 export interface I_TreeNode {
@@ -47,7 +46,6 @@ export interface I_TreeNode {
     show: boolean,
     type: string,
     uuid: string,
-    parentFolder: string
 }
 
 export interface I_Video {

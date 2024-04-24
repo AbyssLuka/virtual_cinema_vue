@@ -2,31 +2,27 @@
     <div class="popups-window" :id="'popups-window-'+props.popUpsId"
          :style="'width:'+width+';'+'height:'+height">
         <div :id="'popups-bar-'+props.popUpsId" class="popups-bar"
-             @dblclick="[fullScreen(state.fullscreen),state.fullscreen = !state.fullscreen]"
+             @dblclick="[fullScreen(fullscreen),fullscreen = !fullscreen]"
              @mousedown="props.popUpsClick('popups-window-'+props.popUpsId)">
             <div class="popups-title">{{title}}</div>
             <div class="ri-fullscreen-fill full-screen" :id="'full-screen-'+props.popUpsId"
-                 @click.stop="[fullScreen(state.fullscreen),state.fullscreen = !state.fullscreen]"></div>
-            <div class="exit-button ri-close-line" @click.stop="props.cencelCallback"></div>
+                 @click.stop="[fullScreen(fullscreen),fullscreen = !fullscreen]"></div>
+            <div class="exit-button ri-close-line" @click.stop="props.cancelCallback"></div>
         </div>
         <div class="popups-window-content" :id="'content-'+props.popUpsId"></div>
     </div>
 </template>
 
 <script setup lang="ts">
-    import {defineProps, withDefaults, reactive, onMounted, onBeforeUnmount} from "vue";
+    import {defineProps, withDefaults, ref, onMounted, onBeforeUnmount} from "vue";
 
-    const state = reactive<{
-        fullscreen: boolean,
-    }>({
-        fullscreen: false,
-    });
+    const fullscreen = ref(false)
 
     const props = withDefaults(defineProps<{
         //标题
         title?: string,
         //回调函数
-        cencelCallback?: () => void,
+        cancelCallback?: () => void,
         //回调函数
         submitCallback?: () => void,
         //初始宽高
@@ -36,17 +32,15 @@
         popUpsId: string,
         //更新窗口大小回调函数
         fullScreen?: (status?: boolean) => void,
-        isFullscreen:()=>boolean
         popUpsClick?: (id: string) => void,
     }>(), {
         //标题
         title: "Window",
-        cencelCallback: () => console.log("cencelCallback"),
+        cancelCallback: () => console.log("cancelCallback"),
         submitCallback: () => console.log("submitCallback"),
         fullScreen: (status?: boolean) => console.log("updateFullScreen", status),
         popUpsClick: (id: string) => {
-            console.log("popUpsClick");
-            console.log(id);
+            console.log(`popUpsClick:${id}`);
         }
     });
 

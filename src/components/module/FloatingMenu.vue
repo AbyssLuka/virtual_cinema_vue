@@ -7,7 +7,7 @@
                      :style="[state.routePath===item.url?'color:orangered;font-weight:bold':'color:white']"></div>
                 <div class="menu-title"
                      :style="[state.routePath===item.url?'color:orangered;font-weight:bold':'color:white']">
-                    {{item.title}}
+                    {{ item.title }}
                 </div>
             </router-link>
         </div>
@@ -20,7 +20,7 @@
                              :style="[state.routePath===item.url?'color:orangered;font-weight:bold':'color:white']"></div>
                         <div class="menu-title-mobile"
                              :style="[state.routePath===item.url?'color:orangered;font-weight:bold':'color:white']">
-                            {{item.title}}
+                            {{ item.title }}
                         </div>
                     </router-link>
                 </div>
@@ -30,148 +30,148 @@
 </template>
 
 <script setup lang="ts">
-    import api from "@/request/api";
-    import {reactive, defineProps, onMounted, watch} from "vue";
-    import {useRoute} from "vue-router";
+import api from "@/request/api";
+import {reactive, defineProps, onMounted, watch} from "vue";
+import {useRoute} from "vue-router";
 
-    const state = reactive<{
-        profileUrl: string,
-        mobile: boolean,
-        routePath: string,
-    }>({
-        profileUrl: "",
-        mobile: false,
-        routePath: "",
-    });
+const state = reactive<{
+    profileUrl: string,
+    mobile: boolean,
+    routePath: string,
+}>({
+    profileUrl: "",
+    mobile: false,
+    routePath: "",
+});
 
-    const route = useRoute();
-    //监听当前路由地址
-    watch(() => route.path, () => {
-        state.routePath = route.path;
-    }, {immediate: true});
+const route = useRoute();
+//监听当前路由地址
+watch(() => route.path, () => {
+    state.routePath = route.path;
+}, {immediate: true});
 
-    interface I_Menu {
-        title: string,
-        icon: string,
-        url: string,
-    }
+interface I_Menu {
+    title: string,
+    icon: string,
+    url: string,
+}
 
-    const props = defineProps<{
-        menu: I_Menu[],
-        toLogin: () => void,
-    }>();
+const props = defineProps<{
+    menu: I_Menu[],
+    toLogin: () => void,
+}>();
 
-    onMounted(async () => {
-        state.profileUrl = await api.profileUrl();
-    });
+onMounted(async () => {
+    state.profileUrl = await api.profileUrl();
+});
 </script>
 
 <style scoped>
 
-    @media (max-width: 768px) {
-        .floating-menu-item {
-            display: none;
-        }
-
-        .floating-menu-mobile {
-            display: block;
-            position: fixed;
-            top: 75px;
-            right: 10px;
-            width: auto;
-            height: auto;
-            background: #111111;
-        }
-
-        .floating-menu-mobile-item {
-            width: auto;
-            height: 40px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .menu-title-mobile {
-            width: 30px;
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-            display: flex;
-            align-items: center;
-        }
-
-        .collage {
-            height: 40px;
-            width: 40px;
-            background: black;
-            border-radius: 50%;
-            margin-left: auto;
-            color: white;
-        }
+@media (max-width: 768px) {
+    .floating-menu-item {
+        display: none;
     }
 
-    @media (min-width: 768px) {
-        .floating-menu-item {
-            width: 40px;
-            height: 40px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .floating-menu-mobile {
-            display: none;
-        }
-
-        .collage {
-            display: none;
-        }
-    }
-
-    .floating-menu {
+    .floating-menu-mobile {
+        display: block;
+        position: fixed;
+        top: 75px;
+        right: 10px;
         width: auto;
+        height: auto;
+        background: #111111;
     }
 
-    .menu-icon {
-        width: 30px;
-        height: 30px;
-        margin: 5px 5px;
-        position: relative;
-        transition: .5s;
-        top: 0;
-        font-size: 24px;
+    .floating-menu-mobile-item {
+        width: auto;
+        height: 40px;
+        overflow: hidden;
+        cursor: pointer;
     }
 
-    .menu-title {
+    .menu-title-mobile {
         width: 30px;
-        height: 20px;
-        margin: 5px 5px;
-        position: relative;
-        text-align: center;
         font-size: 10px;
-        transition: .5s;
-        top: 0;
-        opacity: 0;
         font-weight: bold;
         color: white;
+        display: flex;
+        align-items: center;
     }
 
-    .floating-menu-item:hover .menu-icon {
-        top: -30px;
-        opacity: 0;
-    }
-
-    .floating-menu-item:hover .menu-title {
-        top: -30px;
-        opacity: 1;
-    }
-
-    .avatar {
+    .collage {
         height: 40px;
         width: 40px;
+        background: black;
         border-radius: 50%;
-        margin: 0 5px;
+        margin-left: auto;
+        color: white;
+    }
+}
+
+@media (min-width: 768px) {
+    .floating-menu-item {
+        width: 40px;
+        height: 40px;
+        overflow: hidden;
+        cursor: pointer;
     }
 
-    .avatar[src=""], .avatar:not([src]) {
-        opacity: 1;
+    .floating-menu-mobile {
+        display: none;
     }
+
+    .collage {
+        display: none;
+    }
+}
+
+.floating-menu {
+    width: auto;
+}
+
+.menu-icon {
+    width: 30px;
+    height: 30px;
+    margin: 5px 5px;
+    position: relative;
+    transition: .5s;
+    top: 0;
+    font-size: 24px;
+}
+
+.menu-title {
+    width: 30px;
+    height: 20px;
+    margin: 5px 5px;
+    position: relative;
+    text-align: center;
+    font-size: 10px;
+    transition: .5s;
+    top: 0;
+    opacity: 0;
+    font-weight: bold;
+    color: white;
+}
+
+.floating-menu-item:hover .menu-icon {
+    top: -30px;
+    opacity: 0;
+}
+
+.floating-menu-item:hover .menu-title {
+    top: -30px;
+    opacity: 1;
+}
+
+.avatar {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    margin: 0 5px;
+}
+
+.avatar[src=""], .avatar:not([src]) {
+    opacity: 1;
+}
 </style>

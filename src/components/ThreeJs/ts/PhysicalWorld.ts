@@ -1,5 +1,5 @@
 import * as CANNON from "cannon-es";
-import {default as THREE, Vector3} from "three";
+import { Object3D, PerspectiveCamera} from "three";
 
 export class PhysicalWorld {
     private readonly world: CANNON.World;
@@ -15,7 +15,7 @@ export class PhysicalWorld {
         //更好性能，travelling too fast
         this.world.broadphase = new CANNON.SAPBroadphase(this.world);
         this.world.allowSleep = true;
-        this.world.gravity.set(0, -20, 0);
+        this.world.gravity.set(0, -9.82, 0);
 
         //物理世界的材质
         const defaultMaterial = new CANNON.Material({friction: 1, restitution: 0});
@@ -47,10 +47,10 @@ export class PhysicalWorld {
         return this.world;
     }
 
-    public update(physicalObjects: { mesh: THREE.Mesh | THREE.PerspectiveCamera, body: CANNON.Body }[],) {
-        physicalObjects.forEach((e: { mesh: THREE.Mesh | THREE.PerspectiveCamera, body: CANNON.Body }) => {
-            e.mesh.position.copy(e.body.position as unknown as Vector3);
-            e.mesh.quaternion.copy(e.body.quaternion as unknown as typeof e.mesh.quaternion);
+    public update(physicalObjects: { mesh: Object3D | PerspectiveCamera, body: CANNON.Body }[],) {
+        physicalObjects.forEach((e: { mesh: Object3D | PerspectiveCamera, body: CANNON.Body }) => {
+            e.mesh.position.copy(e.body.position);
+            e.mesh.quaternion.copy(e.body.quaternion);
         });
     }
 

@@ -1,39 +1,62 @@
-import * as THREE from "three";
+import {
+    BoxGeometry, Group,
+    Mesh,
+    MeshBasicMaterial,
+    Object3D,
+    RectAreaLight,
+    Vector3,
+    VideoTexture
+} from "three";
+import {RectAreaLightHelper} from "three/examples/jsm/helpers/RectAreaLightHelper";
 
 interface I_Option {
-    position: THREE.Vector3,
+    position: Vector3,
+    videoDom: HTMLVideoElement,
     name: string,
     active: () => void
 }
 
 export class Display {
-    private readonly videoDom: HTMLVideoElement;
 
-    constructor(videoDom: HTMLVideoElement) {
-        this.videoDom = videoDom;
+    private readonly option: I_Option;
+
+    constructor(option: I_Option) {
+        this.option = option;
     }
 
-    async create(option: I_Option) {
+    public create(callback: (mesh: Object3D) => void) {
+        const width = 24;
+        const aspectRatio = 16 / 9;
         //显示器
-        const displayMesh = await Display.createDisplayMesh(this.videoDom);
-        displayMesh.name = option.name;
-        displayMesh.position.copy(option.position);
-        displayMesh.userData.name = option.name;
-        displayMesh.userData.active = option.active;
-        return displayMesh;
+        const displayMesh = Display.createDisplayMesh(this.option.videoDom, width, aspectRatio);
+        displayMesh.name = this.option.name;
+        displayMesh.position.copy(this.option.position);
+        displayMesh.userData.name = this.option.name;
+        displayMesh.userData.active = this.option.active;
+
+        const rectAreaLight = new RectAreaLight(0xffffff, 1, width, width / aspectRatio);
+        rectAreaLight.rotation.y = Math.PI;
+        rectAreaLight.position.copy(displayMesh.position);
+        const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight);
+        const group = new Group();
+        group.add(rectAreaLight);
+        group.add(rectAreaLightHelper);
+        group.add(displayMesh);
+        callback(group);
     }
 
-    private static async createDisplayMesh(videoDom: HTMLVideoElement) {
-        const displayGeometry = new THREE.BoxGeometry(16, 9, 0.1);
-        const videoTexture = new THREE.VideoTexture(videoDom);
+    private static createDisplayMesh(videoDom: HTMLVideoElement, width: number, aspectRatio: number) {
+        const displayGeometry = new BoxGeometry(width, Math.ceil(width / aspectRatio), 0.1);
+        const videoTexture = new VideoTexture(videoDom);
+        const blackMaterial = new MeshBasicMaterial({color: 0x000000});
         const materialArray = [
-            new THREE.MeshBasicMaterial({color: 0x000000}),
-            new THREE.MeshBasicMaterial({color: 0x000000}),
-            new THREE.MeshBasicMaterial({color: 0x000000}),
-            new THREE.MeshBasicMaterial({color: 0x000000}),
-            new THREE.MeshBasicMaterial({map: videoTexture}),
-            new THREE.MeshBasicMaterial({color: 0x000000}),
+            blackMaterial,
+            blackMaterial,
+            blackMaterial,
+            blackMaterial,
+            new MeshBasicMaterial({map: videoTexture}),
+            blackMaterial,
         ];
-        return new THREE.Mesh(displayGeometry, materialArray);
+        return new Mesh(displayGeometry, materialArray);
     }
 }

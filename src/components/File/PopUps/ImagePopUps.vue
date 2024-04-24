@@ -9,94 +9,94 @@
 </template>
 
 <script setup lang="ts">
-    import {baseUrl} from "@/global/global"
-    import {reactive, watch, defineProps, withDefaults} from "vue"
-    import {I_File} from "@/global/interface";
+import {baseUrl} from "@/global/global"
+import {reactive, watch, defineProps, withDefaults} from "vue"
+import {I_File} from "@/global/interface";
 
-    interface I_PropsData {
-        list: I_File[],
-        defaultIndex: number,
-    }
+interface I_PropsData {
+    list: I_File[],
+    defaultIndex: number,
+}
 
-    const state = reactive<{
-        imageUrl: string,
-        imageTitle: string,
-        index: number,
-        imageList: I_File[],
-        nextImageStatus: boolean,
-        preImageStatus: boolean,
-    }>({
-        imageUrl: "",
-        imageTitle: "",
-        index: 0,
-        imageList: [],
-        nextImageStatus: false,
-        preImageStatus: false,
-    });
+const state = reactive<{
+    imageUrl: string,
+    imageTitle: string,
+    index: number,
+    imageList: I_File[],
+    nextImageStatus: boolean,
+    preImageStatus: boolean,
+}>({
+    imageUrl: "",
+    imageTitle: "",
+    index: 0,
+    imageList: [],
+    nextImageStatus: false,
+    preImageStatus: false,
+});
 
-    const props = withDefaults(defineProps<{
-        data: I_PropsData,
-        updateTitle?: (title: string) => void,
-        fullScreen?: (status?: boolean) => void,
-    }>(), {
-        updateTitle: (title: string) => console.log(title),
-        fullScreen: (status?: boolean) => {
-            console.log("updateFullScreen函数为undefined！！！");
-            console.log(status);
-        },
-    });
+const props = withDefaults(defineProps<{
+    data: I_PropsData,
+    updateTitle?: (title: string) => void,
+    fullScreen?: (status?: boolean) => void,
+}>(), {
+    updateTitle: (title: string) => console.log(title),
+    fullScreen: (status?: boolean) => {
+        console.log("updateFullScreen函数为undefined！！！");
+        console.log(status);
+    },
+});
 
-    watch(() => props.data, (newImgObj: I_PropsData) => {
-        state.index = newImgObj.defaultIndex;
-        state.imageTitle = newImgObj.list[state.index].fileName;
-        state.imageUrl = baseUrl + "/file/" + newImgObj.list[state.index].fileUuid;
-        state.imageList = newImgObj.list
-    }, {immediate: true});
+watch(() => props.data, (newImgObj: I_PropsData) => {
+    state.index = newImgObj.defaultIndex;
+    state.imageTitle = newImgObj.list[state.index].fileName;
+    state.imageUrl = baseUrl + "/file/" + newImgObj.list[state.index].fileUuid;
+    state.imageList = newImgObj.list
+}, {immediate: true});
 
-    function preImage() {
-        state.imageTitle = state.imageList[--state.index].fileName;
-        state.imageUrl = baseUrl + "/file/" + state.imageList[state.index].fileUuid;
-        props.updateTitle(state.imageTitle);
-    }
+function preImage() {
+    state.imageTitle = state.imageList[--state.index].fileName;
+    state.imageUrl = baseUrl + "/file/" + state.imageList[state.index].fileUuid;
+    props.updateTitle(state.imageTitle);
+}
 
-    function nextImage() {
-        state.imageTitle = state.imageList[++state.index].fileName;
-        props.updateTitle(state.imageTitle);
-        state.imageUrl = baseUrl + "/file/" + state.imageList[state.index].fileUuid;
-    }
+function nextImage() {
+    state.imageTitle = state.imageList[++state.index].fileName;
+    props.updateTitle(state.imageTitle);
+    state.imageUrl = baseUrl + "/file/" + state.imageList[state.index].fileUuid;
+}
 </script>
 
 <style scoped>
-    .image-content {
-        position: relative;
-        width: 100%;
-        height: 100%;
-    }
+.image-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
 
-    .image-view {
-        width: auto;
-        height: 100%;
-    }
+.image-view {
+    width: auto;
+    height: 100%;
+}
 
-    .next-image {
-        width: 30px;
-        height: 80px;
-        position: absolute;
-        right: 10px;
-        border: 2px solid #c3c3c3;
-        cursor: pointer;
-    }
+.next-image {
+    width: 30px;
+    height: 80px;
+    position: absolute;
+    right: 10px;
+    border: 2px solid #c3c3c3;
+    cursor: pointer;
+}
 
-    .pre-image {
-        width: 30px;
-        height: 80px;
-        position: absolute;
-        left: 10px;
-        border: 2px solid #c3c3c3;
-        cursor: pointer;
-    }
+.pre-image {
+    width: 30px;
+    height: 80px;
+    position: absolute;
+    left: 10px;
+    border: 2px solid #c3c3c3;
+    cursor: pointer;
+}
 
-    .next-image:hover, .pre-image:hover {
-        background: black;
-    }
+.next-image:hover, .pre-image:hover {
+    background: black;
+}
 </style>

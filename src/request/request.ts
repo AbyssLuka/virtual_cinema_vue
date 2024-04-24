@@ -8,10 +8,7 @@ const instance = axios.create({
 
 instance.interceptors.request.use(config => {
     const token: string | null | undefined = localStorage.getItem("token");
-    token && (config.headers = {
-        ...config.headers,
-        token: token,
-    });
+    token && (config.headers.token = token);
     return config;
 }, error => {
     return new Promise(error);

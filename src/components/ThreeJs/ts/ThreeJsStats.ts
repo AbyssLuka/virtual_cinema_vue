@@ -4,17 +4,17 @@ export class ThreeJsStats {
     private readonly stats: Stats;
 
     constructor() {
-        this.stats = Stats();//性能监视器
+        this.stats = new Stats();//性能监视器
     }
 
     //性能监视器初始化
     private statsInit() {
-        this.stats.setMode(0);
+        // this.stats.setMode(0);
         this.stats.showPanel(0);
-        this.stats.domElement.style.position = 'fixed';
-        this.stats.domElement.style.top = '100px';
-        this.stats.domElement.style.left = '100px';
-        this.stats.domElement.style.display = 'none';
+        this.stats.dom.style.position = 'fixed';
+        this.stats.dom.style.top = '100px';
+        this.stats.dom.style.left = '100px';
+        this.stats.dom.style.display = 'none';
     }
 
     public create() {
