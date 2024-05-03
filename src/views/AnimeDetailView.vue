@@ -18,7 +18,7 @@
             </div>
             <div class="operate">
                 <div class="luka-button button">点赞</div>
-                <div class="luka-button button" @click="collect"
+                <div class="luka-button button" @click="[state.collectInfo.status?delCollect():addCollect()]"
                      :style="[state.collectInfo.status?'color: orangered;':'color: black;']">
                     {{ state.collectInfo.text }}
                 </div>
@@ -155,8 +155,9 @@ async function copyUrl() {
 
 const route = useRoute();
 
-async function collect() {
-    let animeUuid = route.query.data as string;
+async function addCollect() {
+    let animeUuid = <string>route.query.data;
+    console.log(animeUuid)
     let resData = await api.addCollectApi(animeUuid);
     if (resData.code === 200) {
         state.collectInfo.text = "已收藏";
@@ -166,6 +167,19 @@ async function collect() {
         state.collectInfo.status = false;
     }
 }
+
+async function delCollect() {
+    let animeUuid = <string>route.query.data;
+    let resData = await api.unCollectApi(animeUuid);
+    if (resData.code === 200) {
+        state.collectInfo.text = "收藏";
+        state.collectInfo.status = false;
+    } else {
+        state.collectInfo.text = "已收藏";
+        state.collectInfo.status = true;
+    }
+}
+
 
 async function init() {
     let uuid: string = route.query.data as string;

@@ -85,7 +85,6 @@ export class GLTFAndCANNONLoader {
     private body: CANNON.Body | undefined;
     private hitbox: Mesh | undefined;
 
-
     constructor(option: I_Option_) {
         const defaultOption = {
             position: new Vector3(0, 0, 0),
@@ -161,7 +160,6 @@ export class GLTFAndCANNONLoader {
         });
         return this;
     }
-
 
     public createBody(shapeOption: I_CANNONShape, callback: (body: CANNON.Body, mesh: Mesh) => void) {
         if (this.body && this.object) {

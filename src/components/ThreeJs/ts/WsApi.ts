@@ -65,10 +65,6 @@ export class WsApi {
     private readonly token_: string;
     private createPlayerWs: WebSocket | undefined;
     private playerActionWs: WebSocket | undefined;
-    private createRoomWs: WebSocket | undefined;
-    private exitRoomWs: WebSocket | undefined;
-    private selectRoomListWs: WebSocket | undefined;
-    private removeRoomWs: WebSocket | undefined;
     private updateVideoWs: WebSocket | undefined;
 
     constructor(token: string) {
@@ -292,23 +288,6 @@ export class WsApi {
     }
 
     public createRoom(roomName: string, videoUuid: string) {
-        // this.createRoomWs || (this.createRoomWs = new WebSocketUtil("/createRoom", this.token).webSocket)
-        // this.createRoomWs.onmessage = (data) => {
-        //     const parse: I_CreateRoom = JSON.parse(data.data);
-        //     console.log(parse);
-        //     this.createRoomWs && this.createRoomWs.close();
-        // };
-        // this.createRoomWs.onopen = () => {
-        //     const data = JSON.stringify({
-        //         type: "createRoom",
-        //         name: roomName,
-        //         videoUuid,
-        //     });
-        //     this.createRoomWs && this.createRoomWs.send(data);
-        // }
-        // this.createRoomWs.onerror = () => {
-        // }
-
         return ajaxRequest<
             { type: "createRoom", name: string, videoUuid: string, },
             { type: "createRoom", roomId: string, name: string, videoUuid: string, }
@@ -316,20 +295,9 @@ export class WsApi {
             {type: "createRoom", name: roomName, videoUuid,},
             HTTP_BASE_URL
         );
-
     }
 
     public selectRoomList(name: string, callback: (roomList: I_RoomInfo[]) => void) {
-        // this.selectRoomListWs || (this.selectRoomListWs = new WebSocketUtil("/selectRoomList", this.token).webSocket)
-        // this.selectRoomListWs.onmessage = (data) => {
-        //     const parse: I_SelectRoomList = JSON.parse(data.data);
-        //     callback(parse.roomInfoList);
-        //     this.selectRoomListWs && this.selectRoomListWs.close();
-        // };
-        // this.selectRoomListWs.onopen = () => {
-        //     this.selectRoomListWs && this.selectRoomListWs.send(JSON.stringify({type: "selectRoomList", name}));
-        // }
-
         ajaxRequest<
             { type: "selectRoomList", name: string },
             { "type": "selectRoomList", "roomInfoList": [] }
@@ -346,8 +314,6 @@ export class WsApi {
     }
 
     public exitRoom(userId: string, roomId: string) {
-        // this.exitRoomWs || (this.exitRoomWs = new WebSocketUtil("/exitRoom", this.token).webSocket)
-
         ajaxRequest<
             { userId: string, roomId: string },
             {
@@ -362,29 +328,11 @@ export class WsApi {
         ).then(res => {
             console.log(res.data)
             cancelAnimationFrame(this.frameSync);
-            this.exitRoomWs && this.exitRoomWs.close();
             this.playerActionWs && this.playerActionWs.close();
         });
-
-        // this.exitRoomWs.onmessage = () => {
-        //     cancelAnimationFrame(this.frameSync);
-        //     this.exitRoomWs && this.exitRoomWs.close();
-        //     this.playerActionWs && this.playerActionWs.close();
-        // };
-        // this.exitRoomWs.onopen = () => {
-        //     this.exitRoomWs && this.exitRoomWs.send(JSON.stringify({userId, roomId}));
-        // };
     }
 
     public removeRoom(roomId: string) {
-        /*      this.removeRoomWs = new WebSocketUtil("/removeRoom", this.token).webSocket;
-              this.removeRoomWs.onmessage = () => {
-                  this.removeRoomWs && this.removeRoomWs.close();
-              };
-              this.removeRoomWs.onopen = () => {
-                  this.removeRoomWs && this.removeRoomWs.send(JSON.stringify({type: "removeRoom", roomId}));
-              };*/
-
         ajaxRequest<
             { type: "removeRoom", roomId: string }, {
             type: "createRoom",
@@ -398,7 +346,6 @@ export class WsApi {
         ).then(res => {
             console.log(res.data)
             cancelAnimationFrame(this.frameSync);
-            this.exitRoomWs && this.exitRoomWs.close();
             this.playerActionWs && this.playerActionWs.close();
         });
 
@@ -407,11 +354,7 @@ export class WsApi {
     public dispose() {
         this.createPlayerWs && this.createPlayerWs.close();
         this.playerActionWs && this.playerActionWs.close();
-        this.createRoomWs && this.createRoomWs.close();
-        this.exitRoomWs && this.exitRoomWs.close();
-        this.selectRoomListWs && this.selectRoomListWs.close();
         this.updateVideoWs && this.updateVideoWs.close();
         cancelAnimationFrame(this.frameSync);
     }
-
 }

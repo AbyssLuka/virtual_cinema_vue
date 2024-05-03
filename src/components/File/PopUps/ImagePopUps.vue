@@ -1,38 +1,23 @@
 <template>
     <div class="image-content center">
-        <img class="image-view" :src="state.imageUrl" alt="" @dblclick="props.fullScreen()"/>
-        <div class="pre-image ri-arrow-left-s-line center ri-2x"
-             @click="preImage()" v-show="state.index > 0"></div>
-        <div class="next-image ri-arrow-right-s-line center ri-2x"
-             @click="nextImage()" v-show="state.index < state.imageList.length - 1"></div>
+        <img class="image-view" :src="imageUrl" alt="" @dblclick="props.fullScreen()" ref="imageDom"/>
+        <div style="height: 10px;color: #111111;font-weight: bold">{{index}}</div>
+        <div class="pre-image ri-arrow-left-s-line center ri-5x"
+             @click="preImage()" v-show="index > 0"></div>
+        <div class="next-image ri-arrow-right-s-line center ri-5x"
+             @click="nextImage()" v-show="index < state.imageList.length - 1"></div>
     </div>
 </template>
 
 <script setup lang="ts">
-import {baseUrl} from "@/global/global"
-import {reactive, watch, defineProps, withDefaults} from "vue"
+import {reactive, watch, defineProps, withDefaults,ref} from "vue"
 import {I_File} from "@/global/interface";
+import api from "@/request/api";
 
 interface I_PropsData {
     list: I_File[],
     defaultIndex: number,
 }
-
-const state = reactive<{
-    imageUrl: string,
-    imageTitle: string,
-    index: number,
-    imageList: I_File[],
-    nextImageStatus: boolean,
-    preImageStatus: boolean,
-}>({
-    imageUrl: "",
-    imageTitle: "",
-    index: 0,
-    imageList: [],
-    nextImageStatus: false,
-    preImageStatus: false,
-});
 
 const props = withDefaults(defineProps<{
     data: I_PropsData,
@@ -46,23 +31,40 @@ const props = withDefaults(defineProps<{
     },
 });
 
+const state = reactive<{
+    imageList: I_File[],
+}>({
+    imageList: [],
+});
+
+const imageDom = ref();
+const imageUrl = ref("");
+const imageTitle = ref("");
+const index = ref(0);
+
 watch(() => props.data, (newImgObj: I_PropsData) => {
-    state.index = newImgObj.defaultIndex;
-    state.imageTitle = newImgObj.list[state.index].fileName;
-    state.imageUrl = baseUrl + "/file/" + newImgObj.list[state.index].fileUuid;
+    index.value = newImgObj.defaultIndex;
+    imageTitle.value = newImgObj.list[index.value].fileName;
+    imageUrl.value = api.fileUrl(newImgObj.list[index.value].fileUuid);
     state.imageList = newImgObj.list
 }, {immediate: true});
 
 function preImage() {
-    state.imageTitle = state.imageList[--state.index].fileName;
-    state.imageUrl = baseUrl + "/file/" + state.imageList[state.index].fileUuid;
-    props.updateTitle(state.imageTitle);
+    imageTitle.value = state.imageList[--index.value].fileName;
+    imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    setTimeout(()=>{
+        imageUrl.value = api.fileUrl(state.imageList[index.value].fileUuid);
+    },50)
+    props.updateTitle(imageTitle.value);
 }
 
 function nextImage() {
-    state.imageTitle = state.imageList[++state.index].fileName;
-    props.updateTitle(state.imageTitle);
-    state.imageUrl = baseUrl + "/file/" + state.imageList[state.index].fileUuid;
+    imageTitle.value = state.imageList[++index.value].fileName;
+    imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    setTimeout(()=> {
+        imageUrl.value = api.fileUrl(state.imageList[index.value].fileUuid);
+    },50)
+    props.updateTitle(imageTitle.value);
 }
 </script>
 
@@ -70,12 +72,12 @@ function nextImage() {
 .image-content {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: 100%
 }
 
 .image-view {
     width: auto;
-    height: 100%;
+    height: calc(100% - 30px);
 }
 
 .next-image {
@@ -83,7 +85,6 @@ function nextImage() {
     height: 80px;
     position: absolute;
     right: 10px;
-    border: 2px solid #c3c3c3;
     cursor: pointer;
 }
 
@@ -92,11 +93,10 @@ function nextImage() {
     height: 80px;
     position: absolute;
     left: 10px;
-    border: 2px solid #c3c3c3;
     cursor: pointer;
 }
 
 .next-image:hover, .pre-image:hover {
-    background: black;
+    color: orangered;
 }
 </style>

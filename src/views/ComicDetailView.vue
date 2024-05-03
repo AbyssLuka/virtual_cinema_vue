@@ -1,17 +1,19 @@
 <template>
     <div class="comic-detail-view">
-        <div class="comic-detail-container" style="display: flex">
+        <div class="comic-detail-container"
+             style="display: flex">
             <div class="comic-cover-container">
                 <img :src="api.fileUrl(cover)"
                      alt=""
                      class="comic-cover"/>
             </div>
             <div class="comic-cover-info-container">
-                <h2 class="comic-title">标题：{{ comicObj.title }}</h2>
-                <h2>标签</h2>
-                <h2>页数</h2>
-                <h2>时间</h2>
-                <div class="horiz">
+                <h2 class="comic-title">{{ comicState.title }}</h2>
+                <br/>
+                <h3>标签：--</h3>
+                <h3>页数：「 {{ comicState.fileList.length }} 」</h3>
+                <h3>时间：「 {{ comicState.createTime }} 」</h3>
+                <div class="horiz" style="margin: 10px 0 0 0">
                     <div class="luka-button">收藏</div>
                     <div class="luka-button">下载</div>
                 </div>
@@ -20,8 +22,10 @@
         <div class="comic-detail-container">
             <div class="comic-page-container">
                 <img :src="api.thumbnailUrl(image.fileUuid)"
-                     v-for="(image,index) in comicObj.fileList"
+                     v-for="(image,index) in comicState.fileList"
                      :key="index"
+                     alt=""
+                     @click="openImgWindow(index)"
                      class="comic-page"/>
             </div>
         </div>
@@ -32,9 +36,11 @@ import {reactive, onBeforeMount, ref} from "vue";
 import {useRoute} from "vue-router";
 import api from "@/request/api";
 import {I_Detail_, I_ResData} from "@/global/interface";
+import createPopUps from "@/util/createPopUps";
+import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
 
 const cover = ref("")
-const comicObj = reactive<I_Detail_>({
+const comicState = reactive<I_Detail_>({
     id: -1,
     clicks: -1,
     createTime: "0000-00-00",
@@ -55,19 +61,21 @@ async function init(): Promise<void> {
     let uuid: string = route.query.data as string;
     let promise: I_ResData<I_Detail_ | null> = await api.comicApi(uuid);
     if (promise.data) {
-        comicObj.uuid = promise.data.uuid;
-        comicObj.clicks = promise.data.clicks;
-        comicObj.id = promise.data.id;
-        comicObj.info = promise.data.info;
-        comicObj.createTime = promise.data.createTime;
-        comicObj.fileList = promise.data.fileList;
-        comicObj.pathUuid = promise.data.pathUuid;
-        comicObj.title = promise.data.title;
-        cover.value = comicObj.fileList[0].fileUuid;
+        Object.assign(comicState, promise.data);
+        cover.value = comicState.fileList[0].fileUuid;
     }
 }
 
-
+function openImgWindow(index: number) {
+    createPopUps(ImagePopUps, {
+        title: comicState.title,
+        popUpsId: "image",
+        data: {
+            list: comicState.fileList,
+            defaultIndex: index,
+        }
+    }).then();
+}
 </script>
 
 <style scoped>
@@ -77,8 +85,15 @@ async function init(): Promise<void> {
         grid-template-columns: repeat(2, 44%);
     }
 
+    .comic-cover-container {
+        width: 50vw;
+    }
+
     .comic-detail-container {
+        display: flex;
+        flex-direction: column;
         width: 100vw;
+        align-items: center;
     }
 }
 
@@ -86,7 +101,9 @@ async function init(): Promise<void> {
     .comic-page-container {
         grid-template-columns: repeat(3, 30%);
     }
-
+    .comic-cover-container {
+        width: 30%;
+    }
     .comic-detail-container {
         width: 100vw;
     }
@@ -97,6 +114,10 @@ async function init(): Promise<void> {
         grid-template-columns: repeat(4, 23%);
     }
 
+    .comic-cover-container {
+        width: 30%;
+    }
+
     .comic-detail-container {
         width: 100vw;
     }
@@ -104,17 +125,25 @@ async function init(): Promise<void> {
 
 @media (min-width: 980px) and (max-width: 1200px) {
     .comic-page-container {
-        grid-template-columns: repeat(5, calc(100% / 6));
+        grid-template-columns: repeat(5, calc(100% / 5.5));
+    }
+
+    .comic-cover-container {
+        width: 30%;
     }
 
     .comic-detail-container {
-        width: 1200px;
+        width: 100vw;
     }
 }
 
 @media (min-width: 1200px) {
     .comic-page-container {
-        grid-template-columns: repeat(5, calc(100% / 6));
+        grid-template-columns: repeat(5, calc(100% / 5.5));
+    }
+
+    .comic-cover-container {
+        width: 30%;
     }
 
     .comic-detail-container {
@@ -128,6 +157,7 @@ async function init(): Promise<void> {
     display: grid;
     grid-gap: 10px;
     justify-content: center;
+    margin: 20px 0;
 }
 
 .comic-detail-container {
@@ -138,7 +168,7 @@ async function init(): Promise<void> {
 }
 
 .comic-cover-info-container {
-    width: 60%;
+    width: auto;
     height: 100%;
 }
 
@@ -156,21 +186,23 @@ async function init(): Promise<void> {
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+}
 
+.comic-detail-view::-webkit-scrollbar {
+    display: none;
 }
 
 .comic-cover-container {
-    width: 40%;
     height: auto;
     display: flex;
     justify-content: center;
-    margin: 10px 0;
+    margin: 10px;
+    flex-shrink: 0;
 }
 
 .comic-cover {
-    width: 240px;
-    height: 320px;
+    width: 100%;
+    height: auto;
     background: black;
-
 }
 </style>

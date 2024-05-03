@@ -47,13 +47,9 @@
                     </div>
                 </div>
             </div>
-            <label class="search">
-                <div class="ri-search-eye-line ri-3x"></div>
-                <input class="search-input"
-                       type="text"
-                       v-model="pageState.keyword"
-                       @keydown.enter="pageClick(0)"/>
-            </label>
+            <search-input :active="(keyword:string)=>{pageState.keyword = keyword;pageClick(0);}"
+                          style="position: fixed;top: 50px;right: 100px;">
+            </search-input>
         </div>
         <pagination-module
             class="pagination-module"
@@ -72,6 +68,7 @@ import PaginationModule from "@/components/module/PaginationModule.vue";
 import {fileTypeList} from '@/global/global';
 import api from "@/request/api";
 import {I_Detail_} from "@/global/interface";
+import SearchInput from "@/components/module/SearchInput.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -121,20 +118,12 @@ function to3DView() {
         name: "GameMain",
         query: {data: videoState.videoList[current.value].uuid}
     })
-    // router.push({
-    //   name: "ThreeJs",
-    //   query: {data: videoState.videoList[current.value].uuid}
-    // })
 }
 
 function selectAlbum(index: number, animation: boolean) {
-    if (animation) {
-        albumContentDom.value.style.transition = ".5s";
-    } else {
-        albumContentDom.value.style.transition = "0s";
-    }
+    albumContentDom.value.style.transition = animation ? ".5s" : "0s";
     index = (index + videoState.videoList.length) % videoState.videoList.length;
-    // const itemContainer = document.getElementById("album-content") as HTMLDivElement;
+// const itemContainer = document.getElementById("album-content") as HTMLDivElement;
     current.value = index;
     albumTitle.value = videoState.videoList[index].title;
     const number = ((index + 1) * -220) + (220 / 2) + window.innerWidth / 2;
@@ -167,7 +156,6 @@ async function getVideoList(page: number) {
     let resData = await api.animePostLimitApi({keyword: pageState.keyword, page: page, size: 100});
     if (!resData.data) return;
     if (resData.code === 200) {
-        // videoState.videoList = resData.data.content.slice(0,10);
         videoState.videoList = resData.data.content;
         if (resData.data.pageable) {
             pageState.page = resData.data.pageable.page;
@@ -184,41 +172,6 @@ async function getVideoList(page: number) {
 
 </style>
 <style scoped>
-.search {
-    color: white;
-}
-
-.search-input {
-    border: 0 solid white;
-    border-bottom: 2px solid white;
-    color: white;
-}
-
-.search {
-    height: 50px;
-    display: flex;
-    align-items: center;
-    position: fixed;
-    top: 50px;
-    right: 100px;
-}
-
-.search-input {
-    background: transparent;
-    outline: none;
-    height: 35px;
-    transition: .2s linear;
-    width: 0;
-}
-
-.search:hover .search-input {
-    width: 150px
-}
-
-.search-input:focus,
-.search-input:valid {
-    width: 150px
-}
 
 .control-icon {
     cursor: pointer;

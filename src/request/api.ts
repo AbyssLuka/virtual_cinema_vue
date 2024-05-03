@@ -133,7 +133,7 @@ const addCollectApi = async (uuid: string) => {
 
 //取消收藏
 const unCollectApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<{ uuid: string }, I_ResData<null>>("POST", "/collect/remove", {uuid});
+    const resPromise = ajaxRequest<{ uuid: string }, I_ResData<null>>("GET", "/collect/remove", {uuid});
     let resData_: I_ResData<null> = {code: -1, msg: "", data: null};
     await resPromise.then(res => {
         resData_ = res.data;

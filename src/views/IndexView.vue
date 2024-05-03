@@ -10,7 +10,6 @@
 </template>
 
 <script setup lang="ts">
-// import FloatingWindow from "@/components/module/FloatingWindow";
 import HeaderMenu from "@/components/module/HeaderMenu.vue";
 </script>
 

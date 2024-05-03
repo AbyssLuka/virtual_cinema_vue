@@ -124,7 +124,7 @@ async function treeClick(treeNode: I_TreeNode | null, pathList: number[]): Promi
 
     updateTree(treeObject, tempList, pathList);
 
-    treeNode !== null && treeNode.title !== "根路径" && nextFile({
+    treeNode && treeNode.title !== "根路径" && nextFile({
         fileUuid: treeNode.uuid,
         fileType: treeNode.type,
         fileName: treeNode.title,
@@ -183,7 +183,7 @@ async function nextFile(fileObject: I_File): Promise<void> {
         }).then();
     } else if (fileTypeList.image.includes(fileType)) {
         let defaultIndex = 0, count = 0;
-        let fileList = state.directoryAndFileList[1].filter((listItem: I_File) => {
+        const fileList = state.directoryAndFileList[1].filter((listItem: I_File) => {
             let states = fileTypeList.image.includes(listItem.fileType);
             if (listItem.fileUuid === fileObject.fileUuid) defaultIndex = count;
             if (states) count++;
@@ -192,15 +192,15 @@ async function nextFile(fileObject: I_File): Promise<void> {
         //使用弹窗打开图片
         createPopUps(ImagePopUps, {
             title: fileObject.fileName,
-            data: {list: fileList, defaultIndex: defaultIndex},
-            popUpsId: "image"
+            data: {list: fileList, defaultIndex},
+            popUpsId: "image",
         }).then()
     } else if (fileTypeList.document.includes(fileType)) {
         //使用弹窗打开文本
         createPopUps(DocumentView, {
             title: fileObject.fileName,
             data: fileObject,
-            popUpsId: "document"
+            popUpsId: "document",
         }).then()
     }
 }
@@ -251,6 +251,7 @@ async function nextFile(fileObject: I_File): Promise<void> {
     width: 100%;
     box-shadow: 5px 5px 10px rgba(50, 50, 50, 0.5);
     height: 50px;
+    flex-direction: row;
 }
 
 .search-file-input {

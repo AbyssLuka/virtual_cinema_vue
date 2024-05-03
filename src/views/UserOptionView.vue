@@ -68,6 +68,7 @@ function breadCrumbsClick(item: { title: string, path: string }) {
 }
 
 .content-container {
+    backdrop-filter: blur(5px);
     border: 10px white solid;
     width: calc(96vw - 20px);
     height: calc(100vh - 100px);

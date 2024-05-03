@@ -1,8 +1,8 @@
 <template>
     <div class="video-content">
-        <div class="title video-title">正在播放：{{ state.videoTitle }}</div>
+        <div class="title video-title">正在播放：{{ videoTitle }}</div>
         <div class="video-container" ref="videoContainer">
-            <video ref="videoPlayer" class="video-player" :src="state.videoUrl" :poster="state.cover"
+            <video ref="videoPlayer" class="video-player" :src="videoUrl" :poster="cover"
                    @click="togglePlayPause">
                 <track src="" default>
             </video>
@@ -34,21 +34,8 @@ import ASS from "assjs"
 import util from "@/util/util";
 import api from "@/request/api";
 
-import {defineProps, reactive, watch, ref, onMounted, onBeforeMount} from "vue";
+import {defineProps, watch, ref, onMounted, onBeforeMount} from "vue";
 import {I_File, I_Video} from "@/global/interface";
-
-const state = reactive<{
-    videoUrl: string,
-    videoTitle: string,
-    cover: string,
-    ass: typeof ASS | null,
-}>({
-    videoUrl: "",
-    videoTitle: "--",
-    cover: "",
-    //ASS字幕对象
-    ass: null,
-});
 
 const props = defineProps<{
     data: I_File,
@@ -65,6 +52,11 @@ const assContainer = ref();
 const fullScreenButton = ref();
 const subtitleButton = ref();
 const videoContainer = ref();
+
+const videoUrl = ref("");
+const videoTitle = ref("");
+const cover = ref("");
+let ass: typeof ASS;
 
 onMounted(() => {
     updateOrangeBar();
@@ -146,7 +138,7 @@ async function animeList(videoUuid: string) {
 }
 
 watch(() => props.data, (newData: I_File) => {
-    state.videoTitle = newData.fileName;
+    videoTitle.value = newData.fileName;
     animeList(newData.fileUuid);
 }, {immediate: true});
 
@@ -163,13 +155,11 @@ function togglePlayPause() {
 }
 
 function playVideo(videoItem: I_Video) {
-    if (state.ass !== null) {
-        state.ass.destroy();
-    }
-    state.videoTitle = videoItem["videoName"];
-    state.videoUrl = api.videoUrl(videoItem["videoUuid"]);
+    if (ass) ass.destroy();
+    videoTitle.value = videoItem["videoName"];
+    videoUrl.value = api.videoUrl(videoItem["videoUuid"]);
     if (videoItem["cover"] !== "")
-        state.cover = api.fileUrl(videoItem["cover"]);
+        cover.value = api.fileUrl(videoItem["cover"]);
     if (videoItem.subtitle !== "null" && videoItem.subtitle !== "undefined" && videoItem.subtitle !== "") {
         loadSubtitle(videoItem.subtitle);
         updateAss();
@@ -181,7 +171,7 @@ function playVideo(videoItem: I_Video) {
 let animationFunId = 0;
 const updateAss = () => {
     animationFunId = requestAnimationFrame(updateAss);
-    state.ass.resize();
+    ass && ass.resize();
 };
 
 onBeforeMount(() => {
@@ -190,7 +180,7 @@ onBeforeMount(() => {
 
 
 function loadSubtitle(subtitle: string) {
-    state.ass = new ASS(util.loadFile(api.fileUrl(subtitle)), videoPlayer.value, {
+    ass = new ASS(util.loadFile(api.fileUrl(subtitle)), videoPlayer.value, {
         container: assContainer.value
     });
 }

@@ -1,8 +1,5 @@
 import {
-    // ComponentOptionsBase,
-    Component,
-    // ComponentOptionsMixin,
-    // ComponentPublicInstance,
+    ComponentOptionsMixin,
     createVNode,
     render,
     VNode
@@ -17,24 +14,28 @@ interface I_Props<T> {
     height?: string,
 }
 
+// InstanceType<typeof ImagePopUps>["$props"]["data"]
 
-const createPopUps = <T>(component: Component, props: I_Props<T>) => {
+const createPopUps = <T>(
+    component: ComponentOptionsMixin,
+    props: I_Props<T>
+) => {
     let div: HTMLElement;
     const windowClass = "pop-ups-obj-";
-    const windowId: string = windowClass.concat(props.popUpsId);
+    const windowId = windowClass.concat(props.popUpsId);
     //如果窗口未被创建
-    if (document.getElementById(windowId) === null) {
+    if (!document.getElementById(windowId)) {
         //创建一个div设置id和class
         div = document.createElement("div");
         //窗口唯一标识
         div.setAttribute("id", windowId);
         //窗户class
         div.setAttribute("class", windowClass);
-        //添加至于body内末尾使得窗口不会被覆盖
+        //添加至于body内末尾使窗口不会被覆盖
         document.body.appendChild(div);
     } else {
-        const popUpsObj: HTMLElement | null = document.getElementById(windowId);
-        if (popUpsObj === null) {
+        const popUpsObj = document.getElementById(windowId);
+        if (!popUpsObj) {
             div = document.createElement("div");
         } else {
             div = popUpsObj;
@@ -125,7 +126,7 @@ const createPopUps = <T>(component: Component, props: I_Props<T>) => {
         };
 
         //渲染窗体模板虚拟节点
-        const windowTemplate = createVNode(PopUps, {
+        const windowTemplate: VNode = createVNode(PopUps, {
             submitCallback,
             cancelCallback,
             fullScreen,
@@ -149,9 +150,9 @@ const createPopUps = <T>(component: Component, props: I_Props<T>) => {
         });
 
         //渲染窗体内容
-        const contentId: string = "content-".concat(props.popUpsId);
-        const content: HTMLElement = document.getElementById(contentId) as HTMLElement;
-        render(popUpsContentVNode, content);
+        const contentId = "content-".concat(props.popUpsId);
+        const content = document.getElementById(contentId);
+        if (content) render(popUpsContentVNode, content);
     }));
 };
 
@@ -159,10 +160,8 @@ const createPopUps = <T>(component: Component, props: I_Props<T>) => {
 window.dropWindow = (id: string): string => {
     const windowClass = "pop-ups-obj-";
     const windowId: string = windowClass.concat(id);
-    const popUpsObj: HTMLElement | null = document.getElementById(windowId) as HTMLElement;
-    if (popUpsObj === null) {
-        return "Not Find"
-    }
+    const popUpsObj = document.getElementById(windowId);
+    if (!popUpsObj) return "Not Find"
     popUpsObj.remove();
     render(null, popUpsObj);
     return windowId;
