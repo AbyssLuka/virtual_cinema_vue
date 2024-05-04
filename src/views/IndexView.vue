@@ -2,7 +2,11 @@
     <div class="index">
         <div class="index-router-view">
             <div class="router-view-container">
-                <router-view></router-view>
+                <router-view v-slot="{Component}">
+                    <transition>
+                        <component :is="Component"/>
+                    </transition>
+                </router-view>
             </div>
             <header-menu class="header-menu"></header-menu>
         </div>
@@ -15,6 +19,16 @@ import HeaderMenu from "@/components/module/HeaderMenu.vue";
 
 <style scoped>
 
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+}
+
 .header-menu {
     min-height: 75px;
     height: auto;
@@ -26,6 +40,7 @@ import HeaderMenu from "@/components/module/HeaderMenu.vue";
 .router-view-container {
     width: 100%;
     height: calc(100% - 75px);
+    overflow: hidden;
 }
 
 .index {

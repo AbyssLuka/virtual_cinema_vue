@@ -4,17 +4,21 @@
             <directory-tree
                 :dir="treeObject"
                 :tree-click="treeClick"
-                :currentFile="{uuid:''}"
+                :current-node="currentNode"
+                :update-cur-node="(uuid:string)=>{
+                    currentNode = uuid
+                    console.log(currentNode == uuid)
+                }"
                 :path-index="0">
             </directory-tree>
         </div>
         <div class="file-container-base">
             <div class="header-container horiz-sa center">
-                <file-path-header
+                <path-bar
                     class="file-path-header"
                     :path-list="state.pathList"
                     :pathClick="pathClick">
-                </file-path-header>
+                </path-bar>
                 <input class="search-file-input" type="text" v-model="keyword" @keyup.enter="searchFile"/>
             </div>
             <div class="file-container">
@@ -24,7 +28,10 @@
                     <div v-if="filesIndex === 0 && files.length > 0">文件夹：{{ files.length }}</div>
                     <div v-if="filesIndex === 1  && files.length > 0">文件：{{ files.length }}</div>
                     <div class="file-item-container">
-                        <file-item v-for="(file,index) in files" :key="index" :data="file" :next-file="nextFile">
+                        <file-item v-for="file in files"
+                                   :key="file.fileUuid"
+                                   :data="file"
+                                   :next-file="nextFile">
                         </file-item>
                     </div>
                 </div>
@@ -44,7 +51,7 @@
 import VideoPlayer from "@/components/File/PopUps/VideoPlayer.vue";
 import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
 import DocumentView from "@/components/File/PopUps/DocumentView.vue";
-import FilePathHeader from "@/components/File/FilePathHeader.vue";
+import PathBar from "@/components/File/PathBar.vue";
 import FileItem from "@/components/File/FileItem.vue";
 import DirectoryTree from "@/components/File/DirectoryTree.vue";
 import util from "@/util/util";
@@ -56,22 +63,26 @@ import {I_File, I_TreeNode} from "@/global/interface";
 
 const loading = ref(false);
 const keyword = ref("");
-// const popPusIsShow = ref(false);
+
 const treeObject = reactive<I_TreeNode>({
-    title: "根路径",
+    title: "ROOT",
     subDirectory: [],
     show: true,
     type: "",
     uuid: "",
+    absolutePath: ""
 });
 
 const state = reactive<{
     directoryAndFileList: I_File[][];
-    pathList: I_File[],
+    pathList: string[],
 }>({
     directoryAndFileList: [[], []],
     pathList: [],
 });
+
+const pathMap = new Map();
+pathMap.set("", "");
 
 onMounted(async () => {
     let resData = await api.subdirectoryApi("");
@@ -84,21 +95,24 @@ async function searchFile(): Promise<void> {
         let resData = await api.searchFileApi(keyword.value);
         resData.data && classification(resData.data);
     } else {
-        await pathClick(null, 0);
+        await pathClick("", 0);
     }
 }
 
-async function pathClick(fileObject: I_File | null, index: number) {
+async function pathClick(_pathItem: string, index: number) {
     loading.value = !loading.value;
-    let sunDirUuid: string = fileObject === null ? "" : fileObject.fileUuid;
-    let resData = await api.subdirectoryApi(sunDirUuid);
+    const absPath = state.pathList.slice(0, index).join("\\");
+    const resData = await api.subdirectoryApi(pathMap.get(absPath));
     if (resData.data) classification(resData.data);
     state.pathList = state.pathList.splice(0, index);
     loading.value = !loading.value;
 }
 
+const currentNode = ref("root");
+
 async function treeClick(treeNode: I_TreeNode | null, pathList: number[]): Promise<void> {
-    let sunDirUuid: string = treeNode === null ? "" : treeNode.uuid;
+    let sunDirUuid: string = !treeNode ? "" : treeNode.uuid;
+    pathMap.set(treeNode?.absolutePath, sunDirUuid);
     let resData = await api.subdirectoryApi(sunDirUuid);
     let tempList: I_TreeNode[] = [];
     if (resData.data) for (let i = 0; i < resData.data.length; i++) {
@@ -107,28 +121,26 @@ async function treeClick(treeNode: I_TreeNode | null, pathList: number[]): Promi
             title: resData.data[i].fileName,
             uuid: resData.data[i].fileUuid,
             type: resData.data[i].fileType,
+            absolutePath: <string>resData.data[i].absolutePath,
             subDirectory: []
         });
     }
-    if (pathList.length >= 2) pathList.pop();           //长度差1
-
+    pathList.pop();
     const updateTree = (sub: I_TreeNode, list: I_TreeNode[], path: number[]) => {
         if (path.length === 0 && sub.subDirectory.length === 0) {
             sub.subDirectory = list;
             return;
         } else if (path.length === 0) return;
-        let pop: undefined | number = path.pop();
-        if (pop === undefined) return;
+        const pop = path.pop();
+        if (pop === void 0) return;
         updateTree(sub.subDirectory[pop], list, path);
     }
-
     updateTree(treeObject, tempList, pathList);
-
-    treeNode && treeNode.title !== "根路径" && nextFile({
+    treeNode && treeNode.title !== "ROOT" && nextFile({
         fileUuid: treeNode.uuid,
         fileType: treeNode.type,
         fileName: treeNode.title,
-    });
+    }).then();
 }
 
 function classification(dataList: I_File[]): void {
@@ -166,14 +178,17 @@ function classification(dataList: I_File[]): void {
 }
 
 async function nextFile(fileObject: I_File): Promise<void> {
+    if (fileObject.absolutePath) {
+        state.pathList = fileObject.absolutePath.split("\\");
+    }
+    // loading.value = !loading.value;
+    // loading.value = !loading.value;
     let fileType = fileObject.fileType.toLowerCase();
     if (fileTypeList.directory.includes(fileType)) {
-        loading.value = !loading.value;
         let fileUuid = fileObject.fileUuid;
+        pathMap.set(fileObject.absolutePath, fileUuid);
         let resData = await api.subdirectoryApi(fileUuid);
         resData.data && classification(resData.data);
-        state.pathList.push(fileObject);
-        loading.value = !loading.value;
     } else if (fileTypeList.video.includes(fileType)) {
         //使用弹窗打开视频
         createPopUps(VideoPlayer, {
@@ -293,4 +308,5 @@ async function nextFile(fileObject: I_File): Promise<void> {
     display: flex;
     flex-wrap: wrap;
 }
+
 </style>

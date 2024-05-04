@@ -222,9 +222,9 @@ const searchFileApi = async (keyword: string) => {
 };
 
 const subdirectoryApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<{
-        directoryUuid: string
-    }, I_ResData<I_File[] | null>>("POST", "/file/subdirectory", {directoryUuid: uuid});
+    const resPromise = ajaxRequest<
+        { uuid: string }, I_ResData<I_File[] | null>
+    >("GET", "/file/subdirectory", {uuid: uuid});
     let resData_: I_ResData<I_File[] | null> = {code: -1, msg: "", data: null};
     await resPromise.then(res => {
         resData_ = res.data;

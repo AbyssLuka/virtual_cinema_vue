@@ -1,14 +1,14 @@
 <template>
     <div id="app">
         <router-view/>
-        <!--        <cursor-osu></cursor-osu>-->
     </div>
+    <cursor-osu></cursor-osu>
 </template>
 
 
 <script setup lang="ts">
 import {onBeforeMount} from "vue";
-// import CursorOsu from "@/components/module/Cursor.vue";
+import CursorOsu from "@/components/module/CursorOsu.vue";
 
 onBeforeMount(() => {
     console.log(
@@ -66,17 +66,8 @@ a {
 #app {
     width: 100vw;
     height: 100vh;
-    background: url("/public/image/wallhaven-8586my.png") no-repeat center center fixed;
+    background: url("../public/image/wallhaven-8586my.png") no-repeat center center fixed;
     background-size: cover;
 }
-
-/*#app:before {*/
-/*    width: 100vw;*/
-/*    height: 100vh;*/
-/*    background: url("/public/image/wallhaven-8586my.png") no-repeat center center fixed;*/
-/*    background-size: cover;*/
-/*    filter: blur();*/
-/*}*/
-
 
 </style>

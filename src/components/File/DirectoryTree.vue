@@ -4,18 +4,26 @@
             <div class="title-icon">
                 <div class="title-icon-wire-first"></div>
             </div>
-            <div :class="[state.fileTypeIcon]"
-                 style="cursor: pointer"></div>
+            <div :class="[fileTypeIcon]"
+                 style="cursor: pointer;"></div>
             <div class="tree-item-title"
-                 @click="[openNode(props.dir,[]),openDir()]">{{ props.dir.title }}
+                 :style="[props.currentNode === props.dir.uuid?'color:orangered':'']"
+                 @click="[
+                     openNode(props.dir,[]),
+                     openDir(),
+                     props.updateCurNode(props.dir.uuid)]"
+            >{{ props.dir.title }}
             </div>
         </div>
-        <div v-show="state.treeItemShow" class="tree-comment">
-            <directory-tree v-for="(item_,index) in props.dir.subDirectory" :key="index"
+        <div v-show="treeItemShow" class="tree-comment">
+            <directory-tree v-for="(fileItem,index) in props.dir.subDirectory" :key="index"
                             :class="[props.dir.subDirectory.length-1!==index ?
                             'tree-sub-directory':'tree-sub-directory-last']"
-                            :dir="item_"
+
+                            :dir="fileItem"
                             :path-index="index"
+                            :update-cur-node="updateCurNode"
+                            :current-node="props.currentNode"
                             :treeClick="openNode">
             </directory-tree>
         </div>
@@ -24,32 +32,27 @@
 
 <script setup lang="ts">
 import {fileTypeList} from "@/global/global";
-import {reactive, defineProps, onMounted, watch, withDefaults} from "vue";
+import {defineProps, onMounted, watch, withDefaults, ref} from "vue";
 import {I_TreeNode} from "@/global/interface";
 
-const state = reactive<{
-    fileTypeIcon: string,
-    treeItemShow: boolean,
-}>({
-    fileTypeIcon: "",
-    treeItemShow: false,
-});
+const fileTypeIcon = ref("");
+const treeItemShow = ref(false);
 
 const props = withDefaults(defineProps<{
     dir: I_TreeNode,
     pathIndex?: number,
     treeClick?: (data: I_TreeNode, indexList: number[]) => void;
+    updateCurNode: (uuid:string) => void;
+    currentNode: string,
 }>(), {
     pathIndex: 0,
-    treeClick: (data: I_TreeNode, indexList: number[]) => {
-        console.log("空函数");
-        console.log(data);
-        console.log(indexList);
-    }
+    treeClick: () => {
+        //
+    },
 });
 
 watch(() => props.dir, (newObj) => {
-    state.treeItemShow = newObj?.show as boolean;
+    treeItemShow.value = newObj.show;
 }, {immediate: true});
 
 onMounted(() => {
@@ -58,13 +61,9 @@ onMounted(() => {
 
 function openDir() {
     //打开文件夹并更新图标
-    if (props.dir?.type === "directory") {
-        if (!state.treeItemShow) {
-            state.fileTypeIcon = "ri-folder-open-fill";
-        } else {
-            state.fileTypeIcon = "ri-folder-fill";
-        }
-        state.treeItemShow = !state.treeItemShow;
+    if (props.dir.type === "directory") {
+        fileTypeIcon.value = !treeItemShow.value ? "ri-folder-open-fill" : "ri-folder-fill";
+        treeItemShow.value = !treeItemShow.value;
     }
 }
 
@@ -72,21 +71,21 @@ function loadIcon() {
     // 加载图标
     let fileType = props.dir?.type;
     if (fileTypeList.package.includes(fileType)) {
-        state.fileTypeIcon = "ri-folder-zip-fill";
+        fileTypeIcon.value = "ri-folder-zip-fill";
     } else if (fileTypeList.audio.includes(fileType)) {
-        state.fileTypeIcon = "ri-file-music-fill";
+        fileTypeIcon.value = "ri-file-music-fill";
     } else if (fileTypeList.video.includes(fileType)) {
-        state.fileTypeIcon = "ri-movie-fill";
+        fileTypeIcon.value = "ri-movie-fill";
     } else if (fileTypeList.image.includes(fileType)) {
-        state.fileTypeIcon = "ri-image-fill";
+        fileTypeIcon.value = "ri-image-fill";
     } else if (fileTypeList.document.includes(fileType)) {
-        state.fileTypeIcon = "ri-file-text-fill";
+        fileTypeIcon.value = "ri-file-text-fill";
     } else if (fileTypeList.link.includes(fileType)) {
-        state.fileTypeIcon = "ri-link";
+        fileTypeIcon.value = "ri-link";
     } else if (fileTypeList.directory.includes(fileType)) {
-        state.fileTypeIcon = "ri-folder-fill";
+        fileTypeIcon.value = "ri-folder-fill";
     } else {
-        state.fileTypeIcon = "ri-file-fill";
+        fileTypeIcon.value = "ri-file-fill";
     }
 }
 

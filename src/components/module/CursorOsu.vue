@@ -26,8 +26,6 @@ onMounted(() => {
     });
 
     window.addEventListener("mousedown", (event) => {
-        // cursor.style.width = 60 + "px";
-        // cursor.style.height = 60 + "px";
         revolve.value.style.width = 28 + "px";
         revolve.value.style.height = 28 + "px";
         cursor.value.style.transform = "scale(1.3)";
@@ -42,17 +40,9 @@ onMounted(() => {
     });
     window.addEventListener("mouseup", () => {
         cursor.value.style.transform = "scale(1)";
-        // cursor.style.width = 40 + "px";
-        // cursor.style.height = 40 + "px";
         revolve.value.style.width = 20 + "px";
         revolve.value.style.height = 20 + "px";
     });
-    // setInterval(() => {
-    //     if (cursorBox.value.style.top !== top && cursorBox.value.style.left !== left) {
-    //         cursorBox.value.style.top = top + "px";
-    //         cursorBox.value.style.left = left + "px";
-    //     }
-    // }, 20)
 });
 </script>
 

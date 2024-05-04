@@ -5,7 +5,8 @@
             <div class="comic-cover-container">
                 <img :src="api.fileUrl(cover)"
                      alt=""
-                     class="comic-cover"/>
+                     class="comic-cover"
+                />
             </div>
             <div class="comic-cover-info-container">
                 <h2 class="comic-title">{{ comicState.title }}</h2>
@@ -26,7 +27,8 @@
                      :key="index"
                      alt=""
                      @click="openImgWindow(index)"
-                     class="comic-page"/>
+                     class="comic-page"
+                />
             </div>
         </div>
     </div>

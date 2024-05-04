@@ -1,13 +1,12 @@
 <template>
     <div class="file-path">
         <div class="file-path-item">&nbsp;&nbsp;>&nbsp;&nbsp;</div>
-        <div title="根目录" style="cursor: pointer;"
+        <div title="root" style="cursor: pointer;"
              @click="props.pathClick(null,0)">root
         </div>
-        <div class="file-path-item">&nbsp;&nbsp;/&nbsp;&nbsp;</div>
         <div v-for="(item,index) in props.pathList" :key="index" style="display: flex;align-items: center;">
-            <div class="file-path-item" :title="item.fileName" style="cursor: pointer"
-                 @click="props.pathClick(item,index + 1)">{{ item.fileName }}
+            <div class="file-path-item" :title="item" style="cursor: pointer"
+                 @click="props.pathClick(item,index + 1)">{{ item }}
             </div>
             <div class="file-path-item">&nbsp;&nbsp;/&nbsp;&nbsp;</div>
         </div>
@@ -16,13 +15,12 @@
 
 <script setup lang="ts">
 import {defineProps, withDefaults} from "vue";
-import {I_File} from "@/global/interface";
 
 const props = withDefaults(defineProps<{
-    pathList: I_File[],
-    pathClick?: (item: I_File | null, index: number) => void,
+    pathList: string[],
+    pathClick?: (item: string | null, index: number) => void,
 }>(), {
-    pathClick: (item: I_File | null, index: number) => {
+    pathClick: (item: string | null, index: number) => {
         console.log("空函数");
         console.log(item);
         console.log(index);

@@ -36,6 +36,7 @@ export interface I_File {
     fileSize?: string,
     fileType: string,
     fileUuid: string,
+    absolutePath?: string,
     icon?: string,
     lastEditTime?: string,
 }
@@ -46,6 +47,7 @@ export interface I_TreeNode {
     show: boolean,
     type: string,
     uuid: string,
+    absolutePath: string,
 }
 
 export interface I_Video {

@@ -3,27 +3,32 @@
         <div class="album-content-container">
             <div id="album-content" ref="albumContentDom">
                 <!--:style="'transform:rotateY('+(index>current?'-50':(index<current?'50':'0'))+'deg)'"-->
-                <div class="album-item"
-                     @click="[selectAlbum(index,true)]"
-                     :class="[index>current?'current-right':(index<current?'current-left':'current')]"
-                     v-for="(videoItem,index) in videoState.videoList"
-                     :key="index">
-                    <div class="card left">
-                        <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                             :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
-                             @error="(e:Event)=>((e.target as HTMLImageElement).src = '/image/ErrorImage.svg')" alt="">
+                <transition-group>
+                    <div class="album-item"
+                         @click="[selectAlbum(index,true)]"
+                         :class="[index>current?'current-right':(index<current?'current-left':'current')]"
+                         v-for="(videoItem,index) in videoState.videoList"
+                         :key="videoItem.uuid">
+                        <div class="card left">
+                            <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
+                                 :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 @error="(e:Event)=>((<HTMLImageElement>e.target).src = '/image/ErrorImage.svg')"
+                                 alt="">
+                        </div>
+                        <div class="card right">
+                            <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
+                                 :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 @error="(e:Event)=>((<HTMLImageElement>e.target).src = '/image/ErrorImage.svg')"
+                                 alt="">
+                        </div>
+                        <div class="card cover">
+                            <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
+                                 :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 @error="(e:Event)=>((e.target as HTMLImageElement).src = '/image/ErrorImage.svg')"
+                                 alt="">
+                        </div>
                     </div>
-                    <div class="card right">
-                        <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                             :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
-                             @error="(e:Event)=>((e.target as HTMLImageElement).src = '/image/ErrorImage.svg')" alt="">
-                    </div>
-                    <div class="card cover">
-                        <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                             :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
-                             @error="(e:Event)=>((e.target as HTMLImageElement).src = '/image/ErrorImage.svg')" alt="">
-                    </div>
-                </div>
+                </transition-group>
             </div>
             <div class="album-title">
                 <div class="" style="width: auto;height: 40px" :title="albumTitle">
@@ -63,7 +68,7 @@
 
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router";
-import {reactive, onMounted, nextTick, watch, ref} from "vue"
+import {reactive, onMounted, watch, ref} from "vue"
 import PaginationModule from "@/components/module/PaginationModule.vue";
 import {fileTypeList} from '@/global/global';
 import api from "@/request/api";
@@ -123,7 +128,6 @@ function to3DView() {
 function selectAlbum(index: number, animation: boolean) {
     albumContentDom.value.style.transition = animation ? ".5s" : "0s";
     index = (index + videoState.videoList.length) % videoState.videoList.length;
-// const itemContainer = document.getElementById("album-content") as HTMLDivElement;
     current.value = index;
     albumTitle.value = videoState.videoList[index].title;
     const number = ((index + 1) * -220) + (220 / 2) + window.innerWidth / 2;
@@ -136,17 +140,16 @@ function init() {
     const keyword = route.query.keyword;
     const page = route.query.page;
     const current = localStorage.getItem("/:current");
-    pageState.keyword = (keyword ? keyword : "") as string;
-    nextTick(() => {
-        const promise = page ? getVideoList(+page) : getVideoList(0);
-        promise.then(() => {
-            selectAlbum(current ? +current : 0, false);
-        })
-    });
+    pageState.keyword = <string>(keyword ? keyword : "");
+    const promise = page ? getVideoList(+page) : getVideoList(0);
+    promise.then(() => {
+        selectAlbum(current?+current:0, false);
+    })
 }
 
 function pageClick(page: number) {
     localStorage.setItem("/:current", "0");
+    videoState.videoList = [];
     router.push({
         query: {keyword: pageState.keyword, page: page}
     });
@@ -248,7 +251,8 @@ async function getVideoList(page: number) {
     display: flex;
     transition: .5s;
     /*perspective: 1000000px;*/
-    transform-style: preserve-3d
+    transform-style: preserve-3d;
+    height: 280px;
 }
 
 .album-item {
@@ -335,5 +339,15 @@ async function getVideoList(page: number) {
     transform-style: preserve-3d;
     perspective: 100vw;
     overflow: hidden;
+}
+
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
 }
 </style>

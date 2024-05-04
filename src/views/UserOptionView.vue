@@ -71,8 +71,12 @@ function breadCrumbsClick(item: { title: string, path: string }) {
     backdrop-filter: blur(5px);
     border: 10px white solid;
     width: calc(96vw - 20px);
-    height: calc(100vh - 100px);
+    height: calc(100vh - 4vw - 100px);
     overflow: auto;
-    margin: 0 2vw;
+    margin: 2vw 2vw;
 }
+.content-container::-webkit-scrollbar{
+    display: none;
+}
+
 </style>
