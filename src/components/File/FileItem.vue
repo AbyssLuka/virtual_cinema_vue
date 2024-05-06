@@ -1,10 +1,10 @@
 <template>
-    <div class="file-item-box" @click="props.nextFile(props.data)" :title="props.data.fileName">
-        <i class="file-item-ico ri-2x" :class="[props.data.icon]"></i>
+    <div class="file-item-box" @click="nextFile(data)" :title="data.fileName">
+        <i class="file-item-ico ri-2x" :class="[data.icon]"></i>
         <div class="file-item-info-box">
-            <div class="file-item-name"> {{ props.data.fileName }}</div>
-            <div class="file-item-text">大小：{{ props.data.fileSize }}</div>
-            <div class="file-item-text">时间：{{ props.data.lastEditTime }}</div>
+            <div class="file-item-name"> {{ data.fileName }}</div>
+            <div class="file-item-text">大小：{{ data.fileSize }}</div>
+            <div class="file-item-text">时间：{{ data.lastEditTime }}</div>
         </div>
     </div>
 </template>
@@ -13,7 +13,7 @@
 import {defineProps} from "vue";
 import {I_File} from "@/global/interface";
 
-const props = defineProps<{
+defineProps<{
     data: I_File,
     nextFile: (file: I_File) => Promise<void>,
 }>();

@@ -1,6 +1,6 @@
 <template>
     <div class="file-path">
-        <div class="file-path-item">&nbsp;&nbsp;>&nbsp;&nbsp;</div>
+        <div class="file-path-item">&nbsp;>&nbsp;</div>
         <div title="root" style="cursor: pointer;"
              @click="props.pathClick(null,0)">root
         </div>
@@ -8,7 +8,7 @@
             <div class="file-path-item" :title="item" style="cursor: pointer"
                  @click="props.pathClick(item,index + 1)">{{ item }}
             </div>
-            <div class="file-path-item">&nbsp;&nbsp;/&nbsp;&nbsp;</div>
+            <div class="file-path-item">&nbsp;/&nbsp;</div>
         </div>
     </div>
 </template>

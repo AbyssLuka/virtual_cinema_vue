@@ -3,13 +3,7 @@
         <div class="tree-container">
             <directory-tree
                 :dir="treeObject"
-                :tree-click="treeClick"
-                :current-node="currentNode"
-                :update-cur-node="(uuid:string)=>{
-                    currentNode = uuid
-                    console.log(currentNode == uuid)
-                }"
-                :path-index="0">
+                :tree-click="treeClick">
             </directory-tree>
         </div>
         <div class="file-container-base">
@@ -53,13 +47,13 @@ import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
 import DocumentView from "@/components/File/PopUps/DocumentView.vue";
 import PathBar from "@/components/File/PathBar.vue";
 import FileItem from "@/components/File/FileItem.vue";
-import DirectoryTree from "@/components/File/DirectoryTree.vue";
 import util from "@/util/util";
 import createPopUps from "@/util/createPopUps";
 import {fileTypeList} from "@/global/global";
 import api from "@/request/api";
 import {reactive, onMounted, ref} from "vue";
 import {I_File, I_TreeNode} from "@/global/interface";
+import DirectoryTree from "@/components/File/DirectoryTree.vue";
 
 const loading = ref(false);
 const keyword = ref("");
@@ -108,7 +102,6 @@ async function pathClick(_pathItem: string, index: number) {
     loading.value = !loading.value;
 }
 
-const currentNode = ref("root");
 
 async function treeClick(treeNode: I_TreeNode | null, pathList: number[]): Promise<void> {
     let sunDirUuid: string = !treeNode ? "" : treeNode.uuid;

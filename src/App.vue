@@ -1,5 +1,7 @@
 <template>
-    <div id="app">
+    <div id="app"
+         :style="`background: url('${imagePath}') no-repeat center center fixed;background-size: cover`"
+    >
         <router-view/>
     </div>
     <cursor-osu></cursor-osu>
@@ -7,10 +9,34 @@
 
 
 <script setup lang="ts">
-import {onBeforeMount} from "vue";
+import {onBeforeMount, ref} from "vue";
 import CursorOsu from "@/components/module/CursorOsu.vue";
+import wallpaperPath from "@/assets/image/wallhaven-8586my.png"
+
+const imagePath = ref("");
+
+const loadBackground = () => {
+    const path = localStorage.getItem("/:backgroundImageUrl");
+    if (["", "null", void 0, null, "undefined"].includes(path)) {
+        imagePath.value = wallpaperPath;
+    } else {
+        imagePath.value = <string>path;
+    }
+}
+
+window.setBackgroundImage = (url: string) => {
+    try {
+        new URL(url);
+    } catch (e) {
+        url = wallpaperPath;
+    } finally {
+        imagePath.value = url;
+        localStorage.setItem("/:backgroundImageUrl", url);
+    }
+}
 
 onBeforeMount(() => {
+    loadBackground();
     console.log(
         "%c" +
         "   _               _             \n" +
@@ -66,7 +92,9 @@ a {
 #app {
     width: 100vw;
     height: 100vh;
-    background: url("../public/image/wallhaven-8586my.png") no-repeat center center fixed;
+    /*
+    background: url("assets/image/wallhaven-8586my.png") no-repeat center center fixed;
+    */
     background-size: cover;
 }
 

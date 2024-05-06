@@ -8,6 +8,7 @@
 declare module '*.js';
 declare module 'subsrt';
 declare module 'assjs';
+declare module "*.png";
 
 declare module '*.vue' {
     import {ComponentOptions} from "vue";
@@ -17,4 +18,5 @@ declare module '*.vue' {
 
 interface Window {
     dropWindow?: (id: string) => void;
+    setBackgroundImage?: (url: string) => void;
 }

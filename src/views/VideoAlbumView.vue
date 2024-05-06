@@ -11,19 +11,19 @@
                          :key="videoItem.uuid">
                         <div class="card left">
                             <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                                 :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
                                  @error="(e:Event)=>((<HTMLImageElement>e.target).src = '/image/ErrorImage.svg')"
                                  alt="">
                         </div>
                         <div class="card right">
                             <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                                 :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
                                  @error="(e:Event)=>((<HTMLImageElement>e.target).src = '/image/ErrorImage.svg')"
                                  alt="">
                         </div>
                         <div class="card cover">
                             <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                                 :src="api.fileUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
                                  @error="(e:Event)=>((e.target as HTMLImageElement).src = '/image/ErrorImage.svg')"
                                  alt="">
                         </div>
@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router";
-import {reactive, onMounted, watch, ref} from "vue"
+import {reactive, onMounted, watch, ref, onUnmounted} from "vue"
 import PaginationModule from "@/components/module/PaginationModule.vue";
 import {fileTypeList} from '@/global/global';
 import api from "@/request/api";
@@ -105,6 +105,10 @@ onMounted(async () => {
     init();
 });
 
+onUnmounted(()=>{
+    document.removeEventListener("wheel", wheelCharge);
+})
+
 function controlHover(index: number, title: string) {
     const left = (controlPanelDom.value.offsetWidth - controlTitleDom.value.offsetWidth) / 3;
     controlTitle.value = title;
@@ -129,7 +133,7 @@ function selectAlbum(index: number, animation: boolean) {
     albumContentDom.value.style.transition = animation ? ".5s" : "0s";
     index = (index + videoState.videoList.length) % videoState.videoList.length;
     current.value = index;
-    albumTitle.value = videoState.videoList[index].title;
+    albumTitle.value = videoState.videoList[index]?.title;
     const number = ((index + 1) * -220) + (220 / 2) + window.innerWidth / 2;
     albumContentDom.value.style.transformOrigin = number + "px";
     albumContentDom.value.style.transform = "translateX(" + number + "px)";
@@ -143,20 +147,29 @@ function init() {
     pageState.keyword = <string>(keyword ? keyword : "");
     const promise = page ? getVideoList(+page) : getVideoList(0);
     promise.then(() => {
-        selectAlbum(current?+current:0, false);
-    })
+        selectAlbum(current ? +current : 0, false);
+    });
+    document.addEventListener("wheel", wheelCharge);
+}
+
+const wheelCharge = (event: WheelEvent) => {
+    if (event.deltaY < 0) {
+        selectAlbum(current.value + 1, true);
+    } else if (event.deltaY > 0) {
+        selectAlbum(current.value - 1, true);
+    }
 }
 
 function pageClick(page: number) {
     localStorage.setItem("/:current", "0");
     videoState.videoList = [];
     router.push({
-        query: {keyword: pageState.keyword, page: page}
+        query: {keyword: pageState.keyword, page: page, x: Math.random()}
     });
 }
 
 async function getVideoList(page: number) {
-    let resData = await api.animePostLimitApi({keyword: pageState.keyword, page: page, size: 100});
+    let resData = await api.animePostLimitApi({keyword: pageState.keyword, page: page, size: 36});
     if (!resData.data) return;
     if (resData.code === 200) {
         videoState.videoList = resData.data.content;
@@ -167,7 +180,6 @@ async function getVideoList(page: number) {
         pageState.total = resData.data.total;
     }
     albumTitle.value = videoState.videoList[0]?.title;
-    console.log(videoState.videoList)
 }
 
 </script>
@@ -266,7 +278,6 @@ async function getVideoList(page: number) {
     transform-origin: center;
     transition: .5s;
     animation-timing-function: ease-out;
-    /*-webkit-box-reflect: below 25px -webkit-linear-gradient(transparent 50%,rgba(0,0,0,0.33));*/
     box-shadow: 0 0 50px #ffffff;
 }
 
@@ -317,7 +328,6 @@ async function getVideoList(page: number) {
     transform: rotateY(-90deg) translateX(-20px);
     left: 0;
     /*display: none;*/
-
 }
 
 .video-album-view-container {

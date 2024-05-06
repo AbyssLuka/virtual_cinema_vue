@@ -108,11 +108,14 @@ const userInfoApi = async () => {
 };
 
 //更新密码
-type UpdatePswParamsType = { username: string, password: string, code: string };
+type UpdatePswParamsType = { oldPassword: string, newPassword: string };
 const updatePasswordApi = async (param: UpdatePswParamsType) => {
     const resPromise = ajaxRequest<UpdatePswParamsType, I_ResData<null>>("POST", "/user/update_password", param);
     let resData_: I_ResData<null> = {code: -1, msg: "", data: null};
     await resPromise.then(res => {
+        if (res.data.code === 200) {
+            localStorage.setItem("token", res.headers.token);
+        }
         resData_ = res.data;
     }).catch((err) => {
         resData_.msg = err.toString();

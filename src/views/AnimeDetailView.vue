@@ -35,8 +35,8 @@
             </div>
             <hr/>
         </div>
+        <circle-menu class="circle-menu" :menu-list="state.menuList"></circle-menu>
     </div>
-    <circle-menu class="circle-menu" :menu-list="state.menuList"></circle-menu>
 </template>
 <script setup lang="ts">
 import CircleMenu from "@/components/module/CircleMenu.vue";

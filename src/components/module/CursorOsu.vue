@@ -1,49 +1,71 @@
 <template>
-    <div class="cursor-box" ref="cursorBox">
-        <div class="revolve" ref="revolve"></div>
-        <div class="cursor" ref="cursor"></div>
-        <div class="cross"></div>
-    </div>
+    <teleport to="html">
+        <div class="cursor-box" ref="cursorBox" v-show="isNotLock">
+            <div class="revolve" ref="revolve"></div>
+            <div class="cursor" ref="cursor"></div>
+            <div class="cross"></div>
+        </div>
+    </teleport>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 
 let cursorBox = ref();
 let revolve = ref();
 let cursor = ref();
+let isNotLock = ref(true);
+
+
+let top = 0, left = 0;
+
+const mousemoveFunc = (event: MouseEvent) => {
+    top = event.y - cursorBox.value.clientWidth / 2;
+    left = event.x - cursorBox.value.clientHeight / 2;
+    if (cursorBox.value.style.top !== top && cursorBox.value.style.left !== left) {
+        cursorBox.value.style.top = top + "px";
+        cursorBox.value.style.left = left + "px";
+    }
+}
+const mousedownFunc = (event: MouseEvent) => {
+    revolve.value.style.width = 28 + "px";
+    revolve.value.style.height = 28 + "px";
+    cursor.value.style.transform = "scale(1.3)";
+    let ripples = document.createElement("span");
+    ripples.setAttribute("class", "circle");
+    document.body.appendChild(ripples);
+    ripples.style.top = event.y - ripples.clientHeight / 2 + "px";
+    ripples.style.left = event.x - ripples.clientWidth / 2 + "px";
+    setTimeout(() => {
+        ripples.remove();
+    }, 350);
+}
+
+const mouseupFunc = () => {
+    cursor.value.style.transform = "scale(1)";
+    revolve.value.style.width = 20 + "px";
+    revolve.value.style.height = 20 + "px";
+}
+
+const pointerlockchangeFunc = () => {
+    isNotLock.value = !document.pointerLockElement;
+}
 
 onMounted(() => {
+    window.addEventListener("mousemove", mousemoveFunc);
+    window.addEventListener("mousedown", mousedownFunc);
+    window.addEventListener("mouseup", mouseupFunc);
+    document.addEventListener("pointerlockchange", pointerlockchangeFunc);
     document.body.style.cursor = "none";
-    let top = 0, left = 0;
-    window.addEventListener("mousemove", (event) => {
-        top = event.y - cursorBox.value.clientWidth / 2;
-        left = event.x - cursorBox.value.clientHeight / 2;
-        if (cursorBox.value.style.top !== top && cursorBox.value.style.left !== left) {
-            cursorBox.value.style.top = top + "px";
-            cursorBox.value.style.left = left + "px";
-        }
-    });
-
-    window.addEventListener("mousedown", (event) => {
-        revolve.value.style.width = 28 + "px";
-        revolve.value.style.height = 28 + "px";
-        cursor.value.style.transform = "scale(1.3)";
-        let ripples = document.createElement("span");
-        ripples.setAttribute("class", "circle");
-        document.body.appendChild(ripples);
-        ripples.style.top = event.y - ripples.clientHeight / 2 + "px";
-        ripples.style.left = event.x - ripples.clientWidth / 2 + "px";
-        setTimeout(() => {
-            ripples.remove();
-        }, 350);
-    });
-    window.addEventListener("mouseup", () => {
-        cursor.value.style.transform = "scale(1)";
-        revolve.value.style.width = 20 + "px";
-        revolve.value.style.height = 20 + "px";
-    });
 });
+
+onUnmounted(() => {
+    window.removeEventListener("mousemove", mousemoveFunc);
+    window.removeEventListener("mousedown", mousedownFunc);
+    window.removeEventListener("mouseup", mouseupFunc);
+    document.removeEventListener("pointerlockchange", pointerlockchangeFunc);
+    document.body.style.cursor = "auto";
+})
 </script>
 
 <style>
