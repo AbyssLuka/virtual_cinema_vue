@@ -63,7 +63,7 @@ import {
 } from "three";
 import {WsApi} from "@/components/ThreeJs/ts/WsApi";
 import Player from "@/components/ThreeJs/ts/Player";
-import {initScene} from "@/components/ThreeJs/ts/initScene";
+import {InitScene} from "@/components/ThreeJs/ts/InitScene";
 
 const videoUrl = ref("");
 const pauseViewShow = ref(true);
@@ -104,15 +104,16 @@ const physicalWorld = physicalWorldClass.create();//物理世界
 //     .setPath("/3d/skybox/")
 //     .load(["posx.jpg", "negx.jpg", "posy.jpg", "negy.jpg", "posz.jpg", "negz.jpg"]);
 // scene.background = cubeTexture;
-new RGBELoader().loadAsync("/3d/skybox/kloppenheim_06_puresky_1k.hdr",)
+new RGBELoader().loadAsync("/3d/skybox/skydome_hdri-starlight_sky_fullview.hdr",)
     .then((texture: DataTexture) => {
         texture.mapping = EquirectangularReflectionMapping;
         scene.background = texture;
-        // scene.environment = texture;
+        // scene.background = new Color(0x000000);
+        scene.environment = texture;
     })
 // scene.environment = cubeTexture;
 //渲染器//antialias抗锯齿
-const render = new WebGLRenderer({antialias: true});
+const render = new WebGLRenderer({antialias: true, alpha: true});
 render.shadowMap.type = PCFSoftShadowMap;
 // render.outputEncoding = LinearEncoding;
 render.outputColorSpace = LinearSRGBColorSpace;
@@ -150,7 +151,7 @@ scene.add(controls.getObject());
 const rayDetect = new RayDetect(new Vector2(0, 0), camera);
 
 const pickUp = usePickUp(controlsClass, cameraClass, rayDetect, worldRayObjects, InventoryState, activeInfo)
-const loadModel = new initScene(scene, worldOctree, physicalWorld, physicalObjects, worldRayObjects);
+const loadModel = new InitScene(scene, worldOctree, physicalWorld, physicalObjects, worldRayObjects);
 
 let wsApi: WsApi;
 
@@ -181,7 +182,8 @@ async function initGraphicalWorld() {
     //创建显示器
     const activeFunc = useDisplayActive(InventoryState, <HTMLVideoElement>displayVideo.value, videoUrl, subtitleUrl, subtitle, send)
     await loadModel.loadDisplay(<HTMLVideoElement>displayVideo.value, activeFunc);
-
+    loadModel.createFloor();
+    loadModel.loadMoon(render, scene);
     // 添加画布至DOM树
     renderContainer.value.appendChild(render.domElement);
     //初始化摄影机

@@ -28,6 +28,7 @@ const mousemoveFunc = (event: MouseEvent) => {
     }
 }
 const mousedownFunc = (event: MouseEvent) => {
+    if (document.pointerLockElement) return;
     revolve.value.style.width = 28 + "px";
     revolve.value.style.height = 28 + "px";
     cursor.value.style.transform = "scale(1.3)";

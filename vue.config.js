@@ -53,6 +53,7 @@ module.exports = defineConfig({
             })
             .end()
 
+        config.module
             .rule("tsl")
             .exclude
             .add(/node_modules/)
@@ -61,6 +62,17 @@ module.exports = defineConfig({
             .pre()
             .use("tslint-loader")
             .loader("tslint-loader")
+            .end()
+            .end();
+
+        config.module
+            .rule("glsl")
+            .test(/\.(glsl|vs|fs|vert|frag)$/)
+            .exclude
+            .add(/node_modules/)
+            .end()
+            .use("glsl-shader-loader")
+            .loader("glsl-shader-loader")
             .end();
     },
     // configureWebpack: {

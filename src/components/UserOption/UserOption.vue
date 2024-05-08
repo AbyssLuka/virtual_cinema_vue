@@ -123,7 +123,7 @@ input {
 }
 
 input::placeholder {
-    color: black;
+    color: white;
     text-shadow: 0 0 4px #b4b4b4;
 }
 

@@ -42,39 +42,28 @@ export class Display {
         const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight);
 
         this.option.videoDom.addEventListener("loadeddata", () => {
-            const image: HTMLVideoElement = this.option.videoDom;
+            const videoElement: HTMLVideoElement = this.option.videoDom;
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
             if (!context) return;
-            canvas.width = 360;
-            canvas.height = 240;
+            [canvas.width, canvas.height] = [360, 240];
             const loadDisplayLight = () => {
-                context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                let [r, g, b] = [0, 0, 0];
-                let count = 0;
-                let brightness = 0;
-                for (let i = 0; i < imageData.data.length; i += 4) {
-                    const pixelBrightness =
-                        imageData.data[i] * 0.3 +
-                        imageData.data[i + 1] * 0.59 +
-                        imageData.data[i + 2] * 0.11;
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                const image = context.getImageData(0, 0, canvas.width, canvas.height);
+                let [r, g, b, count, brightness] = [0, 0, 0, 0, 0];
+                for (let i = 0; i < image.data.length; i += 4) {
+                    const pixelBrightness = image.data[i] * 0.3 + image.data[i + 1] * 0.59 + image.data[i + 2] * 0.11;
                     if (pixelBrightness > 127) {
-                        r += imageData.data[i];
-                        g += imageData.data[i + 1];
-                        b += imageData.data[i + 2];
+                        r += image.data[i];
+                        g += image.data[i + 1];
+                        b += image.data[i + 2];
                         brightness += pixelBrightness
                         count++;
                     }
                 }
-                if (count > 0) {
-                    r /= count;
-                    g /= count;
-                    b /= count;
-                    brightness /= count;
-                }
+                count > 0 && ([r, g, b, brightness] = [r, g, b, brightness].map((v) => v / count));
                 rectAreaLight.color = new Color(r / 255, g / 255, b / 255);
-                rectAreaLight.intensity = brightness / 255;
+                rectAreaLight.intensity = brightness / 127;
             }
             loadDisplayLight();
             this.option.videoDom.addEventListener("timeupdate", loadDisplayLight)

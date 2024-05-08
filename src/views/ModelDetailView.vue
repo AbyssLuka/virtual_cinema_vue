@@ -31,8 +31,8 @@
 
 <script setup lang="ts">
 import {
-    AnimationMixer, Clock,
-    DirectionalLight,
+    AmbientLight,
+    AnimationMixer, Clock, DirectionalLight,
     HemisphereLight, Mesh, Object3D,
     PerspectiveCamera,
     Scene, Vector3,
@@ -129,9 +129,11 @@ onMounted(() => {
     });
 
     scene.add(new HemisphereLight(0xaaaaaa, 0x444444));
-    const light = new DirectionalLight(0xffffff, 0.5);
-    light.position.set(1, 1, 1);
-    scene.add(light);
+    const ambientLight = new AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const directionalLight = new DirectionalLight(0xffffff, 5);
+    directionalLight.position.set(-1, 10, -1);
+    scene.add(directionalLight);
     canvas = document.getElementById("model-detail-canvas") as HTMLCanvasElement;
     controls = new OrbitControls(camera, canvas);
     controls.target = new Vector3(0, .25, 0);

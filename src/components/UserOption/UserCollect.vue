@@ -1,11 +1,11 @@
 <template>
     <div v-for="(anime,index) in state.collectList" :key="index" class="collect-list box">
-        <div class="luka-title collect-title" @click="toDetail(anime['animeViewData']['uuid'])">
-            {{anime["animeViewData"]["title"]}}
+        <div class="luka-title collect-title" @click="toDetail(anime['videoViewData']['uuid'])">
+            {{anime["videoViewData"]["title"]}}
         </div>
-        <image-list class="image-list" :size="4" :fileList="anime['animeViewData']['fileList']"></image-list>
+        <image-list class="image-list" :size="4" :fileList="anime['videoViewData']['fileList']"></image-list>
         <div class="luka-title" style="display: flex;justify-content: flex-end;">
-            {{anime["animeViewData"]["createTime"]}}
+            {{anime["videoViewData"]["createTime"]}}
         </div>
     </div>
 </template>

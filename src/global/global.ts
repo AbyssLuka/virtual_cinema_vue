@@ -1,13 +1,8 @@
-// export const baseUrl = "http://ganzhou-eb7c59a5.of-7af93c01.shop:57555";
-// export const HTTP_BASE_URL = "http://ganzhou-eb7c59a5.of-7af93c01.shop:59777";
-// export const MODEL_BASE_URL = HTTP_BASE_URL.concat("/static/model/");
-// export const WS_BASE_URL = "ws://ganzhou-eb7c59a5.of-7af93c01.shop:59777";
-
-export const baseUrl = "http://192.168.193.216:2022";
-export const PORT = "3322";
-export const HTTP_BASE_URL = "http://192.168.193.216:".concat(PORT);
+export const baseUrl = "http://***.***.***.***:****";
+export const PORT = "****";
+export const HTTP_BASE_URL = "http://***.***.***.***:".concat(PORT);
 export const MODEL_BASE_URL = HTTP_BASE_URL.concat("/static/model/");
-export const WS_BASE_URL = "ws://192.168.193.216:".concat(PORT);
+export const WS_BASE_URL = "ws://***.***.***.***:".concat(PORT);
 
 export const fileTypeList = {
     directory: ["directory"],
