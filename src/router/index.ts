@@ -24,6 +24,9 @@ const routes = [
             {
                 path: "game_main",
                 name: "GameMain",
+                meta: {
+                    requireAuth: true,
+                },
                 component: () => import("@/views/GameMain.vue")
             },
             {
