@@ -62,7 +62,7 @@
                     <td style="display: flex;">
                         <router-link
                             style="flex-shrink: 0"
-                            :to="`/threejs/${room.id}/${choosePlayer}/${video_id}`"
+                            :to="`/threejs/${room.id}/${choosePlayer}}`"
                             class="luka-button">
                             加入
                         </router-link>

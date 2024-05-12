@@ -12,12 +12,12 @@
         <div class="pause-container" v-show="pauseViewShow">
             <div style="margin: 0 0 30px 30px;">
                 <h1 class="option" ref="continueGame">继续</h1>
-                <h1 class="option" @click="screenContainer.value.requestFullscreen()">全屏</h1>
+                <h1 class="option" @click="screenContainer.requestFullscreen()">全屏</h1>
                 <h1 class="option" @click="StatsClass.changeVisible()">性能监视器</h1>
                 <h1 class="option" @click="[displayVideoShow=!displayVideoShow]">预览显示器</h1>
                 <h1 class="option" onclick="window.close()">退出</h1>
                 <h2 style="text-align: right">
-                    WASD移动；E互动；R丢弃；数字键、滚轮切换物品；
+                    WASD移动；E互动；R丢弃；Shift加速；数字键、滚轮切换物品；
                 </h2>
             </div>
         </div>

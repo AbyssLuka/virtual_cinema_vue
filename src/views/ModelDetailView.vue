@@ -21,8 +21,8 @@
                 返回
             </div>
             <div class="luka-button animation-button"
-                 :style="[state.isCollect?'color:orangered':'']"
-            >
+                 onclick="alert('TO DO')"
+                 :style="[state.isCollect?'color:orangered':'']">
                 {{ state.collectText }}
             </div>
         </div>

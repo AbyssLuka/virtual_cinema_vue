@@ -15,8 +15,8 @@
                 <h3>页数：「 {{ comicState.fileList.length }} 」</h3>
                 <h3>时间：「 {{ comicState.createTime }} 」</h3>
                 <div class="horiz" style="margin: 10px 0 0 0">
-                    <div class="luka-button">收藏</div>
-                    <div class="luka-button">下载</div>
+                    <div class="luka-button" onclick="alert('TO DO')">收藏</div>
+                    <div class="luka-button" onclick="alert('TO DO')">下载</div>
                 </div>
             </div>
         </div>
