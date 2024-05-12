@@ -32,7 +32,7 @@
 
     function toDetail(uuid: string) {
         router.push({
-            name: "AnimeDetailView",
+            name: "VideoDetailView",
             query: {data: uuid,}
         })
     }

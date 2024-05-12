@@ -8,7 +8,7 @@ const routes = [
         children: [
             {
                 path: "/",
-                name: "AnimeView",
+                name: "VideoView",
                 component: () => import("@/views/VideoAlbumView.vue")
             },
             {
@@ -42,9 +42,9 @@ const routes = [
                 component: () => import("@/views/FileView.vue")
             },
             {
-                path: "anime/detail",
-                name: "AnimeDetailView",
-                component: () => import("@/views/AnimeDetailView.vue")
+                path: "video/detail",
+                name: "VideoDetailView",
+                component: () => import("@/views/VideoDetailView.vue")
             },
             {
                 path: "/user",

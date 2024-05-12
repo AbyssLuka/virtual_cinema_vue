@@ -117,7 +117,7 @@ function controlHover(index: number, title: string) {
 
 function toDetail() {
     router.push({
-        name: "AnimeDetailView",
+        name: "VideoDetailView",
         query: {data: videoState.videoList[current.value].uuid}
     })
 }
