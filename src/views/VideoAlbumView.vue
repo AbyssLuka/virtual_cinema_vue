@@ -105,7 +105,7 @@ onMounted(async () => {
     init();
 });
 
-onUnmounted(()=>{
+onUnmounted(() => {
     document.removeEventListener("wheel", wheelCharge);
 })
 
@@ -147,7 +147,8 @@ function init() {
     pageState.keyword = <string>(keyword ? keyword : "");
     const promise = page ? getVideoList(+page) : getVideoList(0);
     promise.then(() => {
-        selectAlbum(current ? +current : 0, false);
+        const currentIndex = current === "NaN" ? 0 : (current ? +current : 0);
+        selectAlbum(currentIndex, false);
     });
     document.addEventListener("wheel", wheelCharge);
 }
