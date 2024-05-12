@@ -17,7 +17,7 @@ const routes = [
                 component: () => import("@/views/ComicView.vue")
             },
             {
-                path: "threejs/:room_id/:model_name/:video_id",
+                path: "threejs/:room_id/:model_name",
                 name: "ThreeJs",
                 component: () => import("@/views/ThreeJsView.vue")
             },
