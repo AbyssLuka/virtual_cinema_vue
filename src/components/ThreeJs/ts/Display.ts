@@ -19,7 +19,7 @@ interface I_Option {
 export class Display {
 
     private readonly option: I_Option;
-    private videoTexture: VideoTexture;
+    private readonly videoTexture: VideoTexture;
 
     constructor(option: I_Option) {
         this.option = option;
@@ -51,7 +51,7 @@ export class Display {
                 context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
                 const image = context.getImageData(0, 0, canvas.width, canvas.height);
                 let [r, g, b, count, brightness] = [0, 0, 0, 0, 0];
-                for (let i = 0; i < image.data.length; i += 4) {
+                for (let i = 0; i < image.data.length; i += (4 * 3)) {
                     const pixelBrightness = image.data[i] * 0.3 + image.data[i + 1] * 0.59 + image.data[i + 2] * 0.11;
                     if (pixelBrightness > 127) {
                         r += image.data[i];

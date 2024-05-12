@@ -20,7 +20,6 @@ import {
     BufferAttribute,
     BufferGeometry,
     FogExp2,
-    WebGLRenderer,
     SpriteMaterial,
     Sprite, AdditiveBlending, Light
 } from "three";
@@ -39,6 +38,7 @@ import {fileTypeList} from "@/global/global";
 import {createNoise2D} from "simplex-noise";
 import grassShader from "@/components/ThreeJs/shaders/GrassShader";
 import {Lensflare, LensflareElement} from "three/examples/jsm/objects/Lensflare";
+import {Camera} from "@/components/ThreeJs/ts/Camera";
 
 type InventoryState = {
     inventory: Object3D[],
@@ -150,7 +150,7 @@ export class InitScene {
 
     public loadTVControl(
         videoDom: HTMLVideoElement,
-        handItemCamera: PerspectiveCamera,
+        cameraClass: Camera,
         controlsClass: Controls,
         InventoryState: UnwrapNestedRefs<InventoryState>,
         pickUp: () => void,
@@ -179,11 +179,17 @@ export class InitScene {
             infoList: ["右击鼠标打开/关闭面板"]
         });
         tvControlClass.create((mesh, body) => {
-            handItemCamera.add(tvControlClass.getCSS2D());
+            // InventoryState.inventory[0] = mesh;
             this.scene.add(mesh);
             this.world.addBody(body);
             this.physicalObjects.push({mesh, body});
-            this.worldRayObjects.push(mesh)
+            this.worldRayObjects.push(mesh);
+            cameraClass.itemCamera.add(tvControlClass.getCSS2D());
+
+            InventoryState.inventory[0] = mesh;
+            cameraClass.loadItem(InventoryState.inventory[0].clone()).then();
+
+            console.log(InventoryState)
         });
     }
 
@@ -355,7 +361,7 @@ export class InitScene {
         return wallpaperMesh;
     }
 
-    public createFloor() {
+    public createTerrain() {
         const worldWidth = 256;
         const worldDepth = 256;
         const geometry = new PlaneGeometry(worldWidth, worldDepth, 128, 128);
@@ -381,7 +387,7 @@ export class InitScene {
         this.generateGrass();
     }
 
-    public loadMoon(renderer: WebGLRenderer, scene: Scene) {
+    public loadMoon() {
         const texture = new TextureLoader().load('/3d/texture/sprite.png')
         const spriteMaterial = new SpriteMaterial({
             map: texture,
@@ -398,7 +404,7 @@ export class InitScene {
         sprite.scale.set(10, 10, 10);
         group.position.copy(new Vector3(0, 150, 150));
         group.add(sprite);
-        scene.add(group);
+        this.scene.add(group);
     }
 
     public addLensflare() {

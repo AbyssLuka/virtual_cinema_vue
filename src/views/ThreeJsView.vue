@@ -10,12 +10,15 @@
                  :detectShow="detectShow">
         </RoleGUI>
         <div class="pause-container" v-show="pauseViewShow">
-            <div style="margin: 0 0 30px 30px;width: 200px">
-                <h1 class="continue" ref="continueGame">继续</h1>
-                <h1 class="continue" @click="screenContainer.value.requestFullscreen()">全屏</h1>
-                <h1 class="continue" @click="StatsClass.changeVisible()">性能监视器</h1>
-                <h1 class="continue" @click="[displayVideoShow=!displayVideoShow]">预览显示器</h1>
-                <h1 class="continue" onclick="window.close()">退出</h1>
+            <div style="margin: 0 0 30px 30px;">
+                <h1 class="option" ref="continueGame">继续</h1>
+                <h1 class="option" @click="screenContainer.value.requestFullscreen()">全屏</h1>
+                <h1 class="option" @click="StatsClass.changeVisible()">性能监视器</h1>
+                <h1 class="option" @click="[displayVideoShow=!displayVideoShow]">预览显示器</h1>
+                <h1 class="option" onclick="window.close()">退出</h1>
+                <h2 style="text-align: right">
+                    WASD移动；E互动；R丢弃；数字键、滚轮切换物品；
+                </h2>
             </div>
         </div>
         <video id="three-display-video"
@@ -135,10 +138,10 @@ const worldOctree = new Octree();
 
 //摄影机
 const cameraClass = new Camera(new Vector3(0, 0, 10));
-const camera = cameraClass.create();
+const camera = cameraClass.camera;
 //摄影机(手持物品防止穿模)
 const handItemScene = new Scene();
-const handItemCamera = cameraClass.createItemCamera();
+const handItemCamera = cameraClass.itemCamera;
 handItemScene.add(handItemCamera);
 handItemScene.add(new AmbientLight(0xFFFFFF, 1));
 //控制器
@@ -177,13 +180,13 @@ async function initGraphicalWorld() {
 
     loadModel.loadGLTFModel(pickUp);
     //创建遥控器
-    loadModel.loadTVControl(<HTMLVideoElement>displayVideo.value, handItemCamera, controlsClass, InventoryState, pickUp, send);
+    loadModel.loadTVControl(<HTMLVideoElement>displayVideo.value, cameraClass, controlsClass, InventoryState, pickUp, send);
     loadModel.loadRoom();
     //创建显示器
     const activeFunc = useDisplayActive(InventoryState, <HTMLVideoElement>displayVideo.value, videoUrl, subtitleUrl, subtitle, send)
     await loadModel.loadDisplay(<HTMLVideoElement>displayVideo.value, activeFunc);
-    loadModel.createFloor();
-    loadModel.loadMoon(render, scene);
+    loadModel.createTerrain();
+    loadModel.loadMoon();
     // 添加画布至DOM树
     renderContainer.value.appendChild(render.domElement);
     //初始化摄影机
@@ -363,11 +366,11 @@ function clearScene() {
     color: orangered;
 }
 
-.continue {
+.option {
     cursor: pointer;
 }
 
-.continue:hover {
+.option:hover {
     color: orangered;
 }
 </style>
