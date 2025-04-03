@@ -68,6 +68,9 @@ export class Camera {
         cameraItem.rotation.set(3, 1.8, 2.9);
         cameraItem.scale.set(cameraItem.scale.x * 1.5, cameraItem.scale.y * 1.5, cameraItem.scale.z * 1.5);
         // 添加到相机中
+        // this.camera_.add(cameraItem);
+        // this.camera_.layers.enable(1);
+
         this.itemCamera.add(cameraItem);
         this.itemCamera.layers.enable(1);
 

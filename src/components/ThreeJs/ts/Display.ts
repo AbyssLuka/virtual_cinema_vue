@@ -18,11 +18,9 @@ interface I_Option {
 
 export class Display {
 
-    private readonly option: I_Option;
     private readonly videoTexture: VideoTexture;
 
-    constructor(option: I_Option) {
-        this.option = option;
+    constructor(private readonly option: I_Option) {
         this.videoTexture = new VideoTexture(option.videoDom)
     }
 
@@ -57,7 +55,7 @@ export class Display {
                         r += image.data[i];
                         g += image.data[i + 1];
                         b += image.data[i + 2];
-                        brightness += pixelBrightness
+                        brightness += pixelBrightness;
                         count++;
                     }
                 }

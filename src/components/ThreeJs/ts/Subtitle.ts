@@ -3,16 +3,12 @@ import util from "@/util/util";
 import {I_SubtitleObject} from "@/global/interface";
 
 export class Subtitle {
-    private videoDom: HTMLVideoElement;
-    private readonly videoUuid: string;
+
     private assSubtitleUrl_: string | undefined;
     private vttSubtitleUrl_: string | undefined;
     private subtitleObject_: I_SubtitleObject[] = [];
 
-    constructor(videoDom: HTMLVideoElement, videoUuid: string) {
-        this.videoDom = videoDom;
-        this.videoUuid = videoUuid;
-    }
+    constructor(private readonly videoDom: HTMLVideoElement, private readonly videoUuid: string) {}
 
     public async init() {
         this.assSubtitleUrl_ = await api.subtitleApi(this.videoUuid);

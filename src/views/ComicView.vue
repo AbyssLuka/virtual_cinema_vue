@@ -60,7 +60,8 @@ async function pageClick(index: number) {
     if (!resData.data) return;
     state.comicList = resData.data.content;
     if (resData.data.pageable) {
-        pageState.page = resData.data.pageable.page;
+        pageState.page = resData.data.pageable.pageNumber;
+        pageState.size = resData.data.pageable.pageSize;
     }
     pageState.total = resData.data.total;
 }

@@ -1,7 +1,6 @@
 import {AnimationAction, AnimationMixer, Group, Mesh, Object3D} from "three";
 import SpriteMessage from "@/components/ThreeJs/ts/SpriteMessage"
 import CANNON from "cannon-es";
-import {string} from "three/examples/jsm/nodes/shadernode/ShaderNode";
 
 interface I_Vector3 {
     x: number,

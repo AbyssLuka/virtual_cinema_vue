@@ -5,8 +5,6 @@ import {
     Group,
     Mesh,
     MeshStandardMaterial,
-    Object3D,
-    PerspectiveCamera,
     PointLight,
     PointLightHelper,
     RepeatWrapping,
@@ -26,9 +24,8 @@ import {
 import {Octree} from "three/examples/jsm/math/Octree";
 import * as CANNON from "cannon-es";
 import {GLTFAndCANNONLoader} from "@/components/ThreeJs/ts/GLTFAndCANNONLoader";
-import {I_PhysicalList} from "@/components/ThreeJs/ts/GameInterface";
 import {TVControl} from "@/components/ThreeJs/ts/TVControl";
-import {UnwrapNestedRefs, watch} from "vue";
+import {watch} from "vue";
 import {Controls} from "@/components/ThreeJs/ts/Controls";
 import {Display} from "@/components/ThreeJs/ts/Display";
 import {DVD_Box} from "@/components/ThreeJs/ts/DVD_Box";
@@ -39,34 +36,21 @@ import {createNoise2D} from "simplex-noise";
 import grassShader from "@/components/ThreeJs/shaders/GrassShader";
 import {Lensflare, LensflareElement} from "three/examples/jsm/objects/Lensflare";
 import {Camera} from "@/components/ThreeJs/ts/Camera";
+import {inventoryState} from "@/components/ThreeJs/ts/Global";
+import {worldRayObjects, physicalObjects} from "@/components/ThreeJs/ts/Global";
+import {Grass} from "@/components/ThreeJs/ts/Grass";
 
-type InventoryState = {
-    inventory: Object3D[],
-    current: number,
-    emptyObject3D: Object3D,
-}
+import * as dat from "dat.gui";
 
 export class InitScene {
-    private readonly scene: Scene;
-    private readonly octree: Octree;
-    private readonly world: CANNON.World;
-    private readonly physicalObjects_: I_PhysicalList[];
-    private readonly worldRayObjects_: Object3D[];
+
     private noise2D = createNoise2D(() => 0.4389958785683823);
 
     constructor(
-        scene: Scene,
-        octree: Octree,
-        world: CANNON.World,
-        physicalObjects: I_PhysicalList[],
-        worldRayObjects: Object3D[]
-    ) {
-        this.scene = scene;
-        this.octree = octree;
-        this.world = world;
-        this.physicalObjects_ = physicalObjects;
-        this.worldRayObjects_ = worldRayObjects;
-    }
+        private readonly scene: Scene,
+        private readonly octree: Octree,
+        private readonly world: CANNON.World,
+    ) {}
 
     public loadGLTFModel(active: () => void) {
 
@@ -86,8 +70,8 @@ export class InitScene {
         }, (body, mesh) => {
             this.scene.add(mesh);
             this.world.addBody(body);
-            this.physicalObjects.push({body, mesh});
-            this.worldRayObjects.push(mesh);
+            physicalObjects.push({body, mesh});
+            worldRayObjects.push(mesh);
         });
 
         new GLTFAndCANNONLoader({
@@ -102,7 +86,7 @@ export class InitScene {
             mass: 0,
         }, (body, mesh) => {
             this.world.addBody(body);
-            this.physicalObjects.push({body, mesh});
+            physicalObjects.push({body, mesh});
         });
 
         new GLTFAndCANNONLoader({
@@ -152,19 +136,18 @@ export class InitScene {
         videoDom: HTMLVideoElement,
         cameraClass: Camera,
         controlsClass: Controls,
-        InventoryState: UnwrapNestedRefs<InventoryState>,
         pickUp: () => void,
         send: (data) => void,
     ) {
         const openGUI = (visible: boolean) => {
-            watch(() => InventoryState.current, () => {
+            watch(() => inventoryState.current, () => {
                 controlsClass.lockAngle(false);
-                tvControlClass.visible(false);
+                tvControlClass.visible = false;
             });
-            const visible_ = visible ? visible : !tvControlClass.isVisible();
+            const visible_ = visible ? visible : !tvControlClass.isVisible;
             // 打开GUI时关闭视角转动
             controlsClass.lockAngle(visible_);
-            tvControlClass.visible(visible_);
+            tvControlClass.visible = visible_;
         };
         const tvControlClass = new TVControl({
             position: new Vector3(),
@@ -182,26 +165,26 @@ export class InitScene {
             // InventoryState.inventory[0] = mesh;
             this.scene.add(mesh);
             this.world.addBody(body);
-            this.physicalObjects.push({mesh, body});
-            this.worldRayObjects.push(mesh);
-            cameraClass.itemCamera.add(tvControlClass.getCSS2D());
+            physicalObjects.push({mesh, body});
+            worldRayObjects.push(mesh);
+            cameraClass.itemCamera.add(tvControlClass.CSS2D);
 
-            InventoryState.inventory[0] = mesh;
-            cameraClass.loadItem(InventoryState.inventory[0].clone()).then();
+            inventoryState.inventory[0] = mesh;
+            cameraClass.loadItem(inventoryState.inventory[0].clone()).then();
 
-            console.log(InventoryState)
+            console.log(inventoryState)
         });
     }
 
     public async loadDisplay(displayVideo: HTMLVideoElement, activeFunc: () => void) {
         new Display({
-            videoDom: <HTMLVideoElement>displayVideo,
+            videoDom: displayVideo,
             position: new Vector3(0, 6, -24),
             name: "显示器",
             active: activeFunc,
         }).create((mesh) => {
             this.scene.add(mesh);
-            this.worldRayObjects.push(mesh);
+            worldRayObjects.push(mesh);
         });
     }
 
@@ -224,8 +207,8 @@ export class InitScene {
                     }).create((mesh, body) => {
                         this.world.addBody(body);
                         this.scene.add(mesh);
-                        this.physicalObjects.push({mesh, body});
-                        this.worldRayObjects.push(mesh);
+                        physicalObjects.push({mesh, body});
+                        worldRayObjects.push(mesh);
                     });
                 }, timeout += 500);
             });
@@ -281,7 +264,7 @@ export class InitScene {
         group.add(pointLightHelper);
 
         //环境光
-        const ambientLight = new AmbientLight(0xFFFFFF, .3);
+        const ambientLight = new AmbientLight(0xFFFFFF, 1);
         group.add(ambientLight);
 
         const mesh_test = new Mesh();
@@ -362,29 +345,32 @@ export class InitScene {
     }
 
     public createTerrain() {
-        const worldWidth = 256;
-        const worldDepth = 256;
+        const worldWidth = 25;
+        const worldDepth = 25;
         const geometry = new PlaneGeometry(worldWidth, worldDepth, 128, 128);
-        const vertices = geometry.attributes.position.array;
-
-        let [a, b] = [1, 1];
-        for (let i = 0; i < vertices.length; i += 3) {
-            vertices[i + 2] = this.noise2D(vertices[i] * a, vertices[i + 1] * a) * b;
-            a *= 1;
-            b *= 1;
-        }
+        //应用噪声到PlaneGeometry
+        // const vertices = geometry.attributes.position.array;
+        //
+        // let [a, b] = [1, 1];
+        // for (let i = 0; i < vertices.length; i += 3) {
+        //     vertices[i + 2] = this.noise2D(vertices[i] * a, vertices[i + 1] * a) * b;
+        //     a *= 1;
+        //     b *= 1;
+        // }
 
         geometry.attributes.position.needsUpdate = true;
         const texture = new TextureLoader().load("/3d/texture/grass.jpg");
         const material = new MeshStandardMaterial({map: texture, fog: true});
         const mesh = new Mesh(geometry, material);
         mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(64, -8, 64);
-        mesh.scale.set(20, 20, 20);
+        mesh.position.set(0, -5, 0);
+        mesh.scale.set(12, 12, 12);
         mesh.receiveShadow = true;
         this.octree.fromGraphNode(mesh);
         this.scene.add(mesh);
-        this.generateGrass();
+        // this.generateGrass();
+
+        new Grass(this.scene, mesh);
     }
 
     public loadMoon() {
@@ -398,7 +384,7 @@ export class InitScene {
         const sprite = new Sprite(spriteMaterial);
         const group = new Group();
         const pointLight = new PointLight(0xd6ecf0, 100, 10000, 1);
-        pointLight.position.set(0, 0, 0)
+        pointLight.position.set(0, 0, 0);
         pointLight.castShadow = true;
         group.add(pointLight);
         sprite.scale.set(10, 10, 10);
@@ -544,11 +530,4 @@ export class InitScene {
         generateField();
     }
 
-    get physicalObjects() {
-        return this.physicalObjects_;
-    }
-
-    get worldRayObjects() {
-        return this.worldRayObjects_;
-    }
 }

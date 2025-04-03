@@ -172,11 +172,12 @@ function pageClick(page: number) {
 async function getVideoList(page: number) {
     let resData = await api.animePostLimitApi({keyword: pageState.keyword, page: page, size: 36});
     if (!resData.data) return;
+    console.log(resData.data)
     if (resData.code === 200) {
         videoState.videoList = resData.data.content;
         if (resData.data.pageable) {
-            pageState.page = resData.data.pageable.page;
-            pageState.size = resData.data.pageable.size;
+            pageState.page = resData.data.pageable.pageNumber;
+            pageState.size = resData.data.pageable.pageSize;
         }
         pageState.total = resData.data.total;
     }

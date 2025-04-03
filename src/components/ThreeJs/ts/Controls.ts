@@ -10,7 +10,6 @@ type Type_KeyCode = "KeyQ" | "KeyW" | "KeyE" | "KeyR" | "KeyT" | "KeyY" | "KeyU"
     "Digit6" | "Digit7" | "Digit8" | "Digit9" | "Digit0";
 
 export class Controls {
-    private camera: PerspectiveCamera;
     private readonly controls: PointerLockControls;
     private readonly playerCollider: Capsule;
     private readonly playerVelocity: Vector3;
@@ -26,8 +25,7 @@ export class Controls {
         Digit4: false, Digit5: false, Digit6: false, Digit7: false, Digit8: false, Digit9: false, Digit0: false,
     };
 
-    constructor(camera: PerspectiveCamera, dom: HTMLElement) {
-        this.camera = camera;
+    constructor(public camera: PerspectiveCamera, public dom: HTMLElement) {
         const start = new Vector3().copy(camera.position);
         const end = new Vector3().copy(camera.position);
         end.y += 2;
@@ -194,7 +192,7 @@ export class Controls {
         //碰撞检测
         this.playerCollisions(worldOctree);
         // 更新控制器和相机位置
-        this.controls.getObject().position.copy(this.playerCollider.end);
+        this.camera.position.copy(this.playerCollider.end);
 
         const x = this.playerCollider.start.x;
         const y = this.playerCollider.start.y + 2;
@@ -258,7 +256,7 @@ export class Controls {
 
     private playerStatus: "run" | "stand" | "jump" = "stand";
 
-    public getPosition(): Vector3 {
+    get position(): Vector3 {
         const x = this.playerCollider.start.x;
         const y = this.playerCollider.start.y;
         const z = this.playerCollider.start.z;

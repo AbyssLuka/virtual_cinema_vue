@@ -4,14 +4,12 @@ import {createVNode, render} from "vue";
 import PlayerMessage from "@/components/ThreeJs/PlayerMessage.vue"
 
 export default class SpriteMessage {
-    private readonly object: CSS3DSprite;
-    private text: string;
+    private readonly object_: CSS3DSprite;
     private readonly messageContainer: HTMLDivElement;
 
-    constructor(text = "") {
+    constructor(private text_ = "") {
         this.messageContainer = document.createElement("div");
-        this.text = text;
-        this.object = this.init();
+        this.object_ = this.init();
         this.object.scale.set(.01, .01, .01);
     }
 
@@ -22,29 +20,29 @@ export default class SpriteMessage {
         return new CSS3DSprite(this.messageContainer);
     }
 
-    public getObject() {
-        return this.object;
+    get object() {
+        return this.object_;
     }
 
-    public setPosition(vector3: Vector3) {
+    set position(vector3: Vector3) {
         this.object.position.copy(vector3);
     }
 
-    public getPosition() {
+    get position() {
         return this.object.position;
     }
 
-    public getElement() {
+    get element() {
         return this.messageContainer;
     }
 
-    public setText(text: string) {
-        this.text = text;
+    set text(text: string) {
+        this.text_ = text;
         const vNode = createVNode(PlayerMessage, {message: text});
         render(vNode, this.messageContainer);
     }
 
-    public getText(): string {
-        return this.text;
+    get text(): string {
+        return this.text_;
     }
 }

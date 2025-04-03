@@ -22,10 +22,9 @@ export class TVControl {
     private readonly tvControlCSS2D: CSS2DObject;
     private readonly tvVideoDom: HTMLVideoElement;
     private readonly uiContainer: HTMLElement;
-    private readonly option: I_Option;
     private readonly visible_ = ref(false);
 
-    constructor(option: I_Option) {
+    constructor(private readonly option: I_Option) {
         const tvControlGeometry = new BoxGeometry(0.5, 1, 0.1);
         const tvControlMaterial = new MeshStandardMaterial({color: 0xff0000});
         this.tvControlMesh = new Mesh(tvControlGeometry, tvControlMaterial);
@@ -67,18 +66,18 @@ export class TVControl {
         callback(this.tvControlMesh, body);
     }
 
-    public visible(status: boolean) {
+    set visible(status: boolean) {
         //防止伪光标移动
         this.visible_.value = status;
         //隐藏
         this.tvControlCSS2D.visible = status;
     }
 
-    public getCSS2D() {
+    get CSS2D() {
         return this.tvControlCSS2D;
     }
 
-    public isVisible(): boolean {
+    get isVisible(): boolean {
         return this.tvControlCSS2D.visible;
     }
     //orangeJuice: 进度 0~100, orangeBuffering: 缓冲 0~100, volumeJuice: 音量 0~100, ended: 是否结束
@@ -111,11 +110,11 @@ export class TVControl {
         })
     }
 
-    public currentTime(time:number){
+    set currentTime(time:number){
         this.tvVideoDom.currentTime = time * this.tvVideoDom.duration;
     }
 
-    public volume(vol:number){
+    set volume(vol:number){
         this.tvVideoDom.volume = vol;
     }
 

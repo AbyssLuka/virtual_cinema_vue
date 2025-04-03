@@ -1,26 +1,26 @@
 <template>
     <div class="page-content">
         <ul class="page-ul">
-            <li :class="[state.pageIndex === 1?'selectPage':'unSelectPage']"
+            <li :class="[pageIndex === 1?'selectPage':'unSelectPage']"
                 class="ri-arrow-left-double-line" style="font-size: 30px;"
-                @click="[props.active(0),state.pageIndex = 1]">
+                @click="[active(0),pageIndex = 1]">
             </li>
-            <li :class="[state.pageIndex === 1?'selectPage':'unSelectPage']"
+            <li :class="[pageIndex === 1?'selectPage':'unSelectPage']"
                 class="ri-arrow-left-s-line" style="font-size: 30px;"
-                @click="[props.active(state.pageIndex-2),state.pageIndex -= 1]">
+                @click="[active(pageIndex-2),pageIndex -= 1]">
             </li>
-            <li v-for="(item,index) in Math.ceil(total/size)" :key="index"
-                @click="[props.active(index),state.pageIndex = index + 1]" style="font-weight: bold;"
-                v-show="index + 1 > state.pageIndex - 3 && index + 1 < state.pageIndex + 3"
-                :class="[state.pageIndex === index+1?'selectPage':'unSelectPage']">{{ index + 1 }}
+            <li v-for="(item,index) in Math.ceil(total/size)" :key="item"
+                @click="[active(index),pageIndex = index + 1]" style="font-weight: bold;"
+                v-show="index + 1 > pageIndex - 3 && index + 1 < pageIndex + 3"
+                :class="[pageIndex === index+1?'selectPage':'unSelectPage']">{{ index + 1 }}
             </li>
-            <li :class="[state.pageIndex === Math.ceil(total / size)?'selectPage':'unSelectPage']"
+            <li :class="[pageIndex === Math.ceil(total / size)?'selectPage':'unSelectPage']"
                 class="ri-arrow-right-s-line" style="font-size: 30px;"
-                @click="[props.active(state.pageIndex),state.pageIndex += 1]">
+                @click="[active(pageIndex),pageIndex += 1]">
             </li>
-            <li :class="[state.pageIndex === Math.ceil(total/size)?'selectPage':'unSelectPage']"
+            <li :class="[pageIndex === Math.ceil(total/size)?'selectPage':'unSelectPage']"
                 class="ri-arrow-right-double-line" style="font-size: 30px;"
-                @click="[props.active(Math.ceil(props.total / size) - 1),state.pageIndex = Math.ceil(total / size)]">
+                @click="[active(Math.ceil(total / size) - 1),pageIndex = Math.ceil(total / size)]">
             </li>
         </ul>
     </div>
@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 
-import {reactive, defineProps, watch, withDefaults} from "vue";
+import { defineProps, watch, withDefaults, ref} from "vue";
 
 const props = withDefaults(defineProps<{
     page?: number,
@@ -42,12 +42,10 @@ const props = withDefaults(defineProps<{
     active: (index: number) => console.log(index),
 });
 
-const state = reactive({
-    pageIndex: 1,
-});
+const pageIndex = ref(1)
 
 watch(() => props.page, (newIndex) => {
-    state.pageIndex = newIndex + 1;
+    pageIndex.value = newIndex + 1;
 }, {immediate: true});
 </script>
 

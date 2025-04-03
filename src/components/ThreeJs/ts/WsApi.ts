@@ -1,11 +1,11 @@
 import WebSocketUtil from "@/util/WS_Util";
 import {
+    Clock,
     Mesh,
     Object3D,
     Scene,
 } from "three";
 import {
-    I_CreateRoom,
     I_EntranceMsg,
     I_InitVideoMsg,
     I_LoadVideoMsg,
@@ -13,23 +13,18 @@ import {
     I_OtherPlayerExitMsg,
     I_PlayerAction,
     I_RoomInfo,
-    I_SelectRoomList,
     I_UpdateVideoMsg
 } from "@/components/ThreeJs/ts/GameInterface";
-import {Controls} from "@/components/ThreeJs/ts/Controls";
 import SpriteMessage from "@/components/ThreeJs/ts//SpriteMessage";
 import Player from "@/components/ThreeJs/ts/Player";
-import {HTTP_BASE_URL, MODEL_BASE_URL, WS_BASE_URL} from "@/global/global";
+import {HTTP_BASE_URL, MODEL_BASE_URL} from "@/global/global";
 import api, {ajaxRequest} from "@/request/api";
 import {Ref} from "vue";
+import {controlsClass, playerList} from "@/components/ThreeJs/ts/Global";
 
 type playerActionOption = {
     userId: string,
-    playerList: {
-        [key: string]: Player,
-    },
     roomId: string,
-    control: Controls,
 };
 
 type createPlayerOption = {
@@ -37,9 +32,6 @@ type createPlayerOption = {
     model: string,
     roomId: string,
     scene: Scene,
-    playerList: {
-        [key: string]: Player
-    },
     callback: () => void;
 }
 
@@ -62,18 +54,11 @@ type LoadVideo = {
 
 
 export class WsApi {
-    private readonly token_: string;
     private createPlayerWs: WebSocket | undefined;
     private playerActionWs: WebSocket | undefined;
     private updateVideoWs: WebSocket | undefined;
 
-    constructor(token: string) {
-        this.token_ = token;
-    }
-
-    get token() {
-        return this.token_;
-    }
+    constructor(public readonly token: string) {}
 
     public useSendVideoInfo(roomId: string, videoUrl: Ref<string>, displayVideo: HTMLVideoElement) {
         const videoInfoFunc = {
@@ -154,7 +139,7 @@ export class WsApi {
                 const player = new Player(userId);
                 // 添加至玩家列表
                 player.create(MODEL_BASE_URL.concat(model)).then((mesh) => {
-                    option.playerList[userId] = player;
+                    playerList[userId] = player;
                     option.scene.add(mesh);
                 });
             },
@@ -172,19 +157,19 @@ export class WsApi {
                         const player = new Player(userId);
                         // 添加至玩家列表
                         player.create(MODEL_BASE_URL.concat(model)).then((mesh) => {
-                            option.playerList[userId] = player;
+                            playerList[userId] = player;
                             option.scene.add(mesh);
                         });
                     } else {
                         // 自己
-                        if (option.playerList[option.userId]) {
-                            option.playerList[option.userId].message = new SpriteMessage("HELLO");
+                        if (playerList[option.userId]) {
+                            playerList[option.userId].message = new SpriteMessage("HELLO");
                         }
                     }
                 });
             },
             otherPlayerExit: (playerData: I_OtherPlayerExitMsg) => {
-                const roleListElement = option.playerList[playerData.data.userId];
+                const roleListElement = playerList[playerData.data.userId];
                 roleListElement && option.scene.remove(roleListElement.mesh);
                 roleListElement.mesh.traverse((child: Object3D) => {
                     if (child.type === "Mesh" && (child) instanceof Mesh) {
@@ -192,7 +177,7 @@ export class WsApi {
                         child.geometry && child.geometry.dispose();
                     }
                 });
-                roleListElement && roleListElement.message && option.scene.remove(roleListElement.message.getObject());
+                roleListElement && roleListElement.message && option.scene.remove(roleListElement.message.object);
             },
             createPlayerError: () => {
                 this.createPlayerWs?.close();
@@ -230,12 +215,17 @@ export class WsApi {
                 })
             },1000)
         }*/
-        clearInterval(this.frameSync);
+        // clearInterval(this.frameSync);
         this.playerActionWs.onopen = () => {
             //同步数据发送函数
+            const clock = new Clock();
+            let time = 0;
             const synchronous = () => {
-                const position = option.control.getPosition();
-                const rotation = option.control.rotation;
+                time += clock.getDelta();
+                if (time <= 1/60) return;
+                time %= 1/60;
+                const position = controlsClass.position;
+                const rotation = controlsClass.rotation;
                 const message = "";
                 // const roleListElement = option.playerList[option.userId];
                 // if (roleListElement && roleListElement.message) {
@@ -249,32 +239,28 @@ export class WsApi {
                     rotation: {x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w},
                     roomId: option.roomId,
                     userId: option.userId,
-                    playerStatus: option.control.playerState,
+                    playerStatus: controlsClass.playerState,
                     message: message,
                 }));
                 this.frameSync = requestAnimationFrame(synchronous);
             };
-            this.frameSync = requestAnimationFrame(synchronous);
-            // this.playerActionWs.onerror = () => {
-            //     console.log("playerActionWs.onerror")
-            //     this.playerActionWs.close();
-            //     cancelAnimationFrame(this.frameSync);
-            // }
+            cancelAnimationFrame(this.frameSync);
+            synchronous();
         };
         //同步，数据接收
         this.playerActionWs.onmessage = (data: MessageEvent) => {
-            const playerKey = Object.keys(option.playerList);
+            const playerKey = Object.keys(playerList);
             const parse: I_PlayerAction = JSON.parse(data.data);
             //更新所有玩家的数据
             parse && parse.room && parse.room.playerList_ && playerKey.forEach((key) => {
-                const playerMesh = option.playerList[key].mesh;
-                const player = option.playerList[key];
-                const message = option.playerList[key].message;
+                const playerMesh = playerList[key].mesh;
+                const player = playerList[key];
+                const message = playerList[key].message;
                 const playerData = parse.room.playerList_[playerMesh.userData.userId];
                 if (!playerData) return;
                 player.update(playerData);
                 if (option.userId !== key) {
-                    message?.setText(playerData.message)
+                    message!.text = playerData.message
                 }
             });
         }

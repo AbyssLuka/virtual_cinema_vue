@@ -17,7 +17,6 @@ export default class Player {
         return this._playerMesh;
     }
 
-    private readonly userId:string;
     private _playerMesh: Object3D = new Object3D();
     public message: SpriteMessage | undefined;
     public mixer: AnimationMixer | undefined;
@@ -28,9 +27,7 @@ export default class Player {
         expression?: AnimationAction,
     } = {};
 
-    constructor(userId: string) {
-        this.userId = userId;
-    }
+    constructor(public readonly userId: string) {}
 
     public create(url: string):Promise<Object3D> {
         const gltfLoader = new GLTFLoader();
@@ -59,7 +56,7 @@ export default class Player {
 
                 const spriteMessage = new SpriteMessage();
                 // spriteMessage.setText("HelloLuka");
-                playerMesh.add(spriteMessage.getObject());
+                playerMesh.add(spriteMessage.object);
                 const moveClip = clips.find(animationClip =>
                     animationClip.name === "animation.model.move"
                 );

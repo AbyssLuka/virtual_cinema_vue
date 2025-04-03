@@ -97,7 +97,7 @@ const profileUrl = async (): Promise<string> => {
 
 //用户信息
 const userInfoApi = async () => {
-    const resPromise = ajaxRequest<null, I_ResData<I_UserInfo>>("GET", "/user/info/", null);
+    const resPromise = ajaxRequest<null, I_ResData<I_UserInfo>>("GET", "/user/info", null);
     let resData_: I_ResData<I_UserInfo | null> = {code: -1, msg: "", data: null};
     await resPromise.then(res => {
         resData_ = res.data;
@@ -192,7 +192,7 @@ const subtitleApi = async (videoUuid: string): Promise<string> => {
 
 type ComicListType = { page: number, size: number };
 const comicListApi = async (params: ComicListType) => {
-    const resPromise = ajaxRequest<ComicListType, I_ResData<I_Pageable | null>>("POST", "/comic/list/", params);
+    const resPromise = ajaxRequest<ComicListType, I_ResData<I_Pageable | null>>("POST", "/comic/list", params);
     let resData_: I_ResData<I_Pageable | null> = {code: -1, msg: "", data: null};
     await resPromise.then(res => {
         resData_ = res.data;
@@ -214,7 +214,7 @@ const comicApi = async (uuid: string) => {
 };
 
 const searchFileApi = async (keyword: string) => {
-    const resPromise = ajaxRequest<{ q: string }, I_ResData<I_File[] | null>>("GET", "/file/searchFile/", {q: keyword});
+    const resPromise = ajaxRequest<{ q: string }, I_ResData<I_File[] | null>>("GET", "/file/searchFile", {q: keyword});
     let resData_: I_ResData<I_File[] | null> = {code: -1, msg: "", data: null};
     await resPromise.then(res => {
         resData_ = res.data;

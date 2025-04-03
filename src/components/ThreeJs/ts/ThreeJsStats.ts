@@ -27,7 +27,7 @@ export class ThreeJsStats {
         this.stats.dom.style.left = left + 'px';
     }
 
-    public visible(status: boolean) {
+    set visible(status: boolean) {
         this.stats.dom.style.display = status ? "block" : "none";
     }
 
@@ -36,11 +36,7 @@ export class ThreeJsStats {
     }
 
     public changeVisible() {
-        if (this.stats.dom.style.display === "none") {
-            this.visible(true);
-        } else {
-            this.visible(false);
-        }
+        this.visible = this.stats.dom.style.display === "none"
     }
 
 }

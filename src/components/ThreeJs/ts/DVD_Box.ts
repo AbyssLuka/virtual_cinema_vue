@@ -1,6 +1,6 @@
 import api from "@/request/api";
 import * as CANNON from "cannon-es";
-import {BoxGeometry, Mesh, MeshBasicMaterial, TextureLoader} from "three";
+import {BoxGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, TextureLoader} from "three";
 
 interface I_Option {
     videoUuid: string,
@@ -12,11 +12,8 @@ interface I_Option {
 }
 
 export class DVD_Box {
-    private readonly option: I_Option;
 
-    constructor(option: I_Option) {
-        this.option = option;
-    }
+    constructor(private readonly option: I_Option) {}
 
     public async create(callback: (mesh: Mesh, body: CANNON.Body) => void) {
         //创建DVD盒子
@@ -29,6 +26,8 @@ export class DVD_Box {
             shape: DVDCubeShape,
             position: this.option.position, //位置
         });
+        DVDCubeMesh.castShadow = true;
+        DVDCubeMesh.receiveShadow = true;
         DVDCubeMesh.name = videoInfo.data.videoName;
         DVDCubeMesh.name = videoInfo.data.videoName;
         DVDCubeMesh.userData.name = this.option.name;
@@ -69,10 +68,10 @@ export class DVD_Box {
             );
 
             //创建材质
-            const cubeCoveMaterial = new MeshBasicMaterial({map: cubeCoverTexture,});
-            const cubeBackMaterial = new MeshBasicMaterial({map: cubeBackCoverTexture,});
-            const cubeLeftMaterial = new MeshBasicMaterial({map: cubeLeftCoverTexture,});
-            const blackMaterial = new MeshBasicMaterial({color: 0x606060,});
+            const cubeCoveMaterial = new MeshStandardMaterial({map: cubeCoverTexture,});
+            const cubeBackMaterial = new MeshStandardMaterial({map: cubeBackCoverTexture,});
+            const cubeLeftMaterial = new MeshStandardMaterial({map: cubeLeftCoverTexture,});
+            const blackMaterial = new MeshStandardMaterial({color: 0x606060,});
             const materials = [blackMaterial, cubeLeftMaterial, blackMaterial, blackMaterial, cubeCoveMaterial, cubeBackMaterial];
             //创建物体
 

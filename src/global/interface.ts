@@ -22,8 +22,8 @@ export interface I_UserInfo {
 export interface I_Pageable {
     content: [],
     pageable: {
-        page: number,
-        size: number,
+        pageNumber: number,
+        pageSize: number,
         sort: {
             orders: []
         }
