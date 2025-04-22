@@ -114,16 +114,8 @@
     "skipLibCheck": true
     /* Skip type checking all .d.ts files. */
   },
-  "include": [
-    "src/**/*",
-    "src/**/*.ts",
-    "src/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "*.ts"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules"
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
   ]
 }
