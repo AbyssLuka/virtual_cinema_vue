@@ -97,7 +97,7 @@ let modelList: I_ModelEntity[] = [];
 let roomList = reactive<{ value: I_RoomInfo[] }>({
     value: []
 });
-const choosePlayer = ref("");
+const choosePlayer = ref("--");
 const video_id = ref("");
 const searchRoomText = ref("");
 const newRoomName = ref("");

@@ -8,16 +8,18 @@
             <h1 style="background: rgba(0,0,0,0.5)">{{ props.subtitle }}</h1>
             <h2>{{ props.activeInfo }}</h2>
             <table style="border-collapse: collapse">
+                <tbody>
                 <tr>
-                    <td v-for="index in 10" :key="index"
-                        style="width: 60px;height: 60px;border: #111111 2px solid;background: rgba(255,255,255,0.2);flex-shrink: 0"
-                        :style="[props.roleGoodsIndex===index?'background:orangered':'background:']">
-                        <div style="width: 100%;height: 100%;display: flex;justify-content: center;align-items: center;"
-                             v-if="index <= props.roleGoods.length">
-                            {{ props.roleGoods[index - 1]?.userData?.type }}
-                        </div>
-                    </td>
+                  <td v-for="index in 10" :key="index"
+                      style="width: 60px;height: 60px;border: #111111 2px solid;background: rgba(255,255,255,0.2);flex-shrink: 0"
+                      :style="[props.roleGoodsIndex===index?'background:orangered':'background:']">
+                    <div style="width: 100%;height: 100%;display: flex;justify-content: center;align-items: center;"
+                         v-if="index <= props.roleGoods.length">
+                      {{ props.roleGoods[index - 1]?.userData?.type }}
+                    </div>
+                  </td>
                 </tr>
+                </tbody>
             </table>
         </div>
         <div class="itemInfo-container" style="justify-content: flex-end;align-items: flex-start;">

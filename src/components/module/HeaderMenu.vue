@@ -4,8 +4,12 @@
             <div class="logo ri-eye-2-line ri-4x"></div>
             <div class="luka-title center">Luka</div>
         </router-link>
-        <floating-menu :menu="menu" :to-login="toLogin" :collage="collage"
-                       id="floating-window" class="floating-window"></floating-menu>
+        <floating-menu :menu="menu"
+                       :to-login="toLogin"
+                       :collage="collage"
+                       id="floating-window"
+                       class="floating-window"
+        ></floating-menu>
     </div>
 </template>
 

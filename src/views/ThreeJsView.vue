@@ -12,7 +12,7 @@
     <div class="pause-container" v-show="pauseViewShow">
       <div style="margin: 0 0 30px 30px;">
         <h1 class="option" ref="continueGame">继续</h1>
-        <h1 class="option" @click="screenContainer.requestFullscreen()">全屏</h1>
+        <h1 class="option" @click="screenContainer!.requestFullscreen()">全屏</h1>
         <h1 class="option" @click="StatsClass.changeVisible()">性能监视器</h1>
         <h1 class="option" @click="[displayVideoShow=!displayVideoShow]">预览显示器</h1>
         <h1 class="option" onclick="window.close()">退出</h1>
@@ -37,7 +37,7 @@
 
 import RoleGUI from "@/components/ThreeJs/RoleGUI.vue"
 
-import {onBeforeUnmount, onMounted, ref} from "vue";
+import {onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
 import {useRoute} from "vue-router";
 
 // import * as CANNON from "cannon-es";
@@ -92,11 +92,11 @@ const displayVideoShow = ref(false);
 const route = useRoute();
 
 //画布容器
-const renderContainer = ref();
+const renderContainer = useTemplateRef<HTMLVideoElement>("renderContainer")!;
 //显示器DOM
-const displayVideo = ref<HTMLVideoElement>();
-const continueGame = ref();
-const screenContainer = ref();
+const displayVideo = useTemplateRef<HTMLVideoElement>("displayVideo")!;
+const continueGame = useTemplateRef<HTMLVideoElement>("continueGame")!;
+const screenContainer = useTemplateRef<HTMLVideoElement>("screenContainer")!;
 
 const scene = new Scene();//图形世界
 const physicalWorldClass = new PhysicalWorld();//物理世界
@@ -148,7 +148,7 @@ onMounted(async () => {
   //页面初始化
   await initGraphicalWorld();
   //刷新渲染动画
-  screenContainer.value.append(stats.dom);
+  screenContainer.value!.append(stats.dom);
   createPlayer();
   playerAction();
   initComposer();
@@ -162,8 +162,8 @@ const initComposer = () => {
   // postprocessing
   composer = new EffectComposer(renderer,
       new WebGLRenderTarget(
-          renderContainer.value.clientWidth,
-          renderContainer.value.clientHeight
+          renderContainer.value!.clientWidth,
+          renderContainer.value!.clientHeight
       )
   );
 
@@ -172,8 +172,8 @@ const initComposer = () => {
 
   outlinePass = new OutlinePass(
       new Vector2(
-          renderContainer.value.clientWidth,
-          renderContainer.value.clientHeight
+          renderContainer.value!.clientWidth,
+          renderContainer.value!.clientHeight
       ),
       scene,
       cameraClass.camera
@@ -196,30 +196,30 @@ const initComposer = () => {
   // const axesHelper = new AxesHelper();
   // scene.add(axesHelper);
 
-  const send = wsApi.useSendVideoInfo(roomId, videoUrl, <HTMLVideoElement>displayVideo.value);
+  const send = wsApi.useSendVideoInfo(roomId, videoUrl, displayVideo.value!);
 
   loadModel.loadGLTFModel(pickUp);
   //创建遥控器
-  loadModel.loadTVControl(<HTMLVideoElement>displayVideo.value, cameraClass, controlsClass, pickUp, send);
+  loadModel.loadTVControl(displayVideo.value!, pickUp, send);
   loadModel.loadRoom();
   //创建显示器
-  const activeFunc = useDisplayActive(<HTMLVideoElement>displayVideo.value, videoUrl, subtitleUrl, subtitle, send)
-  await loadModel.loadDisplay(<HTMLVideoElement>displayVideo.value, activeFunc);
+  const activeFunc = useDisplayActive(displayVideo.value!, videoUrl, subtitleUrl, subtitle, send)
+  await loadModel.loadDisplay(displayVideo.value!, activeFunc);
   loadModel.createTerrain();
   loadModel.loadMoon();
   // 添加画布至DOM树
-  renderContainer.value.appendChild(renderer.domElement);
+  renderContainer.value!.appendChild(renderer.domElement);
   //初始化摄影机
-  cameraClass.resizeCamera(renderContainer.value, renderer);
+  cameraClass.resizeCamera(renderContainer.value!, renderer);
   //指针锁
-  controlsClass.controlsLock(continueGame.value);
+  controlsClass.controlsLock(continueGame.value!);
   roleGoodsActive();
 
-  css2DRenderer.setSize(renderContainer.value.clientWidth, renderContainer.value.clientHeight);
+  css2DRenderer.setSize(renderContainer.value!.clientWidth, renderContainer.value!.clientHeight);
   css2DRenderer.domElement.style.position = 'absolute';
   css2DRenderer.domElement.style.top = '0px';
   // 添加画布至DOM树
-  renderContainer.value.appendChild(css2DRenderer.domElement);
+  renderContainer.value!.appendChild(css2DRenderer.domElement);
 }
 
 const roleGoodsActive = () => {
@@ -301,8 +301,8 @@ function playerAction() {
 }
 
 const windowResizeFun = () => {
-  cameraClass.resizeCamera(renderContainer.value, renderer);
-  css2DRenderer.setSize(renderContainer.value.clientWidth, renderContainer.value.clientHeight)
+  cameraClass.resizeCamera(renderContainer.value!, renderer);
+css2DRenderer.setSize(renderContainer.value!.clientWidth, renderContainer.value!.clientHeight)
 };
 window.addEventListener("resize", windowResizeFun);
 onBeforeUnmount(() => {

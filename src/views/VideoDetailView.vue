@@ -2,15 +2,15 @@
     <div style="width: 100%;height: 100%;display: flex;justify-content: center;">
         <div class="content-container box">
             <div class="video-container">
-                <video :src="state.currentPlay.url" controls>
+                <video :src="currentPlay.url" controls>
                     <track :src="subtitleUrl" kind="subtitles" default>
                 </video>
                 <div class="episode-container">
                     <div class="horiz-warp">
-                        <div class="episode-item box center" v-for="(item,index) in state.fileList.filter(
+                        <div class="episode-item box center" v-for="(item,index) in fileList.filter(
                             fileListItem=>fileTypeList.video.includes(fileListItem['fileType'])
-                        )" :key="index" :class="[index === state.currentPlay.index?'episode-item-playing':'']"
-                             @click="[playVideo(item) ,state.currentPlay.index=index]" :title="item['fileName']">
+                        )" :key="index" :class="[index === currentPlay.index?'episode-item-playing':'']"
+                             @click="[playVideo(item) ,currentPlay.index=index]" :title="item['fileName']">
                             P.{{ index + 1 }}
                         </div>
                     </div>
@@ -18,15 +18,15 @@
             </div>
             <div class="operate">
                 <div class="luka-button button">点赞</div>
-                <div class="luka-button button" @click="[state.collectInfo.status?delCollect():addCollect()]"
-                     :style="[state.collectInfo.status?'color: orangered;':'color: black;']">
-                    {{ state.collectInfo.text }}
+                <div class="luka-button button" @click="[collectInfo.status?delCollect():addCollect()]"
+                     :style="[collectInfo.status?'color: orangered;':'color: black;']">
+                    {{ collectInfo.text }}
                 </div>
                 <div class="luka-button button" @click="copyUrl">分享</div>
             </div>
             <hr/>
             <div class="introduction">
-                <image-list :size="state.fileList.length" :fileList="state.fileList"
+                <image-list :size="fileList.length" :fileList="fileList"
                             class="item-img-container"></image-list>
                 <div>
                     <div class="title">标题：{{ videoTitle }}</div>
@@ -35,7 +35,7 @@
             </div>
             <hr/>
         </div>
-        <circle-menu class="circle-menu" :menu-list="state.menuList"></circle-menu>
+        <circle-menu class="circle-menu" :menu-list="menuList"></circle-menu>
     </div>
 </template>
 <script setup lang="ts">
@@ -55,31 +55,24 @@ const videoTitle = ref("")
 const videoInfo = ref("")
 const subtitleUrl = ref("")
 
-const state = reactive<{
-    fileList: I_File[],
-    currentPlay: {
-        index: number,
-        name: string,
-        url: string,
-    },
-    collectInfo: {
-        status: boolean,
-        text: string,
-    },
-    menuList: I_MenuList[],
+const fileList = ref<I_File[]>([])
+const menuList = ref<I_MenuList[]>([])
+const currentPlay = reactive<{
+  index: number,
+  name: string,
+  url: string,
 }>({
-    fileList: [],
-    currentPlay: {
-        index: 0,
-        name: "",
-        url: "",
-    },
-    collectInfo: {
-        status: false,
-        text: "收藏",
-    },
-    menuList: [],
-});
+  index: 0,
+  name: "",
+  url: "",
+})
+const collectInfo = reactive<{
+  status: boolean,
+  text: string,
+}>({
+  status: false,
+  text: "收藏",
+})
 
 interface I_MenuList {
     icon: string,
@@ -94,7 +87,7 @@ onMounted(() => {
 const router = useRouter();
 
 function initMenuList() {
-    state.menuList = [
+    menuList.value = [
         {
             icon: "ri-home-2-fill",
             active: () => {
@@ -160,11 +153,11 @@ async function addCollect() {
     console.log(animeUuid)
     let resData = await api.addCollectApi(animeUuid);
     if (resData.code === 200) {
-        state.collectInfo.text = "已收藏";
-        state.collectInfo.status = true;
+        collectInfo.text = "已收藏";
+        collectInfo.status = true;
     } else {
-        state.collectInfo.text = "收藏";
-        state.collectInfo.status = false;
+        collectInfo.text = "收藏";
+        collectInfo.status = false;
     }
 }
 
@@ -172,11 +165,11 @@ async function delCollect() {
     let animeUuid = <string>route.query.data;
     let resData = await api.unCollectApi(animeUuid);
     if (resData.code === 200) {
-        state.collectInfo.text = "收藏";
-        state.collectInfo.status = false;
+        collectInfo.text = "收藏";
+        collectInfo.status = false;
     } else {
-        state.collectInfo.text = "已收藏";
-        state.collectInfo.status = true;
+        collectInfo.text = "已收藏";
+        collectInfo.status = true;
     }
 }
 
@@ -185,23 +178,23 @@ async function init() {
     let uuid: string = route.query.data as string;
     let resData = await api.animePostApi(uuid);
     if (!resData.data) return;
-    state.fileList = resData.data.detail.fileList;
+    fileList.value = resData.data.detail.fileList;
     videoTitle.value = resData.data.detail.title;
     videoInfo.value = resData.data.detail.info;
-    let firstVideo = state.fileList.filter(
+    let firstVideo = fileList.value.filter(
         fileListItem => fileTypeList.video.includes(fileListItem.fileType)
     )[0];           //先播放的视频
-    state.currentPlay.url = api.videoUrl(firstVideo.fileUuid);
-    state.currentPlay.name = firstVideo.fileName;
+    currentPlay.url = api.videoUrl(firstVideo.fileUuid);
+    currentPlay.name = firstVideo.fileName;
     await loadSubtitle(firstVideo.fileUuid);
     if (![undefined, null, "null", "undefined", ""].includes(localStorage.getItem("token"))) {
         let resData = await api.collectIsHaveApi(uuid);
         if (resData.data) {
-            state.collectInfo.text = "已收藏";
-            state.collectInfo.status = true;
+            collectInfo.text = "已收藏";
+            collectInfo.status = true;
         } else {
-            state.collectInfo.text = "收藏";
-            state.collectInfo.status = false;
+            collectInfo.text = "收藏";
+            collectInfo.status = false;
         }
     }
 
@@ -209,8 +202,8 @@ async function init() {
 
 function playVideo(fileObj: I_File) {
     //播放视频并重新加载字幕
-    state.currentPlay.name = fileObj.fileName;
-    state.currentPlay.url = api.videoUrl(fileObj.fileUuid);
+    currentPlay.name = fileObj.fileName;
+    currentPlay.url = api.videoUrl(fileObj.fileUuid);
     loadSubtitle(fileObj.fileUuid);
 }
 

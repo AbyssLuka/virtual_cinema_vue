@@ -34,18 +34,18 @@
 </template>
 
 <script setup lang="ts">
-import {ref, defineProps, onBeforeUnmount, onMounted, Ref} from "vue";
+import {defineProps, onBeforeUnmount, onMounted, Ref, useTemplateRef} from "vue";
 
-const cursor = ref();
-const cursorContainer = ref();
-const playAndPause = ref();
-const visibleSubtitle = ref();
-const orangeBar = ref();
-const orangeBuffering = ref();
-const orangeJuice = ref();
-const fullScanner = ref();
-const volumeBar = ref();
-const volumeJuice = ref();
+const cursor = useTemplateRef<HTMLDivElement>("cursor");
+const cursorContainer = useTemplateRef<HTMLDivElement>("cursorContainer");
+const playAndPause = useTemplateRef<HTMLDivElement>("playAndPause");
+const visibleSubtitle = useTemplateRef<HTMLDivElement>("visibleSubtitle");
+const orangeBar = useTemplateRef<HTMLDivElement>("orangeBar");
+const orangeBuffering = useTemplateRef<HTMLDivElement>("orangeBuffering");
+const orangeJuice = useTemplateRef<HTMLDivElement>("orangeJuice");
+const fullScanner = useTemplateRef<HTMLDivElement>("fullScanner");
+const volumeBar = useTemplateRef<HTMLDivElement>("volumeBar");
+const volumeJuice = useTemplateRef<HTMLDivElement>("volumeJuice");
 
 const props = defineProps<{
     visible: Ref<boolean>,
@@ -62,16 +62,18 @@ const props = defineProps<{
     fullscreen: () => void,
 }>();
 
+console.log(props.currentTime)
+
 onMounted(() => {
     //监听video标签，获取            进度                    缓存                      音量                是否结束
     props.onUpdateTime((orangeJuice_: number, orangeBuffering_: number, volumeJuice_: number, ended_: boolean) => {
-        orangeJuice.value.style.width = orangeJuice_ + "%";
-        orangeBuffering.value.style.width = orangeBuffering_ + "%";
-        volumeJuice.value.style.width = volumeJuice_ + "%";
+        orangeJuice.value!.style.width = orangeJuice_ + "%";
+        orangeBuffering.value!.style.width = orangeBuffering_ + "%";
+        volumeJuice.value!.style.width = volumeJuice_ + "%";
         if (!ended_) return;
         //视频播放结束更换图标
-        playAndPause.value.classList.remove("ri-play-circle-line");
-        playAndPause.value.classList.add("ri-pause-circle-line");
+        playAndPause.value!.classList.remove("ri-play-circle-line");
+        playAndPause.value!.classList.add("ri-pause-circle-line");
 
     })
 });
@@ -83,17 +85,17 @@ onBeforeUnmount(() => {
 
 function mousemove(event: MouseEvent) {
     if (!document.pointerLockElement) return;
-    let y = cursor.value.offsetTop;
-    let x = cursor.value.offsetLeft;
+    let y = cursor.value!.offsetTop;
+    let x = cursor.value!.offsetLeft;
     if ((x <= 0 && y <= 0) && !props.visible.value) return;
     const movementX = event.movementX || 0;
     const movementY = event.movementY || 0;
-    if (y > cursorContainer.value.clientHeight) y = cursorContainer.value.clientHeight;
-    if (x > cursorContainer.value.clientWidth) x = cursorContainer.value.clientWidth;
+    if (y > cursorContainer.value!.clientHeight) y = cursorContainer.value!.clientHeight;
+    if (x > cursorContainer.value!.clientWidth) x = cursorContainer.value!.clientWidth;
     if (y < 0) y = 0;
     if (x < 0) x = 0;
-    cursor.value.style.top = (y + movementY) + "px";
-    cursor.value.style.left = (x + movementX) + "px";
+    cursor.value!.style.top = (y + movementY) + "px";
+    cursor.value!.style.left = (x + movementX) + "px";
 }
 
 //指针(伪)移动
@@ -101,57 +103,57 @@ document.addEventListener("mousemove", mousemove);
 
 //修改进度
 function timeupdate() {
-    if (!check(orangeBar.value, cursor.value)) return;
+    if (!check(orangeBar.value!, cursor.value!)) return;
     if (isNaN(props.tvVideoDom.duration)) return;
-    const x = cursor.value.offsetLeft;
-    const w = orangeBar.value.offsetWidth;
+    const x = cursor.value!.offsetLeft;
+    const w = orangeBar.value!.offsetWidth;
     props.currentTime(x / w);
 }
 
 //播放与暂停
 function playAndPauseFun() {
-    if (!check(playAndPause.value, cursor.value)) return;
+    if (!check(playAndPause.value!, cursor.value!)) return;
     if (props.tvVideoDom.paused) {
         props.tvVideoDom.play();
-        playAndPause.value.classList.add("ri-pause-circle-line");
-        playAndPause.value.classList.remove("ri-play-circle-line");
+        playAndPause.value!.classList.add("ri-pause-circle-line");
+        playAndPause.value!.classList.remove("ri-play-circle-line");
     } else {
         props.tvVideoDom.pause();
-        playAndPause.value.classList.add("ri-play-circle-line");
-        playAndPause.value.classList.remove("ri-pause-circle-line");
+        playAndPause.value!.classList.add("ri-play-circle-line");
+        playAndPause.value!.classList.remove("ri-pause-circle-line");
     }
 }
 
 //显示字幕
 function visibleSubtitleFun() {
-    if (!check(visibleSubtitle.value, cursor.value)) return;
+    if (!check(visibleSubtitle.value!, cursor.value!)) return;
     const subtitleStatus = props.tvVideoDom.textTracks[0].mode;
     if (subtitleStatus === "showing") {
         // eslint-disable-next-line vue/no-mutating-props
         props.tvVideoDom.textTracks[0].mode = "disabled";
-        visibleSubtitle.value.classList.add("ri-closed-captioning-line");
-        visibleSubtitle.value.classList.remove("ri-closed-captioning-fill");
+        visibleSubtitle.value!.classList.add("ri-closed-captioning-line");
+        visibleSubtitle.value!.classList.remove("ri-closed-captioning-fill");
     } else {
         // eslint-disable-next-line vue/no-mutating-props
         props.tvVideoDom.textTracks[0].mode = "showing";
-        visibleSubtitle.value.classList.add("ri-closed-captioning-fill");
-        visibleSubtitle.value.classList.remove("ri-closed-captioning-line");
+        visibleSubtitle.value!.classList.add("ri-closed-captioning-fill");
+        visibleSubtitle.value!.classList.remove("ri-closed-captioning-line");
     }
 }
 
 //控制全屏
 function fullScannerFun() {
-    if (!check(fullScanner.value, cursor.value)) return;
+    if (!check(fullScanner.value!, cursor.value!)) return;
     props.fullscreen()
 }
 
 //设置视频音量
 function updateVolume() {
-    if (!check(volumeBar.value, cursor.value)) return;
+    if (!check(volumeBar.value!, cursor.value!)) return;
     // 指针位置点击到进度条的位置
-    let x = cursor.value.offsetLeft - volumeBar.value.offsetLeft;
+    let x = cursor.value!.offsetLeft - volumeBar.value!.offsetLeft;
     // 进度条长度
-    let w = volumeBar.value.offsetWidth;
+    let w = volumeBar.value!.offsetWidth;
     props.volume(x / w)
 }
 

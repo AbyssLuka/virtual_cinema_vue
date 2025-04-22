@@ -110,11 +110,11 @@ export class TVControl {
         })
     }
 
-    set currentTime(time:number){
+    public currentTime(time:number){
         this.tvVideoDom.currentTime = time * this.tvVideoDom.duration;
     }
 
-    set volume(vol:number){
+    public volume(vol:number){
         this.tvVideoDom.volume = vol;
     }
 

@@ -35,21 +35,21 @@ type createPlayerOption = {
     callback: () => void;
 }
 
-type InitVideo = {
+export type InitVideo = {
     type: "initVideo",
-    roomId: string,
+    roomId?: string,
 }
-type UpdateVideo = {
+export type UpdateVideo = {
     type: "updateVideo",
     progress: number,
     audio: number,
     pause: boolean,
-    roomId: string,
+    roomId?: string,
 }
-type LoadVideo = {
+export type LoadVideo = {
     type: "loadVideo",
     videoUuid: string,
-    roomId: string,
+    roomId?: string,
 }
 
 
@@ -114,7 +114,7 @@ export class WsApi {
             this.useSendVideoInfo(roomId, videoUrl, displayVideo);
         }
 
-        return (sendData: InitVideo | UpdateVideo | LoadVideo) => {
+        return (sendData: (InitVideo | UpdateVideo | LoadVideo)) => {
             sendData.roomId = roomId;
             this.updateVideoWs && this.updateVideoWs.send(JSON.stringify(sendData));
         }

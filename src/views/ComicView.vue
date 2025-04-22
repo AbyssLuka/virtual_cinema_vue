@@ -2,7 +2,7 @@
     <div class="view-container">
         <div class="content">
             <div class="comic-content-container">
-                <div v-for="(object,index) in state.comicList"
+                <div v-for="(object,index) in comicList"
                      :key="index"
                      class="comic-container"
                      @click="toDetail(object.uuid)">
@@ -30,18 +30,14 @@
 </template>
 
 <script setup lang="ts">
-import {reactive, onBeforeMount} from "vue";
+import {reactive, onBeforeMount,ref} from "vue";
 import {useRouter} from "vue-router";
 import api from "@/request/api";
 import {I_Detail_} from "@/global/interface";
 import PaginationModule from "@/components/module/PaginationModule.vue";
 import SearchInput from "@/components/module/SearchInput.vue";
 
-const state = reactive<{
-    comicList: I_Detail_[],
-}>({
-    comicList: [],
-});
+const comicList = ref<I_Detail_[]>([]);
 
 const pageState = reactive({
     page: 0,
@@ -51,19 +47,23 @@ const pageState = reactive({
 })
 
 onBeforeMount(async () => {
-    pageClick(0).then();
+    pageClick(0);
 });
 
-async function pageClick(index: number) {
-    state.comicList = [];
-    let resData = await api.comicListApi({page: index, size: pageState.size});
-    if (!resData.data) return;
-    state.comicList = resData.data.content;
-    if (resData.data.pageable) {
-        pageState.page = resData.data.pageable.pageNumber;
-        pageState.size = resData.data.pageable.pageSize;
-    }
-    pageState.total = resData.data.total;
+const pageClick = (index: number) => {
+    comicList.value = [];
+    api.comicListApi({page: index, size: pageState.size}).then((res) => {
+      if (!res.data) return;
+      comicList.value = res.data.content;
+      if (res.data.pageable) {
+        pageState.page = res.data.pageable.pageNumber;
+        pageState.size = res.data.pageable.pageSize;
+      }
+      pageState.total = res.data.total;
+    }).catch((err) => {
+        console.error(err);
+    });
+
 }
 
 const router = useRouter();

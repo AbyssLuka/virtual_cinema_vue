@@ -35,7 +35,8 @@ export class Subtitle {
                 callback(isSubtitleShow ? this.subtitleObject[index].text : "");
             } else if (isExcEnd &&
                 index + 1 < this.subtitleObject.length &&
-                newTime < this.subtitleObject[index + 1].start) {
+                newTime < this.subtitleObject[index + 1].start
+            ) {
                 // 目前时间没有字幕
                 callback("");
                 index++;

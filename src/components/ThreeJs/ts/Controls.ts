@@ -9,6 +9,10 @@ type Type_KeyCode = "KeyQ" | "KeyW" | "KeyE" | "KeyR" | "KeyT" | "KeyY" | "KeyU"
     "KeyV" | "KeyB" | "KeyN" | "KeyM" | "ShiftLeft" | "Space" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "Digit5" |
     "Digit6" | "Digit7" | "Digit8" | "Digit9" | "Digit0";
 
+const keyFunc: {
+    [key in Type_KeyCode]?: (e: KeyboardEvent) => void;
+} = {}
+
 export class Controls {
     private readonly controls: PointerLockControls;
     private readonly playerCollider: Capsule;
@@ -43,24 +47,38 @@ export class Controls {
             allowSleep: false,
         });
 
+        this.initJump();
+        this.initKeyListener();
+
+        // 视角锁
+        this.controls.addEventListener('change', () => {
+            this.allowRotate && this.camera.rotation.copy(this.tempCameraRotation);
+        });
+    }
+
+    private initKeyListener() {
         const keydownFunc = (event: KeyboardEvent) => {
+            keyFunc[event.code as Type_KeyCode]?.(event);
+        };
+        this.funcList.push({type: "keydown", func: keydownFunc});
+        document.addEventListener("keydown", keydownFunc);
+    }
+
+    private initJump() {
+        const jumpKeydownFunc = (event: KeyboardEvent) => {
             this.keyAny_Status[event.code as Type_KeyCode] = true;
             if (this.playerOnFloor && this.keyAny_Status.Space) {
                 // 跳跃
                 this.playerVelocity.y = 15;
             }
         };
-        const keyupFunc = (event: KeyboardEvent) => {
+        const jumpKeyupFunc = (event: KeyboardEvent) => {
             this.keyAny_Status[event.code as Type_KeyCode] = false;
         };
-        this.funcList.push({type: "keydown", func: keydownFunc});
-        this.funcList.push({type: "keyup", func: keyupFunc});
-        document.addEventListener("keydown", keydownFunc);
-        document.addEventListener("keyup", keyupFunc);
-
-        this.controls.addEventListener('change', () => {
-            this.allowRotate && this.camera.rotation.copy(this.tempCameraRotation);
-        });
+        this.funcList.push({type: "keydown", func: jumpKeydownFunc});
+        this.funcList.push({type: "keyup", func: jumpKeyupFunc});
+        document.addEventListener("keydown", jumpKeydownFunc);
+        document.addEventListener("keyup", jumpKeyupFunc);
     }
 
     private allowRotate = false;
@@ -76,24 +94,14 @@ export class Controls {
     }
 
     //键盘时间监听
-    public addKeydownEventListener(keyCode: string | string[], callback: (code: KeyboardEvent) => void) {
-        const keydownFunc = (event: KeyboardEvent) => {
-            if (keyCode instanceof Array && keyCode.includes(event.code as Type_KeyCode)) {
-                callback(event);
-            } else if (event.code === keyCode) {
-                callback(event);
-            }
-        };
-        this.funcList.push({type: "keydown", func: keydownFunc});
-        document.addEventListener("keydown", keydownFunc);
+    public addKeydownEventListener(keyCode: Type_KeyCode, callback: (code: KeyboardEvent) => void) {
+        keyFunc[keyCode as Type_KeyCode] = callback;
     }
 
     // 鼠标点击事件监听
     public addMousedownEventListener(button: number, callback: (code: MouseEvent) => void) {
         const mousedownFunc = (event: MouseEvent) => {
-            if (button === event.button) {
-                callback(event);
-            }
+            if (button === event.button) callback(event);
         };
         this.funcList.push({type: "mousedown", func: mousedownFunc});
         document.addEventListener("mousedown", mousedownFunc);
@@ -129,11 +137,6 @@ export class Controls {
         };
         this.funcList.push({type: "wheel", func: mousewheelFunc});
         document.addEventListener("wheel", mousewheelFunc);
-    }
-
-    //指针锁
-    get isLocked() {
-        return this.controls.isLocked;
     }
 
     //角色碰撞检测
@@ -257,9 +260,7 @@ export class Controls {
     private playerStatus: "run" | "stand" | "jump" = "stand";
 
     get position(): Vector3 {
-        const x = this.playerCollider.start.x;
-        const y = this.playerCollider.start.y;
-        const z = this.playerCollider.start.z;
+        const {x, y, z} = this.playerCollider.start;
         return new Vector3().set(x, y - 1, z);
     }
 
@@ -269,5 +270,10 @@ export class Controls {
 
     get playerState(): string {
         return this.playerStatus;
+    }
+
+    //指针锁
+    get isLocked() {
+        return this.controls.isLocked;
     }
 }

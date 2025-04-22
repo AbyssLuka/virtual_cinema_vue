@@ -5,6 +5,7 @@ import api from "@/request/api";
 import {Subtitle} from "@/components/ThreeJs/ts/Subtitle";
 
 import {cameraClass, controlsClass, inventoryState, worldRayObjects} from "@/components/ThreeJs/ts/Global";
+import {InitVideo, LoadVideo, UpdateVideo} from "@/components/ThreeJs/ts/WsApi";
 
 export const usePickUp = (
     rayDetect: RayDetect,
@@ -40,7 +41,7 @@ export const useDisplayActive = (
     videoUrl: Ref<string>,
     subtitleUrl: Ref<string>,
     subtitle: Ref<string>,
-    send: (data) => void,
+    send: (data: (InitVideo | UpdateVideo | LoadVideo)) => void,
 ) => {
     return async () => {
         const selected = inventoryState.inventory[inventoryState.current - 1];

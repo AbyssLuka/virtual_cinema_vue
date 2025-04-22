@@ -13,7 +13,8 @@ interface I_Option {
 
 export class DVD_Box {
 
-    constructor(private readonly option: I_Option) {}
+    constructor(private readonly option: I_Option) {
+    }
 
     public async create(callback: (mesh: Mesh, body: CANNON.Body) => void) {
         //创建DVD盒子
@@ -42,26 +43,25 @@ export class DVD_Box {
         //创建盒子
         const cubeGeometry = new BoxGeometry(1, 1.5, 0.1);
         if (imageUuid) {
-
             //材质图片
             const url: string = await api.imageObjUrl(imageUuid) as string;
             //创建纹理
             const cubeCoverTexture = new TextureLoader().load(
-                url, function (texture) {
+                url, (texture) => {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.47, 1);
                     texture.offset.set(0.265, 0);
                 }
             );
             const cubeBackCoverTexture = new TextureLoader().load(
-                url, function (texture) {
+                url, (texture) => {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.47, 1);
                     texture.offset.set(-0.265, 0);
                 }
             );
             const cubeLeftCoverTexture = new TextureLoader().load(
-                url, function (texture) {
+                url, (texture) => {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.06, 1);
                 }

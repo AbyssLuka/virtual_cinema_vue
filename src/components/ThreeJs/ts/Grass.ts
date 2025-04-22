@@ -48,7 +48,7 @@ export class Grass {
 
     init() {
         this.loadGrassModel();
-        const ctx = this.canvas.getContext('2d');
+        const ctx = this.canvas.getContext('2d',{willReadFrequently: true});
         const width = 1024;
         const height = 1024;
 

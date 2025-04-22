@@ -1,7 +1,7 @@
 <template>
     <div class="item-img-container">
         <div class="item-image"
-             v-for="(imageObject,index) in state.imageList" :key="index">
+             v-for="(imageObject,index) in imageList" :key="index">
             <img alt="" v-img-lazy :src="api.thumbnailUrl(imageObject.fileUuid)" class="image"
                  @click="openImage(imageObject)"
             />
@@ -11,24 +11,20 @@
 
 <script setup lang="ts">
 import {fileTypeList} from "@/global/global";
-import {reactive, defineProps, watch} from "vue"
+import {defineProps, watch, ref} from "vue"
 import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
 import createPopUps from "@/util/createPopUps";
 import api from "@/request/api";
 import {I_File} from "@/global/interface";
 
-const state = reactive<{
-    imageList: I_File[],
-}>({
-    imageList: [],
-});
+const imageList = ref<I_File[]>([]);
 const props = defineProps<{
     fileList: I_File[],
     size: number,
 }>();
 
 watch(() => props.fileList, () => {
-    state.imageList = props.fileList.filter((fileItem: I_File) => fileTypeList.image.includes(fileItem.fileType)).splice(0, props.size);
+    imageList.value = props.fileList.filter((fileItem: I_File) => fileTypeList.image.includes(fileItem.fileType)).splice(0, props.size);
 }, {immediate: true});
 
 function openImage(imgObj: I_File): void {

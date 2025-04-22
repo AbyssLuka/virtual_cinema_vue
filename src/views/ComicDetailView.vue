@@ -39,7 +39,6 @@ import {useRoute} from "vue-router";
 import api from "@/request/api";
 import {I_Detail_, I_ResData} from "@/global/interface";
 import createPopUps from "@/util/createPopUps";
-import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
 
 const cover = ref("")
 const comicState = reactive<I_Detail_>({
@@ -68,7 +67,8 @@ async function init(): Promise<void> {
     }
 }
 
-function openImgWindow(index: number) {
+import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
+const openImgWindow = (index: number) => {
     createPopUps(ImagePopUps, {
         title: comicState.title,
         popUpsId: "image",

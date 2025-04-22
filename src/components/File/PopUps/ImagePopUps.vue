@@ -5,12 +5,12 @@
         <div class="pre-image ri-arrow-left-s-line center ri-5x"
              @click="preImage()" v-show="index > 0"></div>
         <div class="next-image ri-arrow-right-s-line center ri-5x"
-             @click="nextImage()" v-show="index < state.imageList.length - 1"></div>
+             @click="nextImage()" v-show="index < imageList.length - 1"></div>
     </div>
 </template>
 
 <script setup lang="ts">
-import {reactive, watch, defineProps, withDefaults,ref} from "vue"
+import { watch, defineProps, withDefaults, ref, useTemplateRef} from "vue"
 import {I_File} from "@/global/interface";
 import api from "@/request/api";
 
@@ -31,13 +31,9 @@ const props = withDefaults(defineProps<{
     },
 });
 
-const state = reactive<{
-    imageList: I_File[],
-}>({
-    imageList: [],
-});
+const imageList = ref<I_File[]>([]);
 
-const imageDom = ref();
+const imageDom = useTemplateRef("imageDom");
 const imageUrl = ref("");
 const imageTitle = ref("");
 const index = ref(0);
@@ -46,23 +42,23 @@ watch(() => props.data, (newImgObj: I_PropsData) => {
     index.value = newImgObj.defaultIndex;
     imageTitle.value = newImgObj.list[index.value].fileName;
     imageUrl.value = api.fileUrl(newImgObj.list[index.value].fileUuid);
-    state.imageList = newImgObj.list
+    imageList.value = newImgObj.list
 }, {immediate: true});
 
 function preImage() {
-    imageTitle.value = state.imageList[--index.value].fileName;
+    imageTitle.value = imageList.value[--index.value].fileName;
     imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
     setTimeout(()=>{
-        imageUrl.value = api.fileUrl(state.imageList[index.value].fileUuid);
+        imageUrl.value = api.fileUrl(imageList.value[index.value].fileUuid);
     },50)
     props.updateTitle(imageTitle.value);
 }
 
 function nextImage() {
-    imageTitle.value = state.imageList[++index.value].fileName;
+    imageTitle.value = imageList.value[++index.value].fileName;
     imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
     setTimeout(()=> {
-        imageUrl.value = api.fileUrl(state.imageList[index.value].fileUuid);
+        imageUrl.value = api.fileUrl(imageList.value[index.value].fileUuid);
     },50)
     props.updateTitle(imageTitle.value);
 }

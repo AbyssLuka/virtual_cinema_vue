@@ -2,11 +2,11 @@
     <div class="file-path">
         <div class="file-path-item">&nbsp;>&nbsp;</div>
         <div title="root" style="cursor: pointer;"
-             @click="props.pathClick(null,0)">root
+             @click="pathClick(0)">root
         </div>
-        <div v-for="(item,index) in props.pathList" :key="index" style="display: flex;align-items: center;">
+        <div v-for="(item,index) in pathList" :key="index" style="display: flex;align-items: center;">
             <div class="file-path-item" :title="item" style="cursor: pointer"
-                 @click="props.pathClick(item,index + 1)">{{ item }}
+                 @click="pathClick(index + 1)">{{ item }}
             </div>
             <div class="file-path-item">&nbsp;/&nbsp;</div>
         </div>
@@ -14,18 +14,18 @@
 </template>
 
 <script setup lang="ts">
-import {defineProps, withDefaults} from "vue";
+import {defineProps} from "vue";
 
-const props = withDefaults(defineProps<{
-    pathList: string[],
-    pathClick?: (item: string | null, index: number) => void,
-}>(), {
-    pathClick: (item: string | null, index: number) => {
-        console.log("空函数");
-        console.log(item);
-        console.log(index);
+const {
+  pathList,
+  pathClick = (index: number) => {
+      console.log("空函数");
+      console.log(index);
     }
-});
+} = defineProps<{
+    pathList: string[],
+    pathClick?: (index: number) => void,
+}>();
 </script>
 
 <style scoped>

@@ -34,7 +34,7 @@ import ASS from "assjs"
 import util from "@/util/util";
 import api from "@/request/api";
 
-import {defineProps, watch, ref, onMounted, onBeforeMount} from "vue";
+import {defineProps, watch, ref, onMounted, onBeforeMount, useTemplateRef} from "vue";
 import {I_File, I_Video} from "@/global/interface";
 
 const props = defineProps<{
@@ -43,15 +43,15 @@ const props = defineProps<{
 }>();
 
 //监测屏幕对象
-const videoPlayer = ref();
-const orangeJuice = ref();
-const orangeBar = ref();
-const orangeBuffering = ref();
-const playAndPause = ref();
-const assContainer = ref();
-const fullScreenButton = ref();
-const subtitleButton = ref();
-const videoContainer = ref();
+const videoPlayer = useTemplateRef<HTMLVideoElement>("videoPlayer");
+const orangeJuice = useTemplateRef<HTMLDivElement>("orangeJuice");
+const orangeBar = useTemplateRef<HTMLDivElement>("orangeBar");
+const orangeBuffering = useTemplateRef<HTMLDivElement>("orangeBuffering");
+const playAndPause = useTemplateRef<HTMLDivElement>("playAndPause");
+const assContainer = useTemplateRef<HTMLDivElement>("assContainer");
+const fullScreenButton = useTemplateRef<HTMLDivElement>("fullScreenButton");
+const subtitleButton = useTemplateRef<HTMLDivElement>("subtitleButton");
+const videoContainer = useTemplateRef<HTMLDivElement>("videoContainer");
 
 const videoUrl = ref("");
 const videoTitle = ref("");
@@ -66,69 +66,69 @@ onMounted(() => {
 
 // 进度条更新
 function updateOrangeBar() {
-    videoPlayer.value.addEventListener("timeupdate", () => {
+    videoPlayer.value!.addEventListener("timeupdate", () => {
         //视频长度
-        const duration = videoPlayer.value.duration;
+        const duration = videoPlayer.value!.duration;
         //视频进度
-        const currentTime = videoPlayer.value.currentTime;
+        const currentTime = videoPlayer.value!.currentTime;
         const juicePos = currentTime / duration;
         // 进度百分比
-        orangeJuice.value.style.width = juicePos * 100 + "%";
+        orangeJuice.value!.style.width = juicePos * 100 + "%";
         //缓冲段
-        const buffereds = videoPlayer.value.buffered;
+        const buffereds = videoPlayer.value!.buffered;
         if (buffereds.length > 0) {
             // 计算缓冲进度
             for (let i = 0; i < buffereds.length; i++) {
                 const index = buffereds.length - (i + 1);
                 //end为缓冲最后位置
                 if (buffereds.end(index) < currentTime) continue;
-                orangeBuffering.value.style.width = buffereds.end(index) / duration * 100 + "%";
+                orangeBuffering.value!.style.width = buffereds.end(index) / duration * 100 + "%";
                 break;
             }
         }
         //视频结束
-        if (videoPlayer.value.ended) {
-            playAndPause.value.classList.remove("ri-play-circle-line");
+        if (videoPlayer.value!.ended) {
+            playAndPause.value!.classList.remove("ri-play-circle-line");
         }
     });
 }
 
 // 点击进度条
 function OrangeBarClick() {
-    orangeBar.value.addEventListener("click", (event: PointerEvent) => {
+    orangeBar.value!.addEventListener("click", (event) => {
         let x = event.offsetX;
-        let w = orangeBar.value.offsetWidth;
-        if (isNaN(videoPlayer.value.duration)) return;
-        videoPlayer.value.currentTime = x / w * videoPlayer.value.duration;
+        let w = orangeBar.value!.offsetWidth;
+        if (isNaN(videoPlayer.value!.duration)) return;
+        videoPlayer.value!.currentTime = x / w * videoPlayer.value!.duration;
     });
 }
 
 //全屏
 function fullScreenFun() {
     if (document.fullscreenElement) {
-        fullScreenButton.value.classList.add("ri-fullscreen-line");
-        fullScreenButton.value.classList.remove("ri-fullscreen-exit-line");
+        fullScreenButton.value!.classList.add("ri-fullscreen-line");
+        fullScreenButton.value!.classList.remove("ri-fullscreen-exit-line");
         document.exitFullscreen();
     } else {
-        fullScreenButton.value.classList.add("ri-fullscreen-exit-line");
-        fullScreenButton.value.classList.remove("ri-fullscreen-line");
-        videoContainer.value.requestFullscreen();
+        fullScreenButton.value!.classList.add("ri-fullscreen-exit-line");
+        fullScreenButton.value!.classList.remove("ri-fullscreen-line");
+        videoContainer.value!.requestFullscreen();
     }
 }
 
 //字幕显示
 function visibleSubtitleFun() {
-    const subtitleStatus = videoPlayer.value.textTracks[0].mode;
+    const subtitleStatus = videoPlayer.value!.textTracks[0].mode;
     if (subtitleStatus === "showing") {
-        videoPlayer.value.textTracks[0].mode = "disabled";
-        subtitleButton.value.classList.add("ri-closed-captioning-line");
-        subtitleButton.value.classList.remove("ri-closed-captioning-fill");
-        assContainer.value.style.display = "none";
+        videoPlayer.value!.textTracks[0].mode = "disabled";
+        subtitleButton.value!.classList.add("ri-closed-captioning-line");
+        subtitleButton.value!.classList.remove("ri-closed-captioning-fill");
+        assContainer.value!.style.display = "none";
     } else {
-        videoPlayer.value.textTracks[0].mode = "showing";
-        subtitleButton.value.classList.add("ri-closed-captioning-fill");
-        subtitleButton.value.classList.remove("ri-closed-captioning-line");
-        assContainer.value.style.display = "block";
+        videoPlayer.value!.textTracks[0].mode = "showing";
+        subtitleButton.value!.classList.add("ri-closed-captioning-fill");
+        subtitleButton.value!.classList.remove("ri-closed-captioning-line");
+        assContainer.value!.style.display = "block";
     }
 }
 
@@ -143,14 +143,14 @@ watch(() => props.data, (newData: I_File) => {
 }, {immediate: true});
 
 function togglePlayPause() {
-    if (videoPlayer.value.paused) {
-        playAndPause.value.classList.remove("ri-play-circle-line");
-        playAndPause.value.classList.add("ri-pause-circle-line");
-        videoPlayer.value.play();
+    if (videoPlayer.value!.paused) {
+        playAndPause.value!.classList.remove("ri-play-circle-line");
+        playAndPause.value!.classList.add("ri-pause-circle-line");
+        videoPlayer.value!.play();
     } else {
-        playAndPause.value.classList.add("ri-play-circle-line");
-        playAndPause.value.classList.remove("ri-pause-circle-line");
-        videoPlayer.value.pause();
+        playAndPause.value!.classList.add("ri-play-circle-line");
+        playAndPause.value!.classList.remove("ri-pause-circle-line");
+        videoPlayer.value!.pause();
     }
 }
 

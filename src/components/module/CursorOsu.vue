@@ -9,30 +9,29 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref} from "vue";
+import {onMounted, onUnmounted, ref,useTemplateRef} from "vue";
 
-let cursorBox = ref();
-let revolve = ref();
-let cursor = ref();
+let cursorBox = useTemplateRef<HTMLDivElement>("cursorBox");
+let revolve = useTemplateRef<HTMLDivElement>("revolve");
+let cursor = useTemplateRef<HTMLDivElement>("cursor");
 let isNotLock = ref(true);
 
-
-let x = 0, y = 0;
+let [x, y] = [0, 0];
 let gap = 30, count = 0, angle = 20, fallSpeed = 1;
 
 const mousemoveFunc = (event: MouseEvent) => {
   x = event.x;
   y = event.y;
-  let top = y - cursorBox.value.clientWidth / 2;
-  let left = x - cursorBox.value.clientHeight / 2;
-  if (cursorBox.value.style.top !== top && cursorBox.value.style.left !== left) {
-    cursorBox.value.style.top = top + "px";
-    cursorBox.value.style.left = left + "px";
+  let top = y - cursorBox.value!.clientWidth / 2;
+  let left = x - cursorBox.value!.clientHeight / 2;
+  if (+cursorBox.value!.style.top !== top && +cursorBox.value!.style.left !== left) {
+    cursorBox.value!.style.top = top + "px";
+    cursorBox.value!.style.left = left + "px";
   }
 }
 
 const createRipple = () => {
-  let ripples = document.createElement("span");
+  const ripples = document.createElement("span");
   ripples.setAttribute("class", "circle");
   document.body.appendChild(ripples);
   ripples.style.top = y - ripples.clientHeight / 2 + "px";
@@ -42,27 +41,23 @@ const createRipple = () => {
 
 const mousedownFunc = () => {
   if (document.pointerLockElement) return;
-  revolve.value.style.width = 28 + "px";
-  revolve.value.style.height = 28 + "px";
-  cursor.value.style.transform = "scale(1.3)";
-  angle = 80;
-  fallSpeed = 1.5;
-  gap = 0;
+  revolve.value!.style.width = 28 + "px";
+  revolve.value!.style.height = 28 + "px";
+  cursor.value!.style.transform = "scale(1.3)";
+  [angle, fallSpeed, gap] = [80, 1.5, 0];
   setTimeout(() => {
-    angle = 20;
-    fallSpeed = 1;
-    gap = 30;
+    [angle, fallSpeed, gap] = [20, 1, 30];
   }, 100)
   const ripples = createRipple();
-  ripples.addEventListener("animationend",()=>{
+  ripples.addEventListener("animationend", () => {
     ripples.remove();
   })
 }
 
 const mouseupFunc = () => {
-  cursor.value.style.transform = "scale(1)";
-  revolve.value.style.width = 20 + "px";
-  revolve.value.style.height = 20 + "px";
+  cursor.value!.style.transform = "scale(1)";
+  revolve.value!.style.width = 20 + "px";
+  revolve.value!.style.height = 20 + "px";
 }
 
 const pointerlockchangeFunc = () => {

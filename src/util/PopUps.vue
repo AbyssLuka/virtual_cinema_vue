@@ -56,7 +56,7 @@
     function windowMove() {
         //窗口标题栏
         let barId: string = "popups-bar-".concat(props.popUpsId as string);
-        bar = document.getElementById(barId) as HTMLDivElement;
+        bar = <HTMLDivElement>document.getElementById(barId);
         //窗口
         let windowId: string = "popups-window-".concat(props.popUpsId as string);
         let window: HTMLElement = document.getElementById(windowId) as HTMLElement;

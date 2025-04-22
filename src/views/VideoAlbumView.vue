@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router";
-import {reactive, onMounted, watch, ref, onUnmounted} from "vue"
+import {reactive, onMounted, watch, ref, onUnmounted, useTemplateRef} from "vue"
 import PaginationModule from "@/components/module/PaginationModule.vue";
 import {fileTypeList} from '@/global/global';
 import api from "@/request/api";
@@ -87,9 +87,9 @@ const pageState = reactive({
 const current = ref(0);
 const albumTitle = ref("");
 const controlTitle = ref("");
-const controlTitleDom = ref();
-const controlPanelDom = ref();
-const albumContentDom = ref();
+const controlTitleDom = useTemplateRef<HTMLDivElement>("controlTitleDom");
+const controlPanelDom = useTemplateRef<HTMLDivElement>("controlPanelDom");
+const albumContentDom = useTemplateRef<HTMLDivElement>("albumContentDom");
 
 const videoState = reactive<{
     videoList: I_Detail_[]
@@ -110,9 +110,9 @@ onUnmounted(() => {
 })
 
 function controlHover(index: number, title: string) {
-    const left = (controlPanelDom.value.offsetWidth - controlTitleDom.value.offsetWidth) / 3;
+    const left = (controlPanelDom.value!.offsetWidth - controlTitleDom.value!.offsetWidth) / 3;
     controlTitle.value = title;
-    controlTitleDom.value.style.left = left * index + "px";
+    controlTitleDom.value!.style.left = left * index + "px";
 }
 
 function toDetail() {
@@ -130,13 +130,13 @@ function to3DView() {
 }
 
 function selectAlbum(index: number, animation: boolean) {
-    albumContentDom.value.style.transition = animation ? ".5s" : "0s";
+    albumContentDom.value!.style.transition = animation ? ".5s" : "0s";
     index = (index + videoState.videoList.length) % videoState.videoList.length;
     current.value = index;
     albumTitle.value = videoState.videoList[index]?.title;
     const number = ((index + 1) * -220) + (220 / 2) + window.innerWidth / 2;
-    albumContentDom.value.style.transformOrigin = number + "px";
-    albumContentDom.value.style.transform = "translateX(" + number + "px)";
+    albumContentDom.value!.style.transformOrigin = number + "px";
+    albumContentDom.value!.style.transform = "translateX(" + number + "px)";
     localStorage.setItem("/:current", index.toString());
 }
 

@@ -42,7 +42,7 @@ export class Display {
         this.option.videoDom.addEventListener("loadeddata", () => {
             const videoElement: HTMLVideoElement = this.option.videoDom;
             const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
+            const context = canvas.getContext("2d", {willReadFrequently: true});
             if (!context) return;
             [canvas.width, canvas.height] = [360, 240];
             const loadDisplayLight = () => {

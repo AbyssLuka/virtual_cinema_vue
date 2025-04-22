@@ -11,7 +11,7 @@
                 <path-bar
                     class="file-path-header"
                     :path-list="state.pathList"
-                    :pathClick="pathClick">
+                    :path-click="pathClick">
                 </path-bar>
                 <input class="search-file-input" type="text" v-model="keyword" @keyup.enter="searchFile"/>
             </div>
@@ -89,17 +89,18 @@ async function searchFile(): Promise<void> {
         let resData = await api.searchFileApi(keyword.value);
         resData.data && classification(resData.data);
     } else {
-        await pathClick("", 0);
+      pathClick(0);
     }
 }
 
-async function pathClick(_pathItem: string, index: number) {
+const pathClick = (index: number) => {
     loading.value = !loading.value;
     const absPath = state.pathList.slice(0, index).join("\\");
-    const resData = await api.subdirectoryApi(pathMap.get(absPath));
-    if (resData.data) classification(resData.data);
-    state.pathList = state.pathList.splice(0, index);
-    loading.value = !loading.value;
+    api.subdirectoryApi(pathMap.get(absPath)).then(res=>{
+      if (res.data) classification(res.data);
+      state.pathList = state.pathList.splice(0, index);
+      loading.value = !loading.value;
+    });
 }
 
 
@@ -147,7 +148,7 @@ function classification(dataList: I_File[]): void {
             dataItem.fileSize = "--";
             directoryList.push(dataItem)
         } else {
-            dataItem.fileSize = util.convertByte(dataItem["fileSize"] as string);
+            dataItem.fileSize = util.convertByte(<string>dataItem.fileSize);
             if (fileTypeList.package.includes(fileType)) {
                 dataItem.icon = "ri-folder-zip-fill";
             } else if (fileTypeList.audio.includes(fileType)) {

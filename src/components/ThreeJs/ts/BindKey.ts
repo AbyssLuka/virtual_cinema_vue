@@ -28,12 +28,21 @@ const keyE = (rayDetect: RayDetect) => {
 }
 
 const keyNumber = () => {
-    const code = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0"];
-    controlsClass.addKeydownEventListener(code, (event) => {
-        if (!controlsClass.isLocked || event.ctrlKey) return;
-        inventoryState.current = (+event.key + 9) % 10 + 1;
-        cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone()).then()
-    });
+    const codes = [
+        "Digit1", "Digit2", "Digit3",
+        "Digit4", "Digit5", "Digit6",
+        "Digit7", "Digit8", "Digit9",
+        "Digit0"
+    ] as const;
+
+    codes.forEach((key) => {
+        controlsClass.addKeydownEventListener(key, (event) => {
+            if (!controlsClass.isLocked || event.ctrlKey) return;
+            inventoryState.current = (+event.key + 9) % 10 + 1;
+            cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone()).then()
+        });
+    })
+
 }
 
 const keyMouse2 = () => {

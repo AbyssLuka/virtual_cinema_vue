@@ -26,7 +26,6 @@ import * as CANNON from "cannon-es";
 import {GLTFAndCANNONLoader} from "@/components/ThreeJs/ts/GLTFAndCANNONLoader";
 import {TVControl} from "@/components/ThreeJs/ts/TVControl";
 import {watch} from "vue";
-import {Controls} from "@/components/ThreeJs/ts/Controls";
 import {Display} from "@/components/ThreeJs/ts/Display";
 import {DVD_Box} from "@/components/ThreeJs/ts/DVD_Box";
 import api from "@/request/api";
@@ -35,12 +34,9 @@ import {fileTypeList} from "@/global/global";
 import {createNoise2D} from "simplex-noise";
 import grassShader from "@/components/ThreeJs/shaders/GrassShader";
 import {Lensflare, LensflareElement} from "three/examples/jsm/objects/Lensflare";
-import {Camera} from "@/components/ThreeJs/ts/Camera";
-import {inventoryState} from "@/components/ThreeJs/ts/Global";
+import {cameraClass, controlsClass, inventoryState} from "@/components/ThreeJs/ts/Global";
 import {worldRayObjects, physicalObjects} from "@/components/ThreeJs/ts/Global";
 import {Grass} from "@/components/ThreeJs/ts/Grass";
-
-import * as dat from "dat.gui";
 
 export class InitScene {
 
@@ -134,8 +130,6 @@ export class InitScene {
 
     public loadTVControl(
         videoDom: HTMLVideoElement,
-        cameraClass: Camera,
-        controlsClass: Controls,
         pickUp: () => void,
         send: (data) => void,
     ) {

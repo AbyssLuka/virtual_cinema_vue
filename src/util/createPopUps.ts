@@ -1,8 +1,8 @@
 import {
-    ComponentOptionsMixin,
     createVNode,
     render,
-    VNode
+    VNode,
+    Component,
 } from "vue";
 import PopUps from "@/util/PopUps.vue";
 
@@ -14,10 +14,22 @@ interface I_Props<T> {
     height?: string,
 }
 
-// InstanceType<typeof ImagePopUps>["$props"]["data"]
+// test function
+// const c = <T extends abstract new (...args) => any>(component:T) =>{
+//     return (b:InstanceType<T>["$props"]["data"]) => {
+//         console.log(component)
+//         console.log(b)
+//     }
+// }
+//
+// import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
+// c(ImagePopUps)({
+//     list:[],
+//     defaultIndex:1
+// })
 
 const createPopUps = <T>(
-    component: ComponentOptionsMixin,
+    component: Component,
     props: I_Props<T>
 ) => {
     let div: HTMLElement;

@@ -1,11 +1,11 @@
 <template>
-    <div class="message-container" v-show="state.visible">
+    <div class="message-container" v-show="visible">
         <h1 class="message">{{ props.message }}</h1>
     </div>
 </template>
 
 <script setup lang="ts">
-import {withDefaults, defineProps, watch, reactive} from "vue";
+import {withDefaults, defineProps, watch, ref} from "vue";
 
 const props = withDefaults(defineProps<{
     message: string,
@@ -13,14 +13,12 @@ const props = withDefaults(defineProps<{
     message: "",
 });
 
-const state = reactive({
-    visible: false
-});
+const visible = ref(false);
 
 watch(() => props.message, () => {
-    state.visible = true;
+    visible.value = true;
     setTimeout(() => {
-        state.visible = false;
+        visible.value = false;
     }, 5000);
 }, {immediate: true});
 

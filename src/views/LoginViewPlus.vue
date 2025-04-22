@@ -380,7 +380,7 @@ input {
 }
 
 .login-btn:active {
-    box-shadow: #ff8379;
+    box-shadow: 0 0 #ff8379;
     color: #7ce0ff;
     margin: 2px 0 0 0;
 }

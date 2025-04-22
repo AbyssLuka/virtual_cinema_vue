@@ -42,7 +42,7 @@ onMounted(async () => {
     profileUrl.value = await api.profileUrl();
 });
 
-function breadCrumbsClick(item: { title: string, path: string }) {
+const breadCrumbsClick = (item: { title: string, path: string }) => {
     router.push(item.path);
 }
 </script>

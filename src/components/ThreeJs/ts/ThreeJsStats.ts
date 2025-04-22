@@ -22,9 +22,9 @@ export class ThreeJsStats {
         return this.stats;
     }
 
-    public setPosition(top: number, left: number) {
-        this.stats.dom.style.top = top + 'px';
-        this.stats.dom.style.left = left + 'px';
+    set position(position: { top: number, left: number }) {
+        this.stats.dom.style.top = position.top + 'px';
+        this.stats.dom.style.left = position.left + 'px';
     }
 
     set visible(status: boolean) {
