@@ -3,14 +3,13 @@ import {I_SubtitleObject} from "@/global/interface";
 
 const convertData = (date: string, format: string): string => {
     const newDate: Date = new Date(date);
-    const formatSplit: string[] = format.split(/[-:\s+]/);
-    formatSplit[formatSplit.indexOf("yyyy")] = String(newDate.getFullYear());
-    formatSplit[formatSplit.indexOf("MM")] = "-" + (newDate.getMonth() + 1);
-    formatSplit[formatSplit.indexOf("dd")] = "-" + newDate.getDate();
-    formatSplit[formatSplit.indexOf("HH")] = " " + newDate.getHours();
-    formatSplit[formatSplit.indexOf("mm")] = ":" + newDate.getMinutes();
-    formatSplit[formatSplit.indexOf("ss")] = ":" + newDate.getSeconds();
-    return formatSplit.join("");
+    format = format.replace("yyyy", String(newDate.getFullYear()));
+    format = format.replace("MM", String(newDate.getMonth() + 1));
+    format = format.replace("dd", String(newDate.getDate() ));
+    format = format.replace("HH", String(newDate.getHours()));
+    format = format.replace("mm", String(newDate.getMinutes()));
+    format = format.replace("ss", String(newDate.getSeconds()));
+    return format;
 };
 
 const convertByte = (byte: string): string => {

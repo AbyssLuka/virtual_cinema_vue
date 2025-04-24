@@ -12,7 +12,6 @@ import horiAnimLazy from "@/directives/horiAnimLazy";
 
 import App from "@/App.vue";
 
-
 const app = createApp(App);
 app.directive("img-lazy", imgLazy);
 app.directive("hori-anim-lazy", horiAnimLazy);

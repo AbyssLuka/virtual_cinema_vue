@@ -27,7 +27,7 @@ watch(() => props.fileList, () => {
     imageList.value = props.fileList.filter((fileItem: I_File) => fileTypeList.image.includes(fileItem.fileType)).splice(0, props.size);
 }, {immediate: true});
 
-function openImage(imgObj: I_File): void {
+const openImage = (imgObj: I_File) => {
     createPopUps(ImagePopUps, {
         title: imgObj.fileType,
         popUpsId: "image",

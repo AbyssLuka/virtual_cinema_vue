@@ -10,14 +10,14 @@
             <div class="header-container horiz-sa center">
                 <path-bar
                     class="file-path-header"
-                    :path-list="state.pathList"
+                    :path-list="pathList"
                     :path-click="pathClick">
                 </path-bar>
                 <input class="search-file-input" type="text" v-model="keyword" @keyup.enter="searchFile"/>
             </div>
             <div class="file-container">
                 <div class="file-item-container"
-                     v-for="(files,filesIndex) in state.directoryAndFileList"
+                     v-for="(files,filesIndex) in dirAndFile"
                      :key="filesIndex">
                     <div v-if="filesIndex === 0 && files.length > 0">文件夹：{{ files.length }}</div>
                     <div v-if="filesIndex === 1  && files.length > 0">文件：{{ files.length }}</div>
@@ -29,7 +29,7 @@
                         </file-item>
                     </div>
                 </div>
-                <div v-show="state.directoryAndFileList[0].length === 0 && state.directoryAndFileList[1].length ===0"
+                <div v-show="dirAndFile[0].length === 0 && dirAndFile[1].length ===0"
                      style="height: 100%;width: 100%" class="center">
                     <h2>没有文件</h2>
                 </div>
@@ -51,7 +51,7 @@ import util from "@/util/util";
 import createPopUps from "@/util/createPopUps";
 import {fileTypeList} from "@/global/global";
 import api from "@/request/api";
-import {reactive, onMounted, ref} from "vue";
+import {reactive, onMounted, ref, onUnmounted} from "vue";
 import {I_File, I_TreeNode} from "@/global/interface";
 import DirectoryTree from "@/components/File/DirectoryTree.vue";
 
@@ -67,44 +67,41 @@ const treeObject = reactive<I_TreeNode>({
     absolutePath: ""
 });
 
-const state = reactive<{
-    directoryAndFileList: I_File[][];
-    pathList: string[],
-}>({
-    directoryAndFileList: [[], []],
-    pathList: [],
-});
+const dirAndFile = ref<I_File[][]>([[], []],);
+const pathList = ref<string[]>([]);
 
 const pathMap = new Map();
 pathMap.set("", "");
 
-onMounted(async () => {
-    let resData = await api.subdirectoryApi("");
-    resData.data && classification(resData.data);
-    await treeClick(null, []);
+onMounted(() => {
+    api.subdirectoryApi("").then((res) => {
+        res.data && classification(res.data);
+    });
+    treeClick(null, []).then();
 });
 
-async function searchFile(): Promise<void> {
+const searchFile = () => {
     if (keyword.value.trim() !== "") {
-        let resData = await api.searchFileApi(keyword.value);
-        resData.data && classification(resData.data);
+        api.searchFileApi(keyword.value).then((res) => {
+            res.data && classification(res.data);
+        });
     } else {
-      pathClick(0);
+        pathClick(0);
     }
 }
 
 const pathClick = (index: number) => {
     loading.value = !loading.value;
-    const absPath = state.pathList.slice(0, index).join("\\");
-    api.subdirectoryApi(pathMap.get(absPath)).then(res=>{
-      if (res.data) classification(res.data);
-      state.pathList = state.pathList.splice(0, index);
-      loading.value = !loading.value;
+    const absPath = pathList.value.slice(0, index).join("\\");
+    api.subdirectoryApi(pathMap.get(absPath)).then(res => {
+        if (res.data) classification(res.data);
+        pathList.value = pathList.value.splice(0, index);
+        loading.value = !loading.value;
     });
 }
 
 
-async function treeClick(treeNode: I_TreeNode | null, pathList: number[]): Promise<void> {
+const treeClick = async (treeNode: I_TreeNode | null, pathList: number[]): Promise<void> => {
     let sunDirUuid: string = !treeNode ? "" : treeNode.uuid;
     pathMap.set(treeNode?.absolutePath, sunDirUuid);
     let resData = await api.subdirectoryApi(sunDirUuid);
@@ -134,14 +131,15 @@ async function treeClick(treeNode: I_TreeNode | null, pathList: number[]): Promi
         fileUuid: treeNode.uuid,
         fileType: treeNode.type,
         fileName: treeNode.title,
-    }).then();
+    });
 }
 
-function classification(dataList: I_File[]): void {
-    let directoryList: I_File[] = [], fileList: I_File[] = [];
-    state.directoryAndFileList = [[], []];
-    for (let dataItem of dataList) {
-        dataItem.lastEditTime = util.convertData(dataItem.lastEditTime as string, "yyyy-MM-dd HH:mm:ss");
+const classification = (dataList: I_File[]) => {
+    const directoryList: I_File[] = [];
+    const fileList: I_File[] = [];
+    dirAndFile.value = [[], []];
+    for (const dataItem of dataList) {
+        dataItem.lastEditTime = util.convertData(dataItem.lastEditTime!, "yyyy-MM-dd HH:mm:ss");
         let fileType = dataItem.fileType.toLowerCase();
         if (fileTypeList.directory.includes(fileType)) {
             dataItem.icon = "ri-folder-fill";
@@ -167,52 +165,60 @@ function classification(dataList: I_File[]): void {
             fileList.push(dataItem)
         }
     }
-    state.directoryAndFileList[0] = directoryList;
-    state.directoryAndFileList[1] = fileList;
+    dirAndFile.value[0] = directoryList;
+    dirAndFile.value[1] = fileList;
 }
 
-async function nextFile(fileObject: I_File): Promise<void> {
+const windowList: Function[] = []
+const nextFile = (fileObject: I_File) => {
     if (fileObject.absolutePath) {
-        state.pathList = fileObject.absolutePath.split("\\");
+        pathList.value = fileObject.absolutePath.split("\\");
     }
-    // loading.value = !loading.value;
     // loading.value = !loading.value;
     let fileType = fileObject.fileType.toLowerCase();
     if (fileTypeList.directory.includes(fileType)) {
         let fileUuid = fileObject.fileUuid;
         pathMap.set(fileObject.absolutePath, fileUuid);
-        let resData = await api.subdirectoryApi(fileUuid);
-        resData.data && classification(resData.data);
+        api.subdirectoryApi(fileUuid).then((res) => {
+            res.data && classification(res.data);
+        });
     } else if (fileTypeList.video.includes(fileType)) {
         //使用弹窗打开视频
-        createPopUps(VideoPlayer, {
+        const fns = createPopUps(VideoPlayer, {
             title: fileObject.fileName,
             data: fileObject,
-            popUpsId: "video",
-        }).then();
+        })
+        windowList.push(fns.cancelCallback);
     } else if (fileTypeList.image.includes(fileType)) {
         let defaultIndex = 0, count = 0;
-        const fileList = state.directoryAndFileList[1].filter((listItem: I_File) => {
+        const fileList = dirAndFile.value[1].filter((listItem: I_File) => {
             let states = fileTypeList.image.includes(listItem.fileType);
             if (listItem.fileUuid === fileObject.fileUuid) defaultIndex = count;
             if (states) count++;
             return states;
         });
         //使用弹窗打开图片
-        createPopUps(ImagePopUps, {
+        const fns = createPopUps(ImagePopUps, {
             title: fileObject.fileName,
-            data: {list: fileList, defaultIndex},
-            popUpsId: "image",
-        }).then()
+            data: {
+                list: fileList,
+                defaultIndex: defaultIndex
+            },
+        });
+        windowList.push(fns.cancelCallback);
+
     } else if (fileTypeList.document.includes(fileType)) {
         //使用弹窗打开文本
-        createPopUps(DocumentView, {
+        const fns = createPopUps(DocumentView, {
             title: fileObject.fileName,
             data: fileObject,
-            popUpsId: "document",
-        }).then()
+        });
+        windowList.push(fns.cancelCallback);
     }
 }
+onUnmounted(async () => {
+    windowList.forEach((item: Function) => item())
+})
 </script>
 
 <style scoped>

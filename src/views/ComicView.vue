@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import {reactive, onBeforeMount,ref} from "vue";
+import {reactive, onBeforeMount, ref} from "vue";
 import {useRouter} from "vue-router";
 import api from "@/request/api";
 import {I_Detail_} from "@/global/interface";
@@ -43,23 +43,23 @@ const pageState = reactive({
     page: 0,
     size: 30,
     total: 0,
-    keyword:"",
+    keyword: "",
 })
 
-onBeforeMount(async () => {
+onBeforeMount(() => {
     pageClick(0);
 });
 
 const pageClick = (index: number) => {
     comicList.value = [];
     api.comicListApi({page: index, size: pageState.size}).then((res) => {
-      if (!res.data) return;
-      comicList.value = res.data.content;
-      if (res.data.pageable) {
-        pageState.page = res.data.pageable.pageNumber;
-        pageState.size = res.data.pageable.pageSize;
-      }
-      pageState.total = res.data.total;
+        if (!res.data) return;
+        comicList.value = res.data.content;
+        if (res.data.pageable) {
+            pageState.page = res.data.pageable.pageNumber;
+            pageState.size = res.data.pageable.pageSize;
+        }
+        pageState.total = res.data.total;
     }).catch((err) => {
         console.error(err);
     });
@@ -68,7 +68,7 @@ const pageClick = (index: number) => {
 
 const router = useRouter();
 
-function toDetail(uuid: string): void {
+const toDetail = (uuid: string) => {
     router.push({
         name: "ComicDetailView",
         query: {data: uuid,}

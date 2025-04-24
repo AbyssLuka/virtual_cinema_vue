@@ -196,12 +196,8 @@ export class Controls {
         this.playerCollisions(worldOctree);
         // 更新控制器和相机位置
         this.camera.position.copy(this.playerCollider.end);
-
-        const x = this.playerCollider.start.x;
-        const y = this.playerCollider.start.y + 2;
-        const z = this.playerCollider.start.z;
-
-        this.playerBody.position.set(x, y, z);
+        let {x, y, z} = this.playerCollider.start;
+        this.playerBody.position.set(x, y + 2, z);
         this.playerBody.quaternion.set(0, 0, 0, 1);
     }
 
@@ -209,15 +205,16 @@ export class Controls {
         return this.controls;
     }
 
+
+    private pointLockInterval = 0;
+
     //指针锁
     public controlsLock(dom: HTMLElement) {
-        let setTime: number | null | ReturnType<typeof setTimeout> = 0;
         dom.addEventListener("click", () => {
-            if (setTime != null) clearTimeout(setTime as number);
-            //延迟1.25s锁定指针，防止报错
-            setTime = setTimeout(() => {
-                this.controls.lock();
-            }, 1250);
+            const now = performance.now();
+            if (now - this.pointLockInterval < 1500) return;
+            this.pointLockInterval = now;
+            this.controls.lock();
         });
     }
 
@@ -230,22 +227,10 @@ export class Controls {
             //计算移动距离
             const speedDelta = delta * (this.playerOnFloor ? 50 : 15) * quicken;
             //移动
-            if (this.keyAny_Status.KeyA)
-                this.playerVelocity.add(
-                    this.getSideVector().multiplyScalar(-speedDelta)
-                );
-            if (this.keyAny_Status.KeyD)
-                this.playerVelocity.add(
-                    this.getSideVector().multiplyScalar(speedDelta)
-                );
-            if (this.keyAny_Status.KeyW)
-                this.playerVelocity.add(
-                    this.getForwardVector().multiplyScalar(speedDelta)
-                );
-            if (this.keyAny_Status.KeyS)
-                this.playerVelocity.add(
-                    this.getForwardVector().multiplyScalar(-speedDelta)
-                );
+            if (this.keyAny_Status.KeyA) this.playerVelocity.add(this.getSideVector().multiplyScalar(-speedDelta));
+            if (this.keyAny_Status.KeyD) this.playerVelocity.add(this.getSideVector().multiplyScalar(speedDelta));
+            if (this.keyAny_Status.KeyW) this.playerVelocity.add(this.getForwardVector().multiplyScalar(speedDelta));
+            if (this.keyAny_Status.KeyS) this.playerVelocity.add(this.getForwardVector().multiplyScalar(-speedDelta));
             if (this.keyAny_Status.KeyA ||
                 this.keyAny_Status.KeyD ||
                 this.keyAny_Status.KeyW ||

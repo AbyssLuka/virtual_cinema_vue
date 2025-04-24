@@ -65,7 +65,7 @@ onMounted(() => {
 });
 
 // 进度条更新
-function updateOrangeBar() {
+const updateOrangeBar = () => {
     videoPlayer.value!.addEventListener("timeupdate", () => {
         //视频长度
         const duration = videoPlayer.value!.duration;
@@ -94,7 +94,7 @@ function updateOrangeBar() {
 }
 
 // 点击进度条
-function OrangeBarClick() {
+const OrangeBarClick = () => {
     orangeBar.value!.addEventListener("click", (event) => {
         let x = event.offsetX;
         let w = orangeBar.value!.offsetWidth;
@@ -104,7 +104,7 @@ function OrangeBarClick() {
 }
 
 //全屏
-function fullScreenFun() {
+const fullScreenFun = () => {
     if (document.fullscreenElement) {
         fullScreenButton.value!.classList.add("ri-fullscreen-line");
         fullScreenButton.value!.classList.remove("ri-fullscreen-exit-line");
@@ -117,7 +117,7 @@ function fullScreenFun() {
 }
 
 //字幕显示
-function visibleSubtitleFun() {
+const visibleSubtitleFun = () => {
     const subtitleStatus = videoPlayer.value!.textTracks[0].mode;
     if (subtitleStatus === "showing") {
         videoPlayer.value!.textTracks[0].mode = "disabled";
@@ -132,9 +132,10 @@ function visibleSubtitleFun() {
     }
 }
 
-async function animeList(videoUuid: string) {
-    const resData = (await api.videoApi(videoUuid));
-    resData.data && playVideo(resData.data);
+const animeList = (videoUuid: string) => {
+    api.videoApi(videoUuid).then((res)=>{
+        res.data && playVideo(res.data);
+    });
 }
 
 watch(() => props.data, (newData: I_File) => {
@@ -142,7 +143,7 @@ watch(() => props.data, (newData: I_File) => {
     animeList(newData.fileUuid);
 }, {immediate: true});
 
-function togglePlayPause() {
+const togglePlayPause = () => {
     if (videoPlayer.value!.paused) {
         playAndPause.value!.classList.remove("ri-play-circle-line");
         playAndPause.value!.classList.add("ri-pause-circle-line");
@@ -154,7 +155,7 @@ function togglePlayPause() {
     }
 }
 
-function playVideo(videoItem: I_Video) {
+const playVideo = (videoItem: I_Video) => {
     if (ass) ass.destroy();
     videoTitle.value = videoItem["videoName"];
     videoUrl.value = api.videoUrl(videoItem["videoUuid"]);
@@ -179,7 +180,7 @@ onBeforeMount(() => {
 });
 
 
-function loadSubtitle(subtitle: string) {
+const loadSubtitle = (subtitle: string) => {
     ass = new ASS(util.loadFile(api.fileUrl(subtitle)), videoPlayer.value, {
         container: assContainer.value
     });

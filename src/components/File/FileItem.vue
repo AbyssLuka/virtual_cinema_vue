@@ -15,7 +15,7 @@ import {I_File} from "@/global/interface";
 
 defineProps<{
     data: I_File,
-    nextFile: (file: I_File) => Promise<void>,
+    nextFile: (file: I_File) => void,
 }>();
 
 </script>

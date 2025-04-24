@@ -1,5 +1,5 @@
 import request from "./request";
-import axios, {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
+import axios, {AxiosError, type AxiosRequestConfig, type AxiosResponse} from "axios";
 import {baseUrl} from "@/global/global";
 import {
     I_Detail_,
@@ -13,29 +13,25 @@ import {
 
 //登录
 type LoginParamsType = { username: string, password: string, code: string }
-const loginApi = async (params: LoginParamsType) => {
-    const resPromise = ajaxRequest<LoginParamsType, I_ResData<null>>("POST", "/user/login", params);
-    let resData_: I_ResData<null | string> = {code: -1, msg: "", data: null};
-    await resPromise.then((res: AxiosResponse) => {
-        localStorage.setItem("token", res.headers.token);
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+const loginApi = (params: LoginParamsType):Promise<I_ResData<string>> => {
+    return new Promise((resolve) => {
+        request.post("/user/login",params).then((res:AxiosResponse<I_ResData<string>>)=>{
+            localStorage.setItem("token", res.headers.token);
+            resolve(res.data);
+        })
     });
-    return resData_;
 };
 
 //注册
 type RegisterParamsType = { username: string, password: string, email: string }
-const registerApi = async (params: RegisterParamsType) => {
-    const resPromise = ajaxRequest<RegisterParamsType, I_ResData<null>>("POST", "/user/signup", params);
-    let resData_: I_ResData<null | string> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
-    });
-    return resData_;
+const registerApi = (params: RegisterParamsType):Promise<I_ResData<string>> => {
+    return new Promise((resolve,reject) => {
+        request.post("/user/signup",params).then((res:AxiosResponse<I_ResData<string>>)=>{
+            resolve(res.data)
+        }).catch(err=>{
+            reject(err)
+        });
+    })
 };
 //主页
 type AnimePostParamsType = { keyword: string, page: number, size: number }
@@ -258,8 +254,6 @@ export const ajaxRequest = <T, K>(method: methodType, api: string, params: T, ba
         },
         baseURL: baseUrl_ ? baseUrl_ : baseUrl,
         url: api,
-        // `params` 是即将与请求一起发送的 URL 参数
-        // `data` 是作为请求主体被发送的数据
         params: method === 'GET' || method === 'DELETE' ? params : null,
         data: method === 'POST' || method === 'PUT' ? params : null,
         timeout: 50000

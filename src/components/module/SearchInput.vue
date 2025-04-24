@@ -1,24 +1,24 @@
 <template>
     <label class="search">
         <div class="ri-search-eye-line ri-3x search-logo"
-             @click="props.active(keyword)"></div>
+             @click="active(keyword)"></div>
         <input class="search-input"
                type="text"
                v-model="keyword"
-               @keydown.enter="props.active(keyword)"/>
+               @keydown.enter="active(keyword)"/>
     </label>
 </template>
 
 <script setup lang="ts">
-import {defineProps, withDefaults, ref} from "vue";
+import {defineProps, ref} from "vue";
 
 const keyword = ref("");
 
-const props = withDefaults(defineProps<{
+const {
+    active = (keyword: string) => console.log(keyword)
+} = defineProps<{
     active: (keyword: string) => void,
-}>(), {
-    active: (keyword: string) => console.log(keyword)
-})
+}>();
 
 </script>
 
@@ -32,6 +32,7 @@ const props = withDefaults(defineProps<{
     color: orangered;
     transform: rotateZ(90deg);
 }
+
 .search-logo:active {
     transform: translateY(5px);
 }

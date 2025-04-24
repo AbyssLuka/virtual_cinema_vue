@@ -1,7 +1,7 @@
 <template>
     <div class="image-content center">
         <img class="image-view" :src="imageUrl" alt="" @dblclick="props.fullScreen()" ref="imageDom"/>
-        <div style="height: 10px;color: #111111;font-weight: bold">{{index}}</div>
+        <div style="height: 10px;color: #111111;font-weight: bold">{{ index }}</div>
         <div class="pre-image ri-arrow-left-s-line center ri-5x"
              @click="preImage()" v-show="index > 0"></div>
         <div class="next-image ri-arrow-right-s-line center ri-5x"
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, defineProps, withDefaults, ref, useTemplateRef} from "vue"
+import {watch, defineProps, withDefaults, ref, useTemplateRef} from "vue"
 import {I_File} from "@/global/interface";
 import api from "@/request/api";
 
@@ -45,24 +45,25 @@ watch(() => props.data, (newImgObj: I_PropsData) => {
     imageList.value = newImgObj.list
 }, {immediate: true});
 
-function preImage() {
+const preImage = () => {
     imageTitle.value = imageList.value[--index.value].fileName;
     imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-    setTimeout(()=>{
+    setTimeout(() => {
         imageUrl.value = api.fileUrl(imageList.value[index.value].fileUuid);
-    },50)
+    }, 50)
     props.updateTitle(imageTitle.value);
 }
 
-function nextImage() {
+const nextImage = () => {
     imageTitle.value = imageList.value[++index.value].fileName;
     imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-    setTimeout(()=> {
+    setTimeout(() => {
         imageUrl.value = api.fileUrl(imageList.value[index.value].fileUuid);
-    },50)
+    }, 50)
     props.updateTitle(imageTitle.value);
 }
 </script>
+
 
 <style scoped>
 .image-content {

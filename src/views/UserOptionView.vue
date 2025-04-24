@@ -2,7 +2,7 @@
     <div class="content-container">
         <div style="display: flex;align-items: center;">
             <img class="profile" :src="profileUrl" alt=""/>
-            <BreadCrumbs :in-list="BreadCrumbsInList"
+            <BreadCrumbs :in-list="breadCrumbsInList"
                          :symbol="'/'"
                          :default-index="defaultIndex"
                          :call-back="breadCrumbsClick">
@@ -23,14 +23,17 @@ const router = useRouter();
 const route = useRoute();
 const profileUrl = ref("")
 const defaultIndex = ref(0)
-
-const BreadCrumbsInList = [
+type BreadCrumbsType = {
+    title:string,
+    path:string
+}
+const breadCrumbsInList = [
     {title: "设置", path: "/user/option"},
     {title: "收藏", path: "/user/collect"},
 ];
 
 watch(() => route.path, () => {
-    BreadCrumbsInList.every((item, index) => {
+    breadCrumbsInList.every((item, index) => {
         if (item.path === route.path) {
             defaultIndex.value = index;
             return false;
@@ -42,7 +45,7 @@ onMounted(async () => {
     profileUrl.value = await api.profileUrl();
 });
 
-const breadCrumbsClick = (item: { title: string, path: string }) => {
+const breadCrumbsClick = (item: BreadCrumbsType ) => {
     router.push(item.path);
 }
 </script>

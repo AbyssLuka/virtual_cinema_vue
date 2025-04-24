@@ -83,7 +83,7 @@ onBeforeUnmount(() => {
     document.removeEventListener("mousedown", mousedown);
 });
 
-function mousemove(event: MouseEvent) {
+const mousemove = (event: MouseEvent) => {
     if (!document.pointerLockElement) return;
     let y = cursor.value!.offsetTop;
     let x = cursor.value!.offsetLeft;
@@ -102,7 +102,7 @@ function mousemove(event: MouseEvent) {
 document.addEventListener("mousemove", mousemove);
 
 //修改进度
-function timeupdate() {
+const timeupdate = () => {
     if (!check(orangeBar.value!, cursor.value!)) return;
     if (isNaN(props.tvVideoDom.duration)) return;
     const x = cursor.value!.offsetLeft;
@@ -111,7 +111,7 @@ function timeupdate() {
 }
 
 //播放与暂停
-function playAndPauseFun() {
+const playAndPauseFun = () => {
     if (!check(playAndPause.value!, cursor.value!)) return;
     if (props.tvVideoDom.paused) {
         props.tvVideoDom.play();
@@ -125,7 +125,7 @@ function playAndPauseFun() {
 }
 
 //显示字幕
-function visibleSubtitleFun() {
+const visibleSubtitleFun = () => {
     if (!check(visibleSubtitle.value!, cursor.value!)) return;
     const subtitleStatus = props.tvVideoDom.textTracks[0].mode;
     if (subtitleStatus === "showing") {
@@ -142,13 +142,13 @@ function visibleSubtitleFun() {
 }
 
 //控制全屏
-function fullScannerFun() {
+const fullScannerFun = () => {
     if (!check(fullScanner.value!, cursor.value!)) return;
     props.fullscreen()
 }
 
 //设置视频音量
-function updateVolume() {
+const updateVolume = () => {
     if (!check(volumeBar.value!, cursor.value!)) return;
     // 指针位置点击到进度条的位置
     let x = cursor.value!.offsetLeft - volumeBar.value!.offsetLeft;
@@ -157,7 +157,7 @@ function updateVolume() {
     props.volume(x / w)
 }
 
-function mousedown(event: MouseEvent) {
+const mousedown = (event: MouseEvent) => {
     //左键点击
     if (event.button === 0 && document.pointerLockElement) {
         playAndPauseFun();
@@ -173,7 +173,7 @@ function mousedown(event: MouseEvent) {
 document.addEventListener("mousedown", mousedown);
 
 //判断指针(伪)有没有在某个div上
-function check(div1: HTMLElement, cursor: HTMLElement) {
+const check = (div1: HTMLElement, cursor: HTMLElement) => {
     //左边界
     let left = div1.offsetLeft;
     //上边界

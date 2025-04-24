@@ -8,18 +8,16 @@
 </template>
 
 <script setup lang="ts">
-import {reactive, defineProps} from "vue";
+import {defineProps, ref} from "vue";
 //TODO TAG弹窗
-reactive({
-    tagList: [],
-});
+const tagList = ref([]);
 
 defineProps({
     data: Object,
     updateTitle: Function,
 });
 
-function addTag() {
+const addTag = () => {
     console.log("添加TAG");
 }
 </script>

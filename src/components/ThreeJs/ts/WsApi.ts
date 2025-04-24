@@ -15,7 +15,7 @@ import {
     I_RoomInfo,
     I_UpdateVideoMsg
 } from "@/components/ThreeJs/ts/GameInterface";
-import SpriteMessage from "@/components/ThreeJs/ts//SpriteMessage";
+import SpriteMessage from "@/components/ThreeJs/ts/SpriteMessage";
 import Player from "@/components/ThreeJs/ts/Player";
 import {HTTP_BASE_URL, MODEL_BASE_URL} from "@/global/global";
 import api, {ajaxRequest} from "@/request/api";

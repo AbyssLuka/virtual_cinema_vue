@@ -7,7 +7,7 @@
                     <div class="album-item"
                          @click="[selectAlbum(index,true)]"
                          :class="[index>current?'current-right':(index<current?'current-left':'current')]"
-                         v-for="(videoItem,index) in videoState.videoList"
+                         v-for="(videoItem,index) in videoList"
                          :key="videoItem.uuid">
                         <div class="card left">
                             <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
@@ -91,17 +91,13 @@ const controlTitleDom = useTemplateRef<HTMLDivElement>("controlTitleDom");
 const controlPanelDom = useTemplateRef<HTMLDivElement>("controlPanelDom");
 const albumContentDom = useTemplateRef<HTMLDivElement>("albumContentDom");
 
-const videoState = reactive<{
-    videoList: I_Detail_[]
-}>({
-    videoList: []
-});
+const videoList = ref<I_Detail_[]>( []);
 
 watch(() => route.query, () => {
     init();
 });
 
-onMounted(async () => {
+onMounted(() => {
     init();
 });
 
@@ -109,38 +105,38 @@ onUnmounted(() => {
     document.removeEventListener("wheel", wheelCharge);
 })
 
-function controlHover(index: number, title: string) {
+const controlHover = (index: number, title: string) => {
     const left = (controlPanelDom.value!.offsetWidth - controlTitleDom.value!.offsetWidth) / 3;
     controlTitle.value = title;
     controlTitleDom.value!.style.left = left * index + "px";
 }
 
-function toDetail() {
+const toDetail = () => {
     router.push({
         name: "VideoDetailView",
-        query: {data: videoState.videoList[current.value].uuid}
+        query: {data: videoList.value[current.value].uuid}
     })
 }
 
-function to3DView() {
+const to3DView = () => {
     router.push({
         name: "GameMain",
-        query: {data: videoState.videoList[current.value].uuid}
+        query: {data: videoList.value[current.value].uuid}
     })
 }
 
-function selectAlbum(index: number, animation: boolean) {
+const selectAlbum = (index: number, animation: boolean) => {
     albumContentDom.value!.style.transition = animation ? ".5s" : "0s";
-    index = (index + videoState.videoList.length) % videoState.videoList.length;
+    index = (index + videoList.value.length) % videoList.value.length;
     current.value = index;
-    albumTitle.value = videoState.videoList[index]?.title;
+    albumTitle.value = videoList.value[index]?.title;
     const number = ((index + 1) * -220) + (220 / 2) + window.innerWidth / 2;
     albumContentDom.value!.style.transformOrigin = number + "px";
     albumContentDom.value!.style.transform = "translateX(" + number + "px)";
     localStorage.setItem("/:current", index.toString());
 }
 
-function init() {
+const init = () => {
     const keyword = route.query.keyword;
     const page = route.query.page;
     const current = localStorage.getItem("/:current");
@@ -161,27 +157,27 @@ const wheelCharge = (event: WheelEvent) => {
     }
 }
 
-function pageClick(page: number) {
+const pageClick = (page: number) => {
     localStorage.setItem("/:current", "0");
-    videoState.videoList = [];
+    videoList.value = [];
     router.push({
         query: {keyword: pageState.keyword, page: page, x: Math.random()}
     });
 }
 
-async function getVideoList(page: number) {
+const getVideoList = async (page: number) => {
     let resData = await api.animePostLimitApi({keyword: pageState.keyword, page: page, size: 36});
     if (!resData.data) return;
     console.log(resData.data)
     if (resData.code === 200) {
-        videoState.videoList = resData.data.content;
+        videoList.value = resData.data.content;
         if (resData.data.pageable) {
             pageState.page = resData.data.pageable.pageNumber;
             pageState.size = resData.data.pageable.pageSize;
         }
         pageState.total = resData.data.total;
     }
-    albumTitle.value = videoState.videoList[0]?.title;
+    albumTitle.value = videoList.value[0]?.title;
 }
 
 </script>
@@ -236,7 +232,7 @@ async function getVideoList(page: number) {
     width: 800px;
     display: flex;
     justify-content: space-between;
-    transform: translateY(40px);
+    margin: 40px 0 0 0;
     position: relative;
 }
 
@@ -270,8 +266,8 @@ async function getVideoList(page: number) {
 }
 
 .album-item {
-    width: 180px;
-    height: 250px;
+    width: 10rem;
+    height: 14rem;
     background-size: cover;
     flex-shrink: 0;
     margin: 20px;

@@ -55,7 +55,7 @@
                         </div>
                     </td>
                 </tr>
-                <tr v-for="(room,index) in roomList.value" :key="index">
+                <tr v-for="(room,index) in roomList" :key="index">
                     <td>{{ room.name.trim() === '' ? 'UNKNOWN' : room.name }}</td>
                     <td>{{ room.amount }}</td>
                     <td>{{ new Date() }}</td>
@@ -82,7 +82,7 @@
 <script setup lang="ts">
 import ModelViewItem from "@/components/ThreeJs/ModelViewItem.vue"
 import api from "@/request/api";
-import {onMounted, onBeforeUnmount, reactive, ref} from "vue";
+import {onMounted, onBeforeUnmount, ref} from "vue";
 import {Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer} from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {WsApi} from "@/components/ThreeJs/ts/WsApi";
@@ -94,37 +94,26 @@ const wsApi = new WsApi(<string>localStorage.getItem("token"));
 
 const scenes: Scene[] = [];
 let modelList: I_ModelEntity[] = [];
-let roomList = reactive<{ value: I_RoomInfo[] }>({
-    value: []
-});
+let roomList = ref<I_RoomInfo[]>( []);
 const choosePlayer = ref("--");
 const video_id = ref("");
 const searchRoomText = ref("");
 const newRoomName = ref("");
 const createRoomVisible = ref(false);
 // const deleteRoom = ref(false);
-const manipulate: {
-    icon: string,
-    title: string,
-    func: (index: number) => void,
-}[] = [{
-    icon: "ri-fullscreen-line",
-    title: "预览",
-    func: openDetail
-}];
 
 let renderer: WebGLRenderer, canvas: HTMLCanvasElement;
 
-function callback(scene: Scene) {
+const callback = (scene: Scene) => {
     scenes.push(scene);
 }
 
-function developing() {
+const developing = () => {
     alert("未完成");
 }
 
 const route = useRoute();
-onMounted(async () => {
+onMounted(() => {
     video_id.value = <string>route.query.data;
     canvas = document.getElementById('c') as HTMLCanvasElement;
     renderer = new WebGLRenderer({canvas: canvas});
@@ -161,7 +150,7 @@ onBeforeUnmount(() => {
 });
 const router = useRouter()
 
-function openDetail(index: number) {
+const openDetail = (index: number) => {
     router.push({
         name: "ModelDetail",
         query: {
@@ -171,7 +160,7 @@ function openDetail(index: number) {
     });
 }
 
-function updateSize() {
+const updateSize = () => {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     if (canvas.width !== width || canvas.height !== height) {
@@ -179,7 +168,7 @@ function updateSize() {
     }
 }
 
-function animate() {
+const animate = () => {
     updateSize();
     renderer.setClearColor(0xEEEEEE, 0.1);
     renderer.setScissorTest(false);
@@ -211,13 +200,13 @@ function animate() {
 
 let requestAnimationFrameId = -1;
 
-function selectRoomList_(name = "") {
+const selectRoomList_ = (name = "") => {
     wsApi.selectRoomList(name, (roomList_) => {
         roomList.value = roomList_;
     });
 }
 
-function createRoom(name: string) {
+const createRoom = (name: string) => {
     if (!route.query.data) {
         alert("需要在主页选择一个视频");
         return;
@@ -233,18 +222,28 @@ function createRoom(name: string) {
     newRoomInputEl && newRoomInputEl.setAttribute("placeholder", "ROOM_NAME");
 }
 
-function removeRoom(roomId: string) {
+const removeRoom = (roomId: string) => {
     wsApi.removeRoom(roomId);
     selectRoomList_();
 }
 
-function openCreateRoom() {
+const openCreateRoom = () => {
     if (!route.query.data) {
         alert("需要在主页选择一个视频");
         return;
     }
     createRoomVisible.value = !createRoomVisible.value
 }
+
+const manipulate: {
+    icon: string,
+    title: string,
+    func: (index: number) => void,
+}[] = [{
+    icon: "ri-fullscreen-line",
+    title: "预览",
+    func: openDetail
+}];
 
 </script>
 

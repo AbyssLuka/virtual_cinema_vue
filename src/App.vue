@@ -1,17 +1,20 @@
 <template>
     <div id="app"
          :style="`background: url('${imagePath}') no-repeat center center fixed;background-size: cover`"
+         class="main-container"
     >
         <router-view/>
+        <loading/>
     </div>
     <cursor-osu></cursor-osu>
 </template>
 
 
 <script setup lang="ts">
-import {onBeforeMount, ref} from "vue";
+import {onBeforeMount, onMounted, ref, useTemplateRef} from "vue";
 import CursorOsu from "@/components/module/CursorOsu.vue";
 import wallpaperPath from "@/assets/image/wallhaven-8586my.png"
+import Loading from "@/components/module/Loading.vue";
 
 const imagePath = ref("");
 
@@ -26,6 +29,7 @@ const loadBackground = () => {
 
 window.setBackgroundImage = (url: string) => {
     try {
+        //验证url是否合法
         new URL(url);
     } catch (e) {
         url = wallpaperPath;

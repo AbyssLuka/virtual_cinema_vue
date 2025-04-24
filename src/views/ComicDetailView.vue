@@ -34,7 +34,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import {reactive, onBeforeMount, ref} from "vue";
+import {reactive, onBeforeMount, ref, onMounted, onUnmounted} from "vue";
 import {useRoute} from "vue-router";
 import api from "@/request/api";
 import {I_Detail_, I_ResData} from "@/global/interface";
@@ -52,32 +52,39 @@ const comicState = reactive<I_Detail_>({
     fileList: [],
 });
 
-onBeforeMount(async () => {
-    await init();
+onBeforeMount(() => {
+    init();
 });
 
 const route = useRoute();
 
-async function init(): Promise<void> {
-    let uuid: string = route.query.data as string;
-    let promise: I_ResData<I_Detail_ | null> = await api.comicApi(uuid);
-    if (promise.data) {
-        Object.assign(comicState, promise.data);
-        cover.value = comicState.fileList[0].fileUuid;
-    }
+const init = () => {
+    const uuid = <string>route.query.data;
+    api.comicApi(uuid).then((res) => {
+        if (res.data) {
+            Object.assign(comicState, res.data);
+            cover.value = comicState.fileList[0].fileUuid;
+        }
+    });
 }
 
 import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
+const funcList:Function[] = []
 const openImgWindow = (index: number) => {
-    createPopUps(ImagePopUps, {
+    const fns = createPopUps(ImagePopUps, {
         title: comicState.title,
-        popUpsId: "image",
         data: {
             list: comicState.fileList,
             defaultIndex: index,
         }
-    }).then();
+    });
+    funcList.push(fns.cancelCallback);
 }
+onUnmounted(() => {
+    funcList.forEach((item) => {
+        item();
+    })
+})
 </script>
 
 <style scoped>
@@ -103,9 +110,11 @@ const openImgWindow = (index: number) => {
     .comic-page-container {
         grid-template-columns: repeat(3, 30%);
     }
+
     .comic-cover-container {
         width: 30%;
     }
+
     .comic-detail-container {
         width: 100vw;
     }

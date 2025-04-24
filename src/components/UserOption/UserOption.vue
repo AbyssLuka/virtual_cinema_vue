@@ -76,9 +76,9 @@ onMounted(async () => {
     }
 });
 
-async function updatePassword() {
+ const updatePassword = () => {
     if (!regular.password.test(updatePasswordState.new)) {
-        alert("英文+数字8-16位");
+        alert("字母+数字8-16位");
         return;
     }
     if (updatePasswordState.new !== updatePasswordState.repeat) {
@@ -87,18 +87,19 @@ async function updatePassword() {
     }
     const newPassword = updatePasswordState.new;
     const oldPassword = updatePasswordState.old;
-    const reData = await api.updatePasswordApi({newPassword, oldPassword});
-    if (reData.code === 200) {
-        updatePasswordState.old = "";
-        updatePasswordState.new = "";
-        updatePasswordState.repeat = "";
-        alert("成功")
-    }else {
-        alert("失败")
-    }
+    api.updatePasswordApi({newPassword, oldPassword}).then((res)=>{
+        if (res.code === 200) {
+            updatePasswordState.old = "";
+            updatePasswordState.new = "";
+            updatePasswordState.repeat = "";
+            alert("成功")
+        }else {
+            alert("失败")
+        }
+    });
 }
 
-function logout() {
+const logout = () => {
     localStorage.setItem("token", "");
     router.push("/login");
 }

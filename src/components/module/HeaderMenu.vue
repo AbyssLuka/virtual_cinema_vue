@@ -53,15 +53,15 @@ const menu = [
 
 const router = useRouter();
 
-function toLogin() {
-    if (![null, undefined, "undefined", "null", ""].includes(localStorage.getItem("token"))) {
+const toLogin = () => {
+    if (![null, "undefined", "null", ""].includes(localStorage.getItem("token"))) {
         router.push("/user/option")
     } else {
         router.push("/login")
     }
 }
 
-function collage() {
+const collage = () => {
     //
 }
 </script>

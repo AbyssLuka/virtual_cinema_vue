@@ -64,8 +64,9 @@ const props = withDefaults(defineProps<{
 
 let count = 0;
 
-function modelRef(el: HTMLElement) {
+const modelRef = (el: any) => {
     if (!el || props.modelList.length === count) return;
+    el = <HTMLElement>el;
     count++;
     const scene = new Scene();
     scene.userData.element = el;

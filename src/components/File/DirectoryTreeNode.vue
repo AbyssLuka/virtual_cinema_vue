@@ -59,7 +59,7 @@ onMounted(() => {
     loadIcon();
 });
 
-function openDir() {
+const openDir = () => {
     //打开文件夹并更新图标
     if (props.dir.type === "directory") {
         fileTypeIcon.value = !treeItemShow.value ? "ri-folder-open-fill" : "ri-folder-fill";
@@ -67,7 +67,7 @@ function openDir() {
     }
 }
 
-function loadIcon() {
+const loadIcon = () => {
     // 加载图标
     let fileType = props.dir?.type?.toLowerCase();
     if (fileTypeList.package.includes(fileType)) {
@@ -89,7 +89,7 @@ function loadIcon() {
     }
 }
 
-function openNode(data: I_TreeNode, pathIndex: number[]) {
+const openNode = (data: I_TreeNode, pathIndex: number[]) => {
     pathIndex.push(props.pathIndex);
     props.treeClick(data, pathIndex);
 }

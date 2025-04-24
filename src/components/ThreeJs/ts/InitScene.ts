@@ -364,7 +364,7 @@ export class InitScene {
         this.scene.add(mesh);
         // this.generateGrass();
 
-        new Grass(this.scene, mesh);
+        // new Grass(this.scene, mesh);
     }
 
     public loadMoon() {

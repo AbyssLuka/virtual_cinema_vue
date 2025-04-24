@@ -94,6 +94,9 @@ index.beforeEach((to, from, next) => {
     } else {
         next()
     }
+    if (window.playLoading) {
+        window.playLoading();
+    }
 });
 
 export default index;

@@ -8,55 +8,55 @@
             <div class="page-3" style="--i:3;--s:2;"></div>
             <div class="page-4" style="--i:2;--s:3;">
                 <h2 class="login-title">LOGIN</h2>
-                <div class="login-input">
-                    <label class="input-label">
-                        <input v-model="loginData.userName" id="login-user-name" type="text" required="true"/>
+                <form class="login-input" @submit.prevent="login">
+                    <div class="input-label">
+                        <input v-model="loginData.username" id="login-user-name" type="text" required="true"/>
                         <span class="input-text" id="login-input-text-username">USERNAME</span>
-                    </label>
-                    <label class="input-label">
-                        <input v-model="loginData.passWord" id="login-pass-word" type="password"
+                    </div>
+                    <div class="input-label">
+                        <input v-model="loginData.password" id="login-pass-word" type="password"
                                required="true"/>
                         <span class="input-text" id="login-input-text-password">PASSWORD</span>
-                    </label>
+                    </div>
                     <div class="code-container">
-                        <label class="input-label">
+                        <div class="input-label">
                             <input v-model="loginData.code" id="login-code" type="text" required="true"
                                    autocomplete="off"/>
                             <span class="input-text" id="login-input-text-code">CODE</span>
-                        </label>
-                        <img class="img-div" :src="kaptcha" @click="uploadCode"/>
+                        </div>
+                        <img class="img-div" :src="kaptcha" @click="uploadCode" alt=""/>
                     </div>
 
                     <div class="login-btn-container">
-                        <div class="login-btn" @click="login">LOGIN</div>
+                        <button type="submit" class="login-btn" @click="login">LOGIN</button>
                     </div>
-                </div>
+                </form>
             </div>
 
             <div class="page-5" style="--i:1;--s:4;">
                 <div class="page-5-revers">
                     <h2 class="login-title">SIGNUP</h2>
-                    <div class="login-input">
+                    <form class="login-input" @submit.prevent="signup">
                         <label class="input-label">
-                            <input v-model="registerData.userName" id="register-user-name" type="text"
+                            <input v-model="registerData.username" id="register-user-name" type="text"
                                    required="true"/>
                             <span class="input-text" id="register-input-text-username">USERNAME</span>
                         </label>
                         <label class="input-label">
-                            <input v-model="registerData.passWord" id="register-pass-word" type="password"
+                            <input v-model="registerData.password" id="register-pass-word" type="password"
                                    required="true"/>
                             <span class="input-text" id="register-input-text-password">PASSWORD</span>
                         </label>
                         <label class="input-label">
-                            <input v-model="registerData.eMail" id="register-emali" type="text"
+                            <input v-model="registerData.email" id="register-emali" type="text"
                                    required="true"
                                    autocomplete="off"/>
                             <span class="input-text" id="register-input-text-emali">EMAIL</span>
                         </label>
                         <div class="login-btn-container">
-                            <div class="login-btn" @click="signup">SIGNUP</div>
+                            <button type="submit" class="login-btn" @click="signup">SIGNUP</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -75,14 +75,14 @@ const route = useRoute();
 const kaptcha = ref("");
 
 const loginData = reactive({
-    userName: "",
-    passWord: "",
+    username: "",
+    password: "",
     code: "",
 });
 const registerData = reactive({
-    userName: "",
-    passWord: "",
-    eMail: "",
+    username: "",
+    password: "",
+    email: "",
 });
 const tips = reactive({
     show: false,
@@ -93,54 +93,47 @@ onMounted(() => {
     uploadCode();
 });
 
-function uploadCode() {
+const uploadCode = () => {
     kaptcha.value = api.kaptchaUrl();
 }
 
-async function login() {
-    let flag: boolean = regular.username.test(loginData.userName);
+const login = () => {
+    let flag: boolean = regular.username.test(loginData.username);
     flag || showTips("用户名必须4~16位英文+数字！", 3000);
     if (!flag) return;
-    flag = regular.password.test(loginData.passWord);
+    flag = regular.password.test(loginData.password);
     flag || showTips("密码必须8~16位英文+数字！", 3000);
     if (!flag) return;
     flag = regular.code.test(loginData.code);
     flag || showTips("验证码输入错误！", 3000);
     if (!flag) return;
 
-    let reData = await api.loginApi({
-        username: loginData.userName,
-        password: loginData.passWord,
-        code: loginData.code
+    api.loginApi(loginData).then((res) => {
+        if (res.code === 200) {
+            route.query.redirect || router.push("/");
+            route.query.redirect && router.push(route.query.redirect.toString());
+        } else {
+            showTips(res.msg, 3000)
+        }
     });
-    if (reData.code === 200) {
-        route.query.redirect || await router.push("/");
-        route.query.redirect && await router.push(route.query.redirect.toString());
-    } else {
-        showTips(reData.msg, 3000)
-    }
-
 }
 
-async function signup() {
-    let flag: boolean = regular.username.test(registerData.userName);
+const signup = () => {
+    let flag: boolean = regular.username.test(registerData.username);
     flag || showTips("用户名必须4~16位英文+数字！", 3000);
     if (!flag) return;
-    flag = regular.password.test(registerData.passWord);
+    flag = regular.password.test(registerData.password);
     flag || showTips("密码必须8~16位英文+数字！", 3000);
     if (!flag) return;
-    flag = regular.email.test(registerData.eMail);
+    flag = regular.email.test(registerData.email);
     flag || showTips("邮箱格式错误！", 3000);
     if (!flag) return;
-    let reData = await api.registerApi({
-        username: registerData.userName,
-        password: registerData.passWord,
-        email: registerData.eMail,
+    api.registerApi(registerData).then((res) => {
+        showTips(res.msg, 5000);
     });
-    showTips(reData.msg, 5000);
 }
 
-function showTips(info: string, time: number) {
+const showTips = (info: string, time: number) => {
     tips.info = info;
     tips.show = true;
     setTimeout(() => {

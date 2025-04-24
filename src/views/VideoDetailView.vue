@@ -58,20 +58,20 @@ const subtitleUrl = ref("")
 const fileList = ref<I_File[]>([])
 const menuList = ref<I_MenuList[]>([])
 const currentPlay = reactive<{
-  index: number,
-  name: string,
-  url: string,
+    index: number,
+    name: string,
+    url: string,
 }>({
-  index: 0,
-  name: "",
-  url: "",
+    index: 0,
+    name: "",
+    url: "",
 })
 const collectInfo = reactive<{
-  status: boolean,
-  text: string,
+    status: boolean,
+    text: string,
 }>({
-  status: false,
-  text: "收藏",
+    status: false,
+    text: "收藏",
 })
 
 interface I_MenuList {
@@ -86,19 +86,16 @@ onMounted(() => {
 
 const router = useRouter();
 
-function initMenuList() {
+const initMenuList = () => {
     menuList.value = [
         {
             icon: "ri-home-2-fill",
-            active: () => {
-                console.log(1)
-            }
+            active: () => console.log(1)
+
         },
         {
             icon: "ri-game-fill",
-            active: () => {
-                console.log(2)
-            }
+            active: () => console.log(2)
         },
         {
             icon: "ri-hashtag",
@@ -112,9 +109,7 @@ function initMenuList() {
         },
         {
             icon: "ri-video-add-fill",
-            active: () => {
-                console.log(4)
-            }
+            active: () => console.log(4)
         },
         {
             icon: "ri-link-m",
@@ -129,14 +124,12 @@ function initMenuList() {
         },
         {
             icon: "ri-star-fill",
-            active: () => {
-                console.log(6)
-            }
+            active: () => console.log(6)
         },
     ];
 }
 
-async function copyUrl() {
+const copyUrl = async () => {
     const {toClipboard} = useClipboard();
     try {
         await toClipboard(window.location.href);
@@ -148,71 +141,76 @@ async function copyUrl() {
 
 const route = useRoute();
 
-async function addCollect() {
-    let animeUuid = <string>route.query.data;
-    console.log(animeUuid)
-    let resData = await api.addCollectApi(animeUuid);
-    if (resData.code === 200) {
-        collectInfo.text = "已收藏";
-        collectInfo.status = true;
-    } else {
-        collectInfo.text = "收藏";
-        collectInfo.status = false;
-    }
-}
-
-async function delCollect() {
-    let animeUuid = <string>route.query.data;
-    let resData = await api.unCollectApi(animeUuid);
-    if (resData.code === 200) {
-        collectInfo.text = "收藏";
-        collectInfo.status = false;
-    } else {
-        collectInfo.text = "已收藏";
-        collectInfo.status = true;
-    }
-}
-
-
-async function init() {
-    let uuid: string = route.query.data as string;
-    let resData = await api.animePostApi(uuid);
-    if (!resData.data) return;
-    fileList.value = resData.data.detail.fileList;
-    videoTitle.value = resData.data.detail.title;
-    videoInfo.value = resData.data.detail.info;
-    let firstVideo = fileList.value.filter(
-        fileListItem => fileTypeList.video.includes(fileListItem.fileType)
-    )[0];           //先播放的视频
-    currentPlay.url = api.videoUrl(firstVideo.fileUuid);
-    currentPlay.name = firstVideo.fileName;
-    await loadSubtitle(firstVideo.fileUuid);
-    if (![undefined, null, "null", "undefined", ""].includes(localStorage.getItem("token"))) {
-        let resData = await api.collectIsHaveApi(uuid);
-        if (resData.data) {
+const addCollect = () => {
+    const videoUuid = <string>route.query.data;
+    api.addCollectApi(videoUuid).then((res) => {
+        if (res.code === 200) {
             collectInfo.text = "已收藏";
             collectInfo.status = true;
         } else {
             collectInfo.text = "收藏";
             collectInfo.status = false;
         }
-    }
-
+    });
 }
 
-function playVideo(fileObj: I_File) {
+const delCollect = () => {
+    let animeUuid = <string>route.query.data;
+    api.unCollectApi(animeUuid).then((res) => {
+        if (res.code === 200) {
+            collectInfo.text = "收藏";
+            collectInfo.status = false;
+        } else {
+            collectInfo.text = "已收藏";
+            collectInfo.status = true;
+        }
+    });
+}
+
+
+const init = () => {
+    const uuid = <string>route.query.data;
+    api.animePostApi(uuid).then((res) => {
+        if (!res.data) return;
+        fileList.value = res.data.detail.fileList;
+        videoTitle.value = res.data.detail.title;
+        videoInfo.value = res.data.detail.info;
+        let firstVideo = fileList.value.filter(
+            fileListItem => fileTypeList.video.includes(fileListItem.fileType)
+        )[0];           //先播放的视频
+        currentPlay.url = api.videoUrl(firstVideo.fileUuid);
+        currentPlay.name = firstVideo.fileName;
+        loadSubtitle(firstVideo.fileUuid);
+        const token = localStorage.getItem("token");
+        if (![undefined, null, "null", "undefined", ""].includes(token)) return;
+        api.collectIsHaveApi(uuid).then((res) => {
+            if (res.data) {
+                collectInfo.text = "已收藏";
+                collectInfo.status = true;
+            } else {
+                collectInfo.text = "收藏";
+                collectInfo.status = false;
+            }
+        });
+    });
+}
+
+const playVideo = (fileObj: I_File) => {
     //播放视频并重新加载字幕
     currentPlay.name = fileObj.fileName;
     currentPlay.url = api.videoUrl(fileObj.fileUuid);
     loadSubtitle(fileObj.fileUuid);
 }
 
-async function loadSubtitle(videoUuid: string) {
-    let subtitle = await api.subtitleApi(videoUuid);
-    subtitleUrl.value = <string>(await util.assToVtt(subtitle, "URL"));
-    if (!subtitleUrl.value || subtitleUrl.value === "") {
-        console.log("没有字幕")
-    }
+const loadSubtitle = (videoUuid: string) => {
+    api.subtitleApi(videoUuid).then((res) => {
+        util.assToVtt(res, "URL").then((res) => {
+            subtitleUrl.value = <string>res
+            if (!subtitleUrl.value || subtitleUrl.value === "") {
+                console.log("没有字幕")
+            }
+        })
+    });
 }
 </script>
 

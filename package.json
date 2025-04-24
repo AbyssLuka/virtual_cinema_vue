@@ -29,20 +29,18 @@
     "vue": "^3.5.13",
     "vue-clipboard3": "^2.0.0",
     "vue-router": "^4.3.2",
-    "vue-tsc": "^2.0.16",
     "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.1",
-    "@vueuse/core": "^13.1.0",
     "@types/cannon": "^0.1.12",
     "@types/dat.gui": "^0.7.12",
+    "@types/node": "^22.14.1",
     "@types/three": "^0.171.0",
     "@vitejs/plugin-vue": "^5.2.2",
     "@vue/tsconfig": "^0.7.0",
-    "glsl-shader-loader": "^0.1.6",
     "typescript": "~5.8.3",
     "vite": "^6.3.1",
+    "vite-plugin-glsl": "^1.4.1",
     "vue-tsc": "^2.2.8"
   },
   "type": "module",
