@@ -1,5 +1,5 @@
 <template>
-    <div class="file-item-box" @click="nextFile(data)" :title="data.fileName">
+    <div class="file-item-box" @click="nextFile(data)" :title="data.fileName" ref="file-item-box">
         <i class="file-item-ico ri-2x" :class="[data.icon]"></i>
         <div class="file-item-info-box">
             <div class="file-item-name"> {{ data.fileName }}</div>
@@ -10,13 +10,24 @@
 </template>
 
 <script setup lang="ts">
-import {defineProps} from "vue";
+import {defineProps, onMounted, useTemplateRef} from "vue";
 import {I_File} from "@/global/interface";
 
 defineProps<{
     data: I_File,
     nextFile: (file: I_File) => void,
 }>();
+
+const fileItemEl = useTemplateRef<HTMLDivElement>("file-item-box");
+onMounted(() => {
+    fileItemEl.value!.animate([
+        {transform: "scale(.1)", opacity: 0},
+        {transform: "scale(1)", opacity: 1},
+    ], {
+        duration: Math.random() * 200 + 500,
+        fill: "forwards",
+    });
+})
 
 </script>
 

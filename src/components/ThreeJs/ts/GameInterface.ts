@@ -68,7 +68,7 @@ export interface I_OtherPlayerExitMsg extends I_WsMsg {
 }
 
 export interface I_LoadVideoMsg extends I_WsMsg {
-    data: { videoUuid: string, },
+    data: { videoUuid: string },
 }
 
 export interface I_UpdateVideoMsg extends I_WsMsg {

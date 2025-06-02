@@ -3,8 +3,16 @@ import {Object3D, PerspectiveCamera, Raycaster, Vector2, Vector3} from "three";
 export class RayDetect {
     private raycaster: Raycaster;
 
-    constructor(public readonly axis: Vector2, public readonly camera: PerspectiveCamera) {
-        this.raycaster = new Raycaster(new Vector3(), new Vector3(), 0, 10);
+    constructor(
+        public readonly axis: Vector2,
+        public readonly camera: PerspectiveCamera,
+        far_ = 10
+    ) {
+        this.raycaster = new Raycaster(new Vector3(), new Vector3(), 0, far_);
+    }
+
+    set far(value: number) {
+        this.raycaster.far = value;
     }
 
     public firstMesh(object3DList: Object3D[], callback: (mesh: Object3D | null) => void) {

@@ -2,7 +2,14 @@
     <div class="tree-view-container">
         <div class="vert-center">
             <div class="title-icon">
-                <div class="title-icon-wire-first"></div>
+                <div :class="[
+                     treeItemShow?'ri-play-line':'',
+                     dir.type === 'directory'?'ri-play-fill':''
+                ]"
+                     :style="treeItemShow?'transform:rotate(90deg)':''"
+                     style="width: 1rem;transition: .1s"
+                >
+                </div>
             </div>
             <div :class="[fileTypeIcon]"
                  style="cursor: pointer;"></div>
@@ -16,22 +23,21 @@
             </div>
         </div>
         <div v-show="treeItemShow" class="tree-comment">
-            <directory-tree-node v-for="(fileItem,index) in dir.subDirectory" :key="index"
-                            :class="[dir.subDirectory.length-1!==index ?
-                            'tree-sub-directory':'tree-sub-directory-last']"
-
-                            :dir="fileItem"
-                            :path-index="index"
-                            :update-cur-node="updateCurNode"
-                            :current-node="props.currentNode"
-                            :treeClick="openNode">
-            </directory-tree-node>
+            <dir-tree-node v-for="(fileItem,index) in dir.subDir"
+                           :key="index"
+                           class="tree-sub-directory"
+                           :dir="fileItem"
+                           :path-index="index"
+                           :update-cur-node="updateCurNode"
+                           :current-node="props.currentNode"
+                           :treeClick="openNode">
+            </dir-tree-node>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import {fileTypeList} from "@/global/global";
+import {fileTypes, iconMap} from "@/global/global";
 import {defineProps, onMounted, watch, withDefaults, ref} from "vue";
 import {I_TreeNode} from "@/global/interface";
 
@@ -42,7 +48,7 @@ const props = withDefaults(defineProps<{
     dir: I_TreeNode,
     pathIndex?: number,
     treeClick?: (data: I_TreeNode, indexList: number[]) => void;
-    updateCurNode: (uuid:string) => void;
+    updateCurNode: (uuid: string) => void;
     currentNode: string,
 }>(), {
     pathIndex: 0,
@@ -69,24 +75,9 @@ const openDir = () => {
 
 const loadIcon = () => {
     // 加载图标
-    let fileType = props.dir?.type?.toLowerCase();
-    if (fileTypeList.package.includes(fileType)) {
-        fileTypeIcon.value = "ri-folder-zip-fill";
-    } else if (fileTypeList.audio.includes(fileType)) {
-        fileTypeIcon.value = "ri-file-music-fill";
-    } else if (fileTypeList.video.includes(fileType)) {
-        fileTypeIcon.value = "ri-movie-fill";
-    } else if (fileTypeList.image.includes(fileType)) {
-        fileTypeIcon.value = "ri-image-fill";
-    } else if (fileTypeList.document.includes(fileType)) {
-        fileTypeIcon.value = "ri-file-text-fill";
-    } else if (fileTypeList.link.includes(fileType)) {
-        fileTypeIcon.value = "ri-link";
-    } else if (fileTypeList.directory.includes(fileType)) {
-        fileTypeIcon.value = "ri-folder-fill";
-    } else {
-        fileTypeIcon.value = "ri-file-fill";
-    }
+    const fileType = props.dir.type.toLowerCase();
+    const type = fileTypes[fileType];
+    fileTypeIcon.value = iconMap[type] || "ri-file-fill";
 }
 
 const openNode = (data: I_TreeNode, pathIndex: number[]) => {
@@ -98,18 +89,8 @@ const openNode = (data: I_TreeNode, pathIndex: number[]) => {
 
 <style scoped>
 .title-icon {
-    width: 15px;
-    height: 20px;
-}
-
-.title-icon-wire-first {
-    width: 15px;
-    height: 10px;
-    border: 0;
-    border-bottom: 2px solid black;
-    border-left: 2px solid black;
-    position: relative;
-    left: -2px;
+    width: 1rem;
+    height: 1rem;
 }
 
 .tree-comment {
@@ -127,16 +108,8 @@ const openNode = (data: I_TreeNode, pathIndex: number[]) => {
 
 .tree-sub-directory {
     border: 0;
-    border-left: 2px solid black;
     margin: 0 20px;
 }
-
-.tree-sub-directory-last {
-    border: 0;
-    border-left: 2px solid transparent;
-    margin: 0 20px;
-}
-
 
 .tree-item-title {
     user-select: none;

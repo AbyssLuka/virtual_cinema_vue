@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import {fileTypeList} from "@/global/global";
+import {fileTypes} from "@/global/global";
 import {defineProps, watch, ref} from "vue"
 import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
 import createPopUps from "@/util/createPopUps";
@@ -24,7 +24,9 @@ const props = defineProps<{
 }>();
 
 watch(() => props.fileList, () => {
-    imageList.value = props.fileList.filter((fileItem: I_File) => fileTypeList.image.includes(fileItem.fileType)).splice(0, props.size);
+    imageList.value = props.fileList.filter(
+        (fileItem: I_File) => fileTypes[fileItem.fileType] === "image"
+    ).splice(0, props.size);
 }, {immediate: true});
 
 const openImage = (imgObj: I_File) => {

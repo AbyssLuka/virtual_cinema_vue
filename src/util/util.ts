@@ -1,11 +1,11 @@
 import subsrt from "subsrt";
 import {I_SubtitleObject} from "@/global/interface";
 
-const convertData = (date: string, format: string): string => {
+const convertDate = (date: string, format: string): string => {
     const newDate: Date = new Date(date);
     format = format.replace("yyyy", String(newDate.getFullYear()));
     format = format.replace("MM", String(newDate.getMonth() + 1));
-    format = format.replace("dd", String(newDate.getDate() ));
+    format = format.replace("dd", String(newDate.getDate()));
     format = format.replace("HH", String(newDate.getHours()));
     format = format.replace("mm", String(newDate.getMinutes()));
     format = format.replace("ss", String(newDate.getSeconds()));
@@ -29,30 +29,31 @@ const loadFile = (url: string): string | null => {
 };
 
 
-const assToVtt = async (url: string, type: "URL" | "TEXT"): Promise<string | undefined> => {
+const assToVtt = async (url: string, type: "URL" | "TEXT"): Promise<string> => {
     // let captions = subsrt.parse(loadFile("http://192.168.193.216:2020/ass"), {verbose: true});
     // console.log(captions);
     // let vtt = subsrt.convert(loadFile("http://192.168.193.216:2020/ass"), { format: 'vtt' });
     // console.log(vtt);
     try {
         const vtt: string = subsrt.convert(loadFile(url), {format: 'vtt'});
-        const blob: Blob = new Blob([vtt], {type: "text/plain;charset=utf-8",});
+        const blob: Blob = new Blob([vtt], {type: "text/plain;charset=utf-8"});
         if (type === "URL") {
             return URL.createObjectURL(blob);
         } else if (type === "TEXT") {
             return await blob.text();
         }
     } catch (e) {
-        return undefined;
+        return e!.toString();
     }
+    return "";
 };
 
-const assObjList = async (url: string):Promise<I_SubtitleObject[]> => {
+const assObjList = async (url: string): Promise<I_SubtitleObject[]> => {
     return subsrt.parse(loadFile(url));
 };
 
 export default {
-    convertData,
+    convertDate,
     convertByte,
     loadFile,
     assToVtt,

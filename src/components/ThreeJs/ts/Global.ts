@@ -1,9 +1,12 @@
 import {reactive} from "vue";
-import {AmbientLight, Object3D, Scene, Vector3} from "three";
+import {AmbientLight, Object3D, Scene, Vector2, Vector3} from "three";
 import {I_PhysicalList} from "@/components/ThreeJs/ts/GameInterface";
 import Player from "@/components/ThreeJs/ts/Player";
 import {Camera} from "@/components/ThreeJs/ts/Camera";
 import {Controls} from "@/components/ThreeJs/ts/Controls";
+import {RayDetect} from "@/components/ThreeJs/ts/RayDetect";
+import {Octree} from "three/examples/jsm/math/Octree";
+import {PhysicalWorld} from "@/components/ThreeJs/ts/PhysicalWorld";
 
 export const inventoryState = reactive<{
     inventory: Object3D[],
@@ -16,12 +19,6 @@ export const inventoryState = reactive<{
 });
 inventoryState.inventory.fill(inventoryState.emptyObject3D)
 
-// 射线检测
-// export const rayDetect = new RayDetect(new Vector2(0, 0), camera);
-
-//射线检测列表
-export const worldRayObjects: Object3D[] = [];
-export const physicalObjects: I_PhysicalList[] = [];
 
 export const playerList: { [key: string]: Player } = {};
 
@@ -36,3 +33,16 @@ handItemScene.add(new AmbientLight(0xFFFFFF, 1));
 
 
 export const controlsClass = new Controls(cameraClass.camera, document.body);
+
+// 射线检测
+export const rayDetect = new RayDetect(new Vector2(0, 0), cameraClass.camera);
+
+//射线检测列表
+export const worldRayObjects: Object3D[] = [];
+export const physicalObjects: I_PhysicalList[] = [];
+//八叉树
+export const worldOctree = new Octree();
+export const worldScene = new Scene();
+
+export const physicalWorldClass = new PhysicalWorld();//物理世界
+export const physicalWorld = physicalWorldClass.create();//物理世界

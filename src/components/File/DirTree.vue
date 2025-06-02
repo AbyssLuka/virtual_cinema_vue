@@ -1,24 +1,24 @@
 <template>
     <div class="tree-view-container">
-        <directory-tree-node
-            :dir="dir"
+        <dir-tree-node v-for="dirItem in dir"
+            :dir="dirItem"
             :tree-click="treeClick"
             :current-node="currentNode"
             :path-index="0"
-            :update-cur-node="(uuid:string)=>{
+            :update-cur-node="(uuid)=>{
                 currentNode = uuid;
             }">
-        </directory-tree-node>
+        </dir-tree-node>
     </div>
 </template>
 
 <script setup lang="ts">
 import {defineProps, withDefaults, ref} from "vue";
 import {I_TreeNode} from "@/global/interface";
-import DirectoryTreeNode from "@/components/File/DirectoryTreeNode.vue";
+import DirTreeNode from "@/components/File/DirTreeNode.vue";
 
 withDefaults(defineProps<{
-    dir: I_TreeNode,
+    dir: I_TreeNode[],
     treeClick?: (data: I_TreeNode, indexList: number[]) => void;
 }>(), {
     treeClick: () => {

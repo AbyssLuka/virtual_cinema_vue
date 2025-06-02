@@ -13,7 +13,7 @@ export default class SpriteMessage {
         this.object.scale.set(.01, .01, .01);
     }
 
-    private init(): CSS3DSprite {
+    private init() {
         this.messageContainer.style.background = "#ffffff";
         const vNode = createVNode(PlayerMessage, {message: this.text});
         render(vNode, this.messageContainer);

@@ -1,20 +1,24 @@
 <template>
-    <div class="popups-window" :id="'popups-window-'+props.popUpsId"
-         :style="'width:'+width+';'+'height:'+height">
-        <div :id="'popups-bar-'+props.popUpsId" class="popups-bar"
-             @dblclick="[fullScreen(fullscreen),fullscreen = !fullscreen]"
-             @mousedown="props.popUpsClick('popups-window-'+props.popUpsId)">
+    <div class="popups-window"
+         :id="`popups-window-${popUpsId}`"
+         :style="{height,width}"
+         :ref="`popups-window-${popUpsId}`">
+        <div :id="`popups-bar-${popUpsId}`"
+             class="popups-bar"
+             @dblclick="[fullscreen = fullScreen(fullscreen)]"
+             @mousedown="popUpsClick(`popups-window-${popUpsId}`)">
             <div class="popups-title">{{ title }}</div>
-            <div class="ri-fullscreen-fill full-screen" :id="'full-screen-'+props.popUpsId"
-                 @click.stop="[fullScreen(fullscreen),fullscreen = !fullscreen]"></div>
-            <div class="exit-button ri-close-line" @click.stop="props.cancelCallback"></div>
+            <div class="ri-fullscreen-fill full-screen"
+                 :id="`full-screen-${popUpsId}`"
+                 @click.stop="[fullscreen = fullScreen(fullscreen)]"></div>
+            <div class="exit-button ri-close-line" @click.stop="exitPopups"></div>
         </div>
-        <div class="popups-window-content" :id="'content-'+props.popUpsId"></div>
+        <div class="popups-window-content" :id="`content-${popUpsId}`"></div>
     </div>
 </template>
 
 <script setup lang="ts">
-import {defineProps, withDefaults, ref, onMounted, onBeforeUnmount} from "vue";
+import {defineProps, withDefaults, ref, onMounted, onBeforeUnmount, useTemplateRef} from "vue";
 
 const fullscreen = ref(false)
 
@@ -31,14 +35,17 @@ const props = withDefaults(defineProps<{
     //窗口ID
     popUpsId: string,
     //更新窗口大小回调函数
-    fullScreen?: (status?: boolean) => void,
+    fullScreen?: (status?: boolean) => boolean,
     popUpsClick?: (id: string) => void,
 }>(), {
     //标题
     title: "Window",
     cancelCallback: () => console.log("cancelCallback"),
     submitCallback: () => console.log("submitCallback"),
-    fullScreen: (status?: boolean) => console.log("updateFullScreen", status),
+    fullScreen: (status?: boolean) => {
+        console.log("updateFullScreen", status)
+        return status!;
+    },
     popUpsClick: (id: string) => {
         console.log(`popUpsClick:${id}`);
     }
@@ -47,7 +54,27 @@ const props = withDefaults(defineProps<{
 
 onMounted(() => {
     windowMove();
+    openWindow()
 });
+
+const windowEl = useTemplateRef<HTMLDivElement>(`popups-window-${props.popUpsId}`);
+let animation: Animation | null = null;
+const openWindow = () => {
+    animation = windowEl.value!.animate([
+        {transform: "translate(-50%, -50%) scale(.5)", opacity: 0},
+        {transform: "translate(-50%, -50%) scale(1)", opacity: 1},
+    ], {
+        duration: 100,
+        fill: "forwards"
+    });
+}
+
+const exitPopups = () => {
+    animation!.reverse();
+    animation!.finished.then(() => {
+        props.cancelCallback();
+    })
+}
 
 let bar: HTMLDivElement | null = null;
 let mousedownFunc: ((e: MouseEvent) => void) | null = null;
@@ -55,22 +82,20 @@ let mousedownFunc: ((e: MouseEvent) => void) | null = null;
 //窗口拖动
 const windowMove = () => {
     //窗口标题栏
-    let barId: string = "popups-bar-".concat(props.popUpsId as string);
+    const barId = `popups-bar-${props.popUpsId}`;
     bar = <HTMLDivElement>document.getElementById(barId);
     //窗口
-    let windowId: string = "popups-window-".concat(props.popUpsId as string);
-    let window: HTMLElement = document.getElementById(windowId) as HTMLElement;
 
-    mousedownFunc = (e: MouseEvent): void => {
+    mousedownFunc = (e: MouseEvent) => {
         // 阻止跳转
         e.preventDefault();
         //鼠标位置
-        let distX: number = e.pageX - window.offsetLeft;
-        let distY: number = e.pageY - window.offsetTop;
-        let left: number = e.clientX - distX;
-        let top: number = e.clientY - distY;
+        const distX = e.pageX - windowEl.value!.offsetLeft;
+        const distY = e.pageY - windowEl.value!.offsetTop;
+        let left = e.clientX - distX;
+        let top = e.clientY - distY;
         //鼠标拖动
-        const mousemoveFunc = (e: MouseEvent): void => {
+        const mousemoveFunc = (e: MouseEvent) => {
             //鼠标移动位置
             left = e.clientX - distX;
             top = e.clientY - distY;
@@ -86,17 +111,16 @@ const windowMove = () => {
             } else if (top > document.documentElement.clientHeight) {
                 top = document.documentElement.clientHeight
             }
-
-            if (+window.style.left != left && +window.style.top != top) {
+            if (windowEl.value!.offsetLeft != left && windowEl.value!.offsetTop != top) {
                 //设置窗口位置
-                window.style.left = left + "px";
-                window.style.top = top + "px";
+                windowEl.value!.style.left = left + "px";
+                windowEl.value!.style.top = top + "px";
             }
         };
         document.addEventListener("mousemove", mousemoveFunc);
 
         //销毁
-        const mouseupFunc = (): void => {
+        const mouseupFunc = () => {
             document.removeEventListener("mousemove", mousemoveFunc);
             document.removeEventListener("mouseup", mouseupFunc);
         };
@@ -110,25 +134,6 @@ const windowMove = () => {
 onBeforeUnmount(() => {
     bar && mousedownFunc && bar.removeEventListener("mousedown", mousedownFunc);
 });
-
-// //窗口被点击后移动到最上层
-// function popUpsClick(): void {
-//     //获取所有窗口
-//     let classList = document.getElementsByClassName("pop-ups-obj-");
-//     //没有窗口直接return结束函数
-//     if (classList.length <= 1) return;
-//     let id: string = 'popups-window-'.concat(props.popUpsId as string);
-//     //被点击的窗口
-//     let first = (document.getElementById(id) as Node).parentElement as Node;
-//     //最上层的窗口
-//     let last = classList[classList.length - 1] as Node;
-//     //当前窗口已经在最上层
-//     if (last === first) return;
-//     //父元素
-//     let parentNode = first.parentNode as Node;
-//     //插入到父元素内末尾，窗口移到最上层
-//     parentNode.insertBefore(first, last.nextSibling)
-// }
 </script>
 <style scoped>
 @media (max-width: 768px) {
@@ -195,8 +200,6 @@ onBeforeUnmount(() => {
     position: fixed;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
-    /*transition: .1s;*/
 }
 
 .popups-bar {

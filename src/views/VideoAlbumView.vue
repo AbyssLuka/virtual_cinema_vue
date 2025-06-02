@@ -11,19 +11,19 @@
                          :key="videoItem.uuid">
                         <div class="card left">
                             <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypes[fileItem.fileType] === 'image')[0]?.fileUuid)"
                                  @error="(e:Event)=>((<HTMLImageElement>e.target).src = '/image/ErrorImage.svg')"
                                  alt="">
                         </div>
                         <div class="card right">
                             <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypes[fileItem.fileType] === 'image')[0]?.fileUuid)"
                                  @error="(e:Event)=>((<HTMLImageElement>e.target).src = '/image/ErrorImage.svg')"
                                  alt="">
                         </div>
                         <div class="card cover">
                             <img v-img-lazy style="width: 100%;height: 100%;object-fit: cover"
-                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypeList.image.includes(fileItem.fileType))[0]?.fileUuid)"
+                                 :src="api.thumbnailUrl(videoItem.fileList.filter((fileItem)=>fileTypes[fileItem.fileType] === 'image')[0]?.fileUuid)"
                                  @error="(e:Event)=>((e.target as HTMLImageElement).src = '/image/ErrorImage.svg')"
                                  alt="">
                         </div>
@@ -70,7 +70,7 @@
 import {useRoute, useRouter} from "vue-router";
 import {reactive, onMounted, watch, ref, onUnmounted, useTemplateRef} from "vue"
 import PaginationModule from "@/components/module/PaginationModule.vue";
-import {fileTypeList} from '@/global/global';
+import {fileTypes} from '@/global/global';
 import api from "@/request/api";
 import {I_Detail_} from "@/global/interface";
 import SearchInput from "@/components/module/SearchInput.vue";

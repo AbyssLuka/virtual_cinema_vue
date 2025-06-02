@@ -44,7 +44,7 @@ export class Display {
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d", {willReadFrequently: true});
             if (!context) return;
-            [canvas.width, canvas.height] = [360, 240];
+            [canvas.width, canvas.height] = [180, 120];
             const loadDisplayLight = () => {
                 context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
                 const image = context.getImageData(0, 0, canvas.width, canvas.height);

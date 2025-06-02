@@ -1,6 +1,5 @@
 import {Ref} from "vue";
-import {RayDetect} from "@/components/ThreeJs/ts/RayDetect";
-import {inventoryState, worldRayObjects, cameraClass, controlsClass} from "@/components/ThreeJs/ts/Global";
+import {inventoryState, worldRayObjects, cameraClass, controlsClass, rayDetect} from "@/components/ThreeJs/ts/Global";
 
 const keyQ = (activeInfo: Ref<string>) => {
     controlsClass.addKeydownEventListener("KeyQ", () => {
@@ -14,15 +13,31 @@ const keyQ = (activeInfo: Ref<string>) => {
         }
     });
 }
-
-const keyE = (rayDetect: RayDetect) => {
+const keyE = () => {
     //模型互动
     controlsClass.addKeydownEventListener("KeyE", () => {
         if (!controlsClass.isLocked) return;
         rayDetect.firstMesh(worldRayObjects, (intersectObject) => {
-            console.log(intersectObject)
-            // 执行模型自定义行为
-            intersectObject?.userData?.active();
+            if (!intersectObject)return;
+            if (intersectObject.userData.pickup){
+                // 没有检测到
+                // 查询物品栏有没有相同的物品 防止重复获取
+                const index = inventoryState.inventory.indexOf(intersectObject);
+                // 查询物品栏第一个空位的位置
+                const insertIndex = inventoryState.inventory.indexOf(inventoryState.emptyObject3D);
+                if (index !== -1) {
+                    inventoryState.current = index + 1;
+                } else if (insertIndex !== -1) {
+                    // 拾取物品插入空位
+                    inventoryState.inventory[insertIndex] = intersectObject;
+                    inventoryState.current = insertIndex + 1;
+                }
+                // 把模型加载到手中
+                cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone()).then()
+            }else {
+                // 执行模型自定义行为
+                intersectObject.userData.active();
+            }
         });
     });
 }

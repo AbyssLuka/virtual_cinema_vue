@@ -1,6 +1,6 @@
 <template>
     <div class="view-container">
-        <div class="content">
+        <div class="comic-content">
             <div class="comic-content-container">
                 <div v-for="(object,index) in comicList"
                      :key="index"
@@ -52,7 +52,7 @@ onBeforeMount(() => {
 
 const pageClick = (index: number) => {
     comicList.value = [];
-    api.comicListApi({page: index, size: pageState.size}).then((res) => {
+    api.comicListApi({page: index, size: pageState.size,keyword:pageState.keyword}).then((res) => {
         if (!res.data) return;
         comicList.value = res.data.content;
         if (res.data.pageable) {
@@ -91,16 +91,16 @@ const toDetail = (uuid: string) => {
     }
 }
 
-.content {
+.comic-content {
     width: 100vw;
     max-width: 980px;
     height: calc(100% - 100px);
     background: rgba(255, 255, 255, 0.5);
     overflow-x: auto;
-    margin: 20px 0;
+    margin: 20px 0 0 0;
 }
 
-.content::-webkit-scrollbar {
+.comic-content::-webkit-scrollbar {
     display: none;
 }
 

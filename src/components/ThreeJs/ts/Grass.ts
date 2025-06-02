@@ -123,7 +123,7 @@ export class Grass {
                     }),
                 },
                 iScalar: this.iScalar,
-                pointLightPosition: {value: new Vector3(100, 100, 100),},
+                pointLightPosition: {value: new Vector3(100, 100, 100)},
                 pointLightDistance: {value: 10,},
                 pointLightDecay: {value: .01,},
             },

@@ -13,11 +13,13 @@ interface I_Props<T> {
     height?: string,
 }
 
-const createPopUps = <T extends abstract new (...args: any[]) => any>(
-    component: InstanceType<T>,
+const createPopUps = <
+    T extends abstract new (...args: any[]) => any
+>(
+    component: T,
     props: I_Props<InstanceType<T>["$props"]["data"]>
 ) => {
-    !props.popUpsId && (props.popUpsId = component.__name);
+    !props.popUpsId && (props.popUpsId = component["__name"]);
     let div: HTMLElement;
     const windowClass = "pop-ups-obj-";
     const windowId = windowClass.concat(props.popUpsId!);
@@ -33,26 +35,19 @@ const createPopUps = <T extends abstract new (...args: any[]) => any>(
         document.body.appendChild(div);
     } else {
         const popUpsObj = document.getElementById(windowId);
-        if (!popUpsObj) {
-            div = document.createElement("div");
-        } else {
-            div = popUpsObj;
-        }
+        div = !popUpsObj ? document.createElement("div") : popUpsObj;
     }
 
     const submitCallback = () => {
         render(null, div);
         document.body.removeChild(div);
-        if (document.body.contains(div)) {
-            document.body.removeChild(div);
-        }
+        document.body.contains(div) && document.body.removeChild(div);
+
     };
 
     const cancelCallback = () => {
         render(null, div);
-        if (document.body.contains(div)) {
-            document.body.removeChild(div);
-        }
+        document.body.contains(div) && document.body.removeChild(div);
     };
 
     // 重新渲染更新标题
@@ -76,56 +71,41 @@ const createPopUps = <T extends abstract new (...args: any[]) => any>(
         //没有窗口直接return结束函数
         if (classList.length <= 1) return;
         //被点击的窗口
-        const first = (document.getElementById(windowId) as Node).parentElement as Node;
+        const first = <HTMLElement>(<HTMLElement>document.getElementById(windowId)).parentElement;
         //最上层的窗口
-        const last = classList[classList.length - 1] as Node;
+        const last = <HTMLElement>classList[classList.length - 1];
         //当前窗口已经在最上层
         if (last === first) return;
         //父元素
-        const parentNode: Node = first.parentNode as Node;
+        const parentNode = <HTMLElement>first.parentNode;
         //插入到父元素内末尾，窗口移到最上层
         parentNode.insertBefore(first, last.nextSibling)
     };
 
+    let animation: Animation | null = null;
     //窗体缩放
     const fullScreen = (status: boolean) => {
-        // if (status === undefined || status == null) {
-        //     status = false;
-        // }
-        const popupsWindowId = "popups-window-".concat(props.popUpsId as string);
-        const fullScreenId = "full-screen-".concat(props.popUpsId as string);
-        const popupsWindow: HTMLElement = document.getElementById(popupsWindowId) as HTMLElement;
-        const fullScreenBtn: HTMLElement = document.getElementById(fullScreenId) as HTMLElement;
+        const fullScreenBtn = document.getElementById(`full-screen-${props.popUpsId}`);
+        const popupsWindow = document.getElementById(`popups-window-${props.popUpsId}`);
+
         if (!status) {
-            //设置过渡动画100ms全屏和位置
-            Object.assign(popupsWindow.style, {
-                transition: ".1s", width: "100vw", height: "100vh", top: "50%", left: "50%"
+            animation = popupsWindow!.animate({
+                width: "100vw", height: "100vh", top: "50%", left: "50%"
+            }, {
+                duration: 100, fill: "forwards"
             });
             // 更改按钮图标
-            fullScreenBtn.classList.remove("ri-fullscreen-fill");
-            fullScreenBtn.classList.add("ri-fullscreen-exit-fill");
+            fullScreenBtn!.classList.replace("ri-fullscreen-fill", "ri-fullscreen-exit-fill")
         } else {
-            //设置过渡动画100ms取消全屏
-            const window: HTMLElement = document.getElementById(windowId) as HTMLElement;
-            Object.assign(popupsWindow.style, {
-                transition: ".1s",
-                width: window.style.width,
-                height: window.style.height,
-                top: window.style.top,
-                left: window.style.left
-            });
+            animation?.reverse();
             // 更改按钮图标
-            fullScreenBtn.classList.remove("ri-fullscreen-exit-fill");
-            fullScreenBtn.classList.add("ri-fullscreen-fill");
+            fullScreenBtn!.classList.replace("ri-fullscreen-exit-fill", "ri-fullscreen-fill")
         }
-        //100ms后删除过渡动画防止拖动卡顿
-        setTimeout(() => {
-            popupsWindow.style.transition = "0s";
-        }, 100);
+        return !status;
     };
 
     //渲染窗体模板虚拟节点
-    const windowTemplate: VNode = createVNode(PopUps, {
+    const windowTemplate = createVNode(PopUps, {
         submitCallback,
         cancelCallback,
         fullScreen,
@@ -139,7 +119,7 @@ const createPopUps = <T extends abstract new (...args: any[]) => any>(
     // 渲染窗口模板
     render(windowTemplate, div);
     //渲染窗体虚拟节点
-    const popUpsContentVNode: VNode = createVNode(<any>component, {
+    const popUpsContentVNode: VNode = createVNode(<InstanceType<T>>component, {
         data: props.data,
         fullScreenStatus: false,
         updateTitle,
@@ -149,7 +129,7 @@ const createPopUps = <T extends abstract new (...args: any[]) => any>(
     });
 
     //渲染窗体内容
-    const contentId = "content-".concat(props.popUpsId!);
+    const contentId = `content-${props.popUpsId}`;
     const content = document.getElementById(contentId);
     if (content) render(popUpsContentVNode, content);
 
@@ -164,11 +144,11 @@ const createPopUps = <T extends abstract new (...args: any[]) => any>(
 };
 
 // 控制台关闭窗口
-window.dropWindow = (id: string): string => {
+window.dropWindow = (id: string) => {
     const windowClass = "pop-ups-obj-";
     const windowId: string = windowClass.concat(id);
     const popUpsObj = document.getElementById(windowId);
-    if (!popUpsObj) return "Not Find"
+    if (!popUpsObj) return "Not Found !";
     popUpsObj.remove();
     render(null, popUpsObj);
     return windowId;

@@ -12,8 +12,7 @@ import * as CANNON from "cannon-es";
 import {mergeGeometries} from "three/examples/jsm/utils/BufferGeometryUtils"
 import {Euler} from "three/src/math/Euler";
 import {Shape} from "shapes/Shape";
-import {ConvexGeometry} from "three/examples/jsm/geometries/ConvexGeometry";
-import {SimplifyModifier} from "three/examples/jsm/modifiers/SimplifyModifier";
+import {funcKey, hitboxCreator} from "@/components/ThreeJs/ts/LoadConfig";
 
 // import {OBB} from "three/examples/jsm/math/OBB";
 
@@ -24,6 +23,7 @@ interface I_Option {
     url: string,
     name: string,
     type: string,
+    pickup: boolean,
     active: (() => void) | undefined,
     infoList?: string[]
 }
@@ -36,50 +36,11 @@ interface I_Option_ {
     name?: string,
     type?: string,
     active?: (() => void) | undefined,
+    pickup?: boolean,
     infoList?: string[]
 }
 
-type funcKey = keyof typeof hitboxFuncMap;
-const hitboxFuncMap = {
-    AABB: (mesh: Mesh) => {
-        //AABB盒子
-        const box3 = new Box3().setFromObject(mesh);
-        const size = box3.getSize(new Vector3());
-        const [width, height, depth] = [size.x, size.y, size.z];
-        const geometry = new BoxGeometry(width, height, depth);
-        const hitBox = new Mesh(geometry);
-        const center = box3.getCenter(new Vector3());
-        hitBox.position.copy(center);
-        return hitBox;
-    },
-    convex: (mesh: Mesh) => {
-        const vertices: Vector3[] = [];
-        const position = mesh.geometry.attributes.position;
-        for (let i = 0; i < position.count; i++) {
-            const [x, y, z] = [position.getX(i), position.getY(i), position.getZ(i)]
-            vertices.push(new Vector3(x, y, z));
-        }
-        const geometry = new ConvexGeometry(vertices);
-        const hitbox = new Mesh(geometry);
-        hitbox.position.copy(mesh.position);
-        hitbox.scale.copy(mesh.scale);
-        hitbox.rotation.copy(mesh.rotation);
-        return hitbox;
-    },
-    simplify: (mesh: Mesh) => {
-        // 精简模型
-        const simplifyModifier = new SimplifyModifier();
-        const hitBox = mesh.clone();
-        hitBox.geometry = simplifyModifier.modify(hitBox.geometry, 0);
-        hitBox.material = new MeshBasicMaterial({color: 0x000000, wireframe: true, transparent: true});
-        return hitBox;
-    },
-    OBB: (mesh: Mesh) => {
-        return mesh;
-    }
-}
-
-export class GLTFAndCANNONLoader {
+export class ModelLoader {
     private readonly option: I_Option;
     private object: Mesh | undefined;
     private body: CANNON.Body | undefined;
@@ -93,8 +54,9 @@ export class GLTFAndCANNONLoader {
             name: "",
             type: "?",
             url: "",
-            active: undefined,
+            pickup: false,
             infoList: [],
+            active:()=>{},
         };
         this.option = {
             ...defaultOption,
@@ -135,6 +97,7 @@ export class GLTFAndCANNONLoader {
             mesh.userData.type = this.option.type;
             mesh.userData.active = this.option.active;
             mesh.userData.infoList = this.option.infoList;
+            mesh.userData.pickup = this.option.pickup;
             this.object = mesh;
             callback(mesh);
         });
@@ -147,15 +110,11 @@ export class GLTFAndCANNONLoader {
             return this;
         }
 
-        const getCreateHitboxFunc = (type: funcKey) => {
-            return hitboxFuncMap[type];
-        };
-
         if (this.object) {
-            this.hitbox = getCreateHitboxFunc(type)(this.object);
+            this.hitbox = hitboxCreator[type](this.object);
             callback(this.hitbox, this.object);
         } else this.createMesh((mesh: Mesh) => {
-            this.hitbox = getCreateHitboxFunc(type)(mesh);
+            this.hitbox = hitboxCreator[type](mesh);
             callback(this.hitbox, mesh);
         });
         return this;
@@ -166,14 +125,14 @@ export class GLTFAndCANNONLoader {
             callback(this.body, this.object);
             return this;
         }
-        const createBody_ = (shape: Shape) => {
+        const createShapeBody = (shape: Shape) => {
             return new CANNON.Body({
                 mass: shapeOption.mass,
                 shape: shape,
                 position: <unknown>this.option.position as CANNON.Vec3,
             });
         };
-        const createBody__ = (mesh: Mesh) => {
+        const createMeshBody = (mesh: Mesh) => {
             if (shapeOption.type === "Cylinder") {
                 const shape = new CANNON.Cylinder(
                     shapeOption.radiusTop,
@@ -181,21 +140,21 @@ export class GLTFAndCANNONLoader {
                     shapeOption.height,
                     shapeOption.numSegments
                 );
-                callback(createBody_(shape), mesh)
+                callback(createShapeBody(shape), mesh)
             } else if (shapeOption.type === "Sphere") {
                 const shape = new CANNON.Sphere(shapeOption.radius);
-                callback(createBody_(shape), mesh)
+                callback(createShapeBody(shape), mesh)
             } else if (shapeOption.type === "Box") {
                 const shape = new CANNON.Box(new CANNON.Vec3(shapeOption.x, shapeOption.y, shapeOption.z));
-                callback(createBody_(shape), mesh)
+                callback(createShapeBody(shape), mesh)
             } else if (shapeOption.type === "AABB") {
                 const box3 = new Box3().setFromObject(mesh);
                 const size = box3.getSize(new Vector3());
                 const [width, height, depth] = [size.x, size.y, size.z];
                 const shape = new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, depth / 2));
-                callback(createBody_(shape), mesh);
+                callback(createShapeBody(shape), mesh);
             } else if (shapeOption.type === "convex") {
-                const aabbMesh = hitboxFuncMap["convex"](mesh);
+                const aabbMesh = hitboxCreator.convex(mesh);
                 const vertices = Array.from(aabbMesh.geometry.attributes.position.array);
                 const indices: number[] = [];
                 for (let i = 0; i < vertices.length / 3; i++) {
@@ -205,13 +164,13 @@ export class GLTFAndCANNONLoader {
                 const body = new CANNON.Body({shape: trimesh,});
                 callback(body, mesh);
             } else {
-                callback(createBody_(new CANNON.Sphere(1)), mesh);
+                callback(createShapeBody(new CANNON.Sphere(1)), mesh);
             }
         }
         if (this.object) {
-            createBody__(this.object);
+            createMeshBody(this.object);
         } else this.createMesh((mesh: Mesh) => {
-            createBody__(mesh);
+            createMeshBody(mesh);
         });
         return this;
     }

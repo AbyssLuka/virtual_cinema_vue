@@ -18,7 +18,7 @@ export class Controls {
     private readonly playerCollider: Capsule;
     private readonly playerVelocity: Vector3;
     private readonly playerDirection: Vector3;
-    private readonly playerBody: CANNON.Body;
+    private readonly _playerBody: CANNON.Body;
     private playerOnFloor = false;
     private GRAVITY = 30;
     private keyAny_Status = {
@@ -40,7 +40,7 @@ export class Controls {
         this.controls = new PointerLockControls(camera, dom);
         const cylinder = new CANNON.Cylinder(1, 1, 6, 20);
 
-        this.playerBody = new CANNON.Body({
+        this._playerBody = new CANNON.Body({
             mass: 45,
             shape: cylinder,
             position: camera.position as unknown as CANNON.Vec3,
@@ -54,6 +54,22 @@ export class Controls {
         this.controls.addEventListener('change', () => {
             this.allowRotate && this.camera.rotation.copy(this.tempCameraRotation);
         });
+    }
+
+    private throttledCallback = () => void 0;
+
+    public addChangeListener(callback: () => void) {
+        //节流
+        let lastCall = 0;
+        this.throttledCallback = () => {
+            const now = performance.now();
+            if (now - lastCall >= 100) { // 每100毫秒调用一次
+                callback();
+                lastCall = now;
+            }
+        };
+        this.controls.addEventListener('change', this.throttledCallback);
+
     }
 
     private initKeyListener() {
@@ -89,8 +105,8 @@ export class Controls {
         this.allowRotate = status;
     }
 
-    public getPlayerBody() {
-        return this.playerBody;
+    get playerBody() {
+        return this._playerBody;
     }
 
     //键盘时间监听
@@ -107,7 +123,7 @@ export class Controls {
         document.addEventListener("mousedown", mousedownFunc);
     }
 
-    private funcList: { type: string, func: ((...any) => void) }[] = [];
+    private funcList: { type: string, func: ((...args: any[]) => void) }[] = [];
 
     //销毁监听器
     public dispose() {
@@ -197,8 +213,8 @@ export class Controls {
         // 更新控制器和相机位置
         this.camera.position.copy(this.playerCollider.end);
         let {x, y, z} = this.playerCollider.start;
-        this.playerBody.position.set(x, y + 2, z);
-        this.playerBody.quaternion.set(0, 0, 0, 1);
+        this._playerBody.position.set(x, y + 2, z);
+        this._playerBody.quaternion.set(0, 0, 0, 1);
     }
 
     public create() {
@@ -207,7 +223,6 @@ export class Controls {
 
 
     private pointLockInterval = 0;
-
     //指针锁
     public controlsLock(dom: HTMLElement) {
         dom.addEventListener("click", () => {
@@ -227,15 +242,14 @@ export class Controls {
             //计算移动距离
             const speedDelta = delta * (this.playerOnFloor ? 50 : 15) * quicken;
             //移动
-            if (this.keyAny_Status.KeyA) this.playerVelocity.add(this.getSideVector().multiplyScalar(-speedDelta));
-            if (this.keyAny_Status.KeyD) this.playerVelocity.add(this.getSideVector().multiplyScalar(speedDelta));
-            if (this.keyAny_Status.KeyW) this.playerVelocity.add(this.getForwardVector().multiplyScalar(speedDelta));
-            if (this.keyAny_Status.KeyS) this.playerVelocity.add(this.getForwardVector().multiplyScalar(-speedDelta));
-            if (this.keyAny_Status.KeyA ||
-                this.keyAny_Status.KeyD ||
-                this.keyAny_Status.KeyW ||
-                this.keyAny_Status.KeyS) {
+            const {KeyA, KeyD, KeyW, KeyS} = this.keyAny_Status;
+            if (KeyA) this.playerVelocity.add(this.getSideVector().multiplyScalar(-speedDelta));
+            if (KeyD) this.playerVelocity.add(this.getSideVector().multiplyScalar(speedDelta));
+            if (KeyW) this.playerVelocity.add(this.getForwardVector().multiplyScalar(speedDelta));
+            if (KeyS) this.playerVelocity.add(this.getForwardVector().multiplyScalar(-speedDelta));
+            if (KeyA || KeyD || KeyW || KeyS) {
                 this.playerStatus = "run";
+                this.throttledCallback();
             } else {
                 this.playerStatus = "stand";
             }

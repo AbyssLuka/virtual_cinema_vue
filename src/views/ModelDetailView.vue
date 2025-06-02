@@ -1,7 +1,6 @@
 <template>
     <div class="webgl-container">
         <div ref="canvas-container" style="width: 100%;height: 100%"></div>
-        <!--        <canvas id="model-detail-canvas"></canvas>-->
         <div class="control-panel">
             <div class="luka-button animation-button"
                  :style="state.AnimationActions[index].isScheduled()?'color:forestgreen':''"
@@ -222,11 +221,6 @@ const dispose = () => {
     position: relative;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
-}
-
-#model-detail-canvas {
-    width: 100%;
-    height: 100%;
 }
 
 .control-panel {

@@ -25,6 +25,7 @@
                 <img :src="api.thumbnailUrl(image.fileUuid)"
                      v-for="(image,index) in comicState.fileList"
                      :key="index"
+                     @error="(e:Event)=>((<HTMLImageElement>e.target).src = '/image/ErrorImage.svg')"
                      alt=""
                      @click="openImgWindow(index)"
                      class="comic-page"
@@ -34,10 +35,10 @@
     </div>
 </template>
 <script setup lang="ts">
-import {reactive, onBeforeMount, ref, onMounted, onUnmounted} from "vue";
+import {reactive, onBeforeMount, ref, onUnmounted} from "vue";
 import {useRoute} from "vue-router";
 import api from "@/request/api";
-import {I_Detail_, I_ResData} from "@/global/interface";
+import {I_Detail_} from "@/global/interface";
 import createPopUps from "@/util/createPopUps";
 
 const cover = ref("")
@@ -69,7 +70,8 @@ const init = () => {
 }
 
 import ImagePopUps from "@/components/File/PopUps/ImagePopUps.vue";
-const funcList:Function[] = []
+
+const funcList: Function[] = []
 const openImgWindow = (index: number) => {
     const fns = createPopUps(ImagePopUps, {
         title: comicState.title,

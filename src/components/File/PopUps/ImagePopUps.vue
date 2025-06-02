@@ -1,11 +1,14 @@
 <template>
-    <div class="image-content center">
-        <img class="image-view" :src="imageUrl" alt="" @dblclick="props.fullScreen()" ref="imageDom"/>
-        <div style="height: 10px;color: #111111;font-weight: bold">{{ index }}</div>
+    <div class="image-content center" ref="image-content">
+        <img class="image-view"
+             :src="imageUrl" alt=""
+             @dblclick="props.fullScreen()"
+             ref="imageEl"/>
+        <div style="height: 10px;color: #ffffff;font-weight: bold">-- {{ index + 1 }}/{{ imageList.length }} --</div>
         <div class="pre-image ri-arrow-left-s-line center ri-5x"
-             @click="preImage()" v-show="index > 0"></div>
+             @click="changeImage(-1)" v-show="index > 0"></div>
         <div class="next-image ri-arrow-right-s-line center ri-5x"
-             @click="nextImage()" v-show="index < imageList.length - 1"></div>
+             @click="changeImage(1)" v-show="index < imageList.length - 1"></div>
     </div>
 </template>
 
@@ -33,7 +36,8 @@ const props = withDefaults(defineProps<{
 
 const imageList = ref<I_File[]>([]);
 
-const imageDom = useTemplateRef("imageDom");
+const imageEl = useTemplateRef<HTMLElement>("imageEl");
+const contentEl = useTemplateRef<HTMLElement>("image-content");
 const imageUrl = ref("");
 const imageTitle = ref("");
 const index = ref(0);
@@ -46,21 +50,29 @@ watch(() => props.data, (newImgObj: I_PropsData) => {
 }, {immediate: true});
 
 const preImage = () => {
-    imageTitle.value = imageList.value[--index.value].fileName;
-    imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-    setTimeout(() => {
-        imageUrl.value = api.fileUrl(imageList.value[index.value].fileUuid);
-    }, 50)
-    props.updateTitle(imageTitle.value);
+
 }
 
-const nextImage = () => {
-    imageTitle.value = imageList.value[++index.value].fileName;
-    imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-    setTimeout(() => {
+const changeImage = (active: 1 | -1) => {
+    imageEl.value!.animate([
+        {transform: `translateX(${-contentEl.value!.offsetWidth * active}px)`},
+    ], {
+        duration: 200
+    }).finished.then(() => {
+        imageEl.value!.style.transform = `translateX(${contentEl.value!.offsetWidth * active}px)`;
+        index.value += active;
+        imageTitle.value = imageList.value[index.value].fileName;
+        imageUrl.value = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
         imageUrl.value = api.fileUrl(imageList.value[index.value].fileUuid);
-    }, 50)
-    props.updateTitle(imageTitle.value);
+        props.updateTitle(imageTitle.value);
+        imageEl.value!.animate([
+            {transform: "translateX(0)"},
+        ], {
+            duration: 200,
+        }).finished.then(() => {
+            imageEl.value!.style.transform = "translateX(0)";
+        })
+    })
 }
 </script>
 
@@ -69,7 +81,8 @@ const nextImage = () => {
 .image-content {
     position: relative;
     width: 100%;
-    height: 100%
+    height: 100%;
+    overflow: hidden;
 }
 
 .image-view {

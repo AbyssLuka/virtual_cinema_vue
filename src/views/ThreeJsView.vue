@@ -42,7 +42,6 @@ import {useRoute} from "vue-router";
 
 // import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
-import {Octree} from "three/examples/jsm/math/Octree";
 import {CSS2DRenderer} from "three/examples/jsm/renderers/CSS2DRenderer";
 import {RGBELoader} from "three/examples/jsm/loaders/RGBELoader";
 import {
@@ -52,7 +51,6 @@ import {
     Mesh,
     Object3D,
     PCFSoftShadowMap,
-    Scene,
     Vector2,
     WebGLRenderer,
     WebGLRenderTarget
@@ -67,16 +65,21 @@ import {
     controlsClass,
     cameraClass,
     handItemCamera,
-    handItemScene
+    handItemScene,
+    rayDetect,
+    worldOctree,
+    worldScene,
+    physicalWorld,
+    physicalWorldClass
 } from "@/components/ThreeJs/ts/Global";
 import BindKey from "@/components/ThreeJs/ts/BindKey"
-import {useDisplayActive, usePickUp} from "@/components/ThreeJs/ts/ActiveFunc";
+import {useDisplayActive} from "@/components/ThreeJs/ts/ActiveFunc";
 import {ThreeJsStats} from "@/components/ThreeJs/ts/ThreeJsStats";
-import {PhysicalWorld} from "@/components/ThreeJs/ts/PhysicalWorld";
-import {RayDetect} from "@/components/ThreeJs/ts/RayDetect";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {OutlinePass} from "three/examples/jsm/postprocessing/OutlinePass";
+import {listener} from "@/components/ThreeJs/ts/EventListener";
+import {loadModelCfg} from "@/components/ThreeJs/ts/LoadConfig";
 
 const videoUrl = ref("");
 const pauseViewShow = ref(true);
@@ -84,7 +87,6 @@ const subtitle = ref("");
 const subtitleUrl = ref("");
 const activeInfo = ref("");
 
-let roomId = "";
 const userId = <string>localStorage.getItem("token");
 const detectShow = ref(false);
 const displayVideoShow = ref(false);
@@ -98,9 +100,7 @@ const displayVideo = useTemplateRef<HTMLVideoElement>("displayVideo")!;
 const continueGame = useTemplateRef<HTMLVideoElement>("continueGame")!;
 const screenContainer = useTemplateRef<HTMLVideoElement>("screenContainer")!;
 
-const scene = new Scene();//图形世界
-const physicalWorldClass = new PhysicalWorld();//物理世界
-const physicalWorld = physicalWorldClass.create();//物理世界
+
 // const cubeTexture = new CubeTextureLoader()
 //     .setPath("/3d/skybox/")
 //     .load(["posx.jpg", "negx.jpg", "posy.jpg", "negy.jpg", "posz.jpg", "negz.jpg"]);
@@ -108,9 +108,9 @@ const physicalWorld = physicalWorldClass.create();//物理世界
 new RGBELoader().loadAsync("/3d/skybox/skydome_hdri-starlight_sky_fullview.hdr",)
     .then((texture) => {
         texture.mapping = EquirectangularReflectionMapping;
-        scene.background = texture;
+        worldScene.background = texture;
         // scene.background = new Color(0x000000);
-        scene.environment = texture;
+        worldScene.environment = texture;
     })
 // scene.environment = cubeTexture;
 //渲染器//antialias抗锯齿
@@ -122,31 +122,24 @@ renderer.shadowMap.enabled = true;
 const css2DRenderer = new CSS2DRenderer();
 
 //碰撞线框
-CannonDebugger(scene, physicalWorld, {color: 0x077700});
+// const cannonDebugger = CannonDebugger(worldScene, physicalWorld, {color: 0x077700});
 //性能监视器
 const StatsClass = new ThreeJsStats();
 const stats = StatsClass.create();
 
-//八叉树
-const worldOctree = new Octree();
-
 const controls = controlsClass.create();
-physicalWorld.addBody(controlsClass.getPlayerBody());
-scene.add(cameraClass.camera);
+physicalWorld.addBody(controlsClass.playerBody);
+worldScene.add(cameraClass.camera);
 renderer.sortObjects = true;
-// 射线检测
-const rayDetect = new RayDetect(new Vector2(0, 0), cameraClass.camera);
 
-const pickUp = usePickUp(rayDetect, activeInfo)
-const loadModel = new InitScene(scene, worldOctree, physicalWorld);
+const loadModel = new InitScene(worldScene, worldOctree, physicalWorld);
 
-let wsApi: WsApi;
+const roomId = <string>route.params.room_id;
+const wsApi = new WsApi(userId);
 
-onMounted(async () => {
-    roomId = <string>route.params.room_id;
-    wsApi = new WsApi(userId);
+onMounted(() => {
     //页面初始化
-    await initGraphicalWorld();
+    initGraphicalWorld();
     //刷新渲染动画
     screenContainer.value!.append(stats.dom);
     createPlayer();
@@ -167,7 +160,7 @@ const initComposer = () => {
         )
     );
 
-    const renderPass = new RenderPass(scene, cameraClass.camera);
+    const renderPass = new RenderPass(worldScene, cameraClass.camera);
     composer.addPass(renderPass);
 
     outlinePass = new OutlinePass(
@@ -175,7 +168,7 @@ const initComposer = () => {
             renderContainer.value!.clientWidth,
             renderContainer.value!.clientHeight
         ),
-        scene,
+        worldScene,
         cameraClass.camera
     );
     outlinePass.edgeStrength = 3;
@@ -191,20 +184,21 @@ const initComposer = () => {
 }
 
 //图形世界初始化
-const initGraphicalWorld = async () => {
+const initGraphicalWorld = () => {
     // 坐标
     // const axesHelper = new AxesHelper();
     // scene.add(axesHelper);
 
     const send = wsApi.useSendVideoInfo(roomId, videoUrl, displayVideo.value!);
-
-    loadModel.loadGLTFModel(pickUp);
+    listener.on("ws:send", send)
+    // loadModel.loadGLTFModel();
+    loadModelCfg();
     //创建遥控器
-    loadModel.loadTVControl(displayVideo.value!, pickUp, send);
+    loadModel.loadTVControl(displayVideo.value!);
     loadModel.loadRoom();
     //创建显示器
-    const activeFunc = useDisplayActive(displayVideo.value!, videoUrl, subtitleUrl, subtitle, send)
-    await loadModel.loadDisplay(displayVideo.value!, activeFunc);
+    const activeFunc = useDisplayActive(displayVideo.value!, videoUrl, subtitleUrl, subtitle)
+    loadModel.loadDisplay(displayVideo.value!, activeFunc).then();
     loadModel.createTerrain();
     loadModel.loadMoon();
     // 添加画布至DOM树
@@ -226,20 +220,16 @@ const roleGoodsActive = () => {
     BindKey.keyMouse2();
     BindKey.keyLoopNumber(activeInfo);
     BindKey.keyQ(activeInfo);
-    BindKey.keyE(rayDetect);
+    BindKey.keyE();
     BindKey.keyNumber();
 }
 
 //计时器
 const clock = new Clock();
-let lastTime = 0;
 //渲染函数ID
-// let requestAnimationFrameId = 0;
 const renderLoopFunc = () => {
     let delta = clock.getDelta();
-    lastTime += delta;
     //每一帧调用
-    // requestAnimationFrameId = requestAnimationFrame(renderLoopFunc);
     //刷新物理碰撞线框
     // cannonDebugger.update();
     //刷新物理世界
@@ -252,7 +242,7 @@ const renderLoopFunc = () => {
     stats.update();
     //渲染图像世界画面
     renderer.clear();
-    renderer.render(scene, cameraClass.camera);
+    renderer.render(worldScene, cameraClass.camera);
     outlinePass && composer.render();
     renderer.autoClear = false;
     renderer.clearDepth();
@@ -266,32 +256,30 @@ const renderLoopFunc = () => {
     controlsClass.update(worldOctree, delta);
     //刷新物理引擎
     physicalWorldClass.update(physicalObjects);
-    //检测是是否有可互动的Mesh
-    if (lastTime >= .2) {
-        lastTime = 0;
-        rayDetect.firstMesh(worldRayObjects, (intersectObject) => {
-            detectShow.value = !!intersectObject;
-            if (intersectObject != null) {
-                if (!outlinePass || outlinePass.selectedObjects[0] === intersectObject) return;
-                outlinePass.selectedObjects = [intersectObject];
-            } else {
-                outlinePass && (outlinePass.selectedObjects = []);
-            }
-        });
-    }
 };
+
+controlsClass.addChangeListener(()=>{
+    rayDetect.firstMesh(worldRayObjects, (intersectObject) => {
+        if (intersectObject != null) {
+            if (!outlinePass || outlinePass.selectedObjects[0] === intersectObject) return;
+            outlinePass.selectedObjects = [intersectObject];
+        } else {
+            outlinePass && (outlinePass.selectedObjects = []);
+        }
+        detectShow.value = !!intersectObject;
+    });
+})
 
 const createPlayer = () => {
     const modelName = <string>route.params.model_name;
     modelName && wsApi.createPlayer({
         userId,
-        scene,
         model: modelName,
         roomId,
         callback: async () => {
             //获取当前场景的信息后生成视频模型
             const videoUuid = <string>localStorage.getItem("/threejs:videoUuid");
-            (await loadModel.requestDVDBox(videoUuid))(pickUp);
+            (await loadModel.requestDVDBox(videoUuid))();
         }
     })
 }
@@ -317,7 +305,7 @@ onBeforeUnmount(() => {
 
 //释放资源
 const clearScene = () => {
-    scene.traverse((child: Object3D) => {
+    worldScene.traverse((child: Object3D) => {
         if (child.type === "Mesh" && (child) instanceof Mesh) {
             child.material.dispose && child.material.dispose();
             child.geometry && child.geometry.dispose();
@@ -325,7 +313,7 @@ const clearScene = () => {
     });
     renderer.forceContextLoss();
     renderer.dispose();
-    scene.clear();
+    worldScene.clear();
 }
 
 </script>

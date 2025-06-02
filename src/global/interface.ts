@@ -19,8 +19,8 @@ export interface I_UserInfo {
     uuid: string,
 }
 
-export interface I_Pageable {
-    content: [],
+export interface I_Pageable<T = any> {
+    content: T[],
     pageable: {
         pageNumber: number,
         pageSize: number,
@@ -43,11 +43,11 @@ export interface I_File {
 
 export interface I_TreeNode {
     title: string,
-    subDirectory: I_TreeNode[],
+    subDir: I_TreeNode[],
     show: boolean,
     type: string,
     uuid: string,
-    absolutePath: string,
+    absPath: string,
 }
 
 export interface I_Video {
@@ -70,6 +70,14 @@ export interface I_Detail_ {
     pathUuid: string,
     title: string,
     uuid: string,
+}
+
+export interface I_Collection {
+    uuid: string,
+    userUuid: string,
+    viewUuid: string,
+    videoViewData: I_Detail_,
+    createTime: string,
 }
 
 export interface I_SubtitleObject {

@@ -1,11 +1,11 @@
 <template>
-    <div v-for="(anime,index) in collectList" :key="index" class="collect-list box">
-        <div class="luka-title collect-title" @click="toDetail(anime['videoViewData']['uuid'])">
-            {{ anime["videoViewData"]["title"] }}
+    <div v-for="(video,index) in collectList" :key="index" class="collect-list box">
+        <div class="luka-title collect-title" @click="toDetail(video.viewUuid)">
+            {{ video.videoViewData.title }}
         </div>
-        <image-list class="image-list" :size="4" :fileList="anime['videoViewData']['fileList']"></image-list>
+        <image-list class="image-list" :size="4" :fileList="video.videoViewData.fileList"></image-list>
         <div class="luka-title" style="display: flex;justify-content: flex-end;">
-            {{ anime["videoViewData"]["createTime"] }}
+            {{ video.videoViewData.createTime }}
         </div>
     </div>
 </template>
@@ -15,10 +15,11 @@ import api from "@/request/api";
 import ImageList from "@/components/module/ImageList.vue";
 import {useRouter} from "vue-router";
 import {onMounted, ref} from "vue";
+import {I_Collection} from "@/global/interface";
 
 
 const router = useRouter();
-const collectList = ref([]);
+const collectList = ref<I_Collection[]>([]);
 onMounted(() => {
     api.collectListApi(1, 10).then((res) => {
         if (res.data) collectList.value = res.data.content;

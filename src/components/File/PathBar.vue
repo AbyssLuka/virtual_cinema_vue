@@ -33,7 +33,6 @@ const {
     overflow-x: auto;
     user-select: none;
     display: flex;
-    height: 50px;
     background: rgba(255, 255, 255, 0.50);
     backdrop-filter: blur(10px);
     align-items: center;

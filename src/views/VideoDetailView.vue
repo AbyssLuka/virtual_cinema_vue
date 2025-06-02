@@ -8,7 +8,7 @@
                 <div class="episode-container">
                     <div class="horiz-warp">
                         <div class="episode-item box center" v-for="(item,index) in fileList.filter(
-                            fileListItem=>fileTypeList.video.includes(fileListItem['fileType'])
+                            fileListItem=>fileTypes[fileListItem.fileType] === 'video'
                         )" :key="index" :class="[index === currentPlay.index?'episode-item-playing':'']"
                              @click="[playVideo(item) ,currentPlay.index=index]" :title="item['fileName']">
                             P.{{ index + 1 }}
@@ -42,7 +42,7 @@
 import CircleMenu from "@/components/module/CircleMenu.vue";
 import ImageList from "@/components/module/ImageList.vue";
 import AddAnimeTag from "@/components/AnimePostDetail/PopUps/AddAnimeTag.vue";
-import {fileTypeList} from "@/global/global";
+import {fileTypes} from "@/global/global";
 import useClipboard from "vue-clipboard3"
 import api from "@/request/api";
 import util from "@/util/util";
@@ -129,14 +129,13 @@ const initMenuList = () => {
     ];
 }
 
-const copyUrl = async () => {
+const copyUrl = () => {
     const {toClipboard} = useClipboard();
-    try {
-        await toClipboard(window.location.href);
+    toClipboard(window.location.href).then(() => {
         alert("URL已复制！")
-    } catch (e) {
-        console.error(e)
-    }
+    }, () => {
+        alert("复制失败");
+    });
 }
 
 const route = useRoute();
@@ -155,7 +154,7 @@ const addCollect = () => {
 }
 
 const delCollect = () => {
-    let animeUuid = <string>route.query.data;
+    const animeUuid = <string>route.query.data;
     api.unCollectApi(animeUuid).then((res) => {
         if (res.code === 200) {
             collectInfo.text = "收藏";
@@ -175,14 +174,14 @@ const init = () => {
         fileList.value = res.data.detail.fileList;
         videoTitle.value = res.data.detail.title;
         videoInfo.value = res.data.detail.info;
-        let firstVideo = fileList.value.filter(
-            fileListItem => fileTypeList.video.includes(fileListItem.fileType)
+        const firstVideo = fileList.value.filter(
+            fileListItem => fileTypes[fileListItem.fileType] === "video"
         )[0];           //先播放的视频
         currentPlay.url = api.videoUrl(firstVideo.fileUuid);
         currentPlay.name = firstVideo.fileName;
         loadSubtitle(firstVideo.fileUuid);
         const token = localStorage.getItem("token");
-        if (![undefined, null, "null", "undefined", ""].includes(token)) return;
+        if ([null, "null", "undefined", ""].includes(token)) return;
         api.collectIsHaveApi(uuid).then((res) => {
             if (res.data) {
                 collectInfo.text = "已收藏";

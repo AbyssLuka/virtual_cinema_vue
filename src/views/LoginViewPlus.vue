@@ -10,17 +10,17 @@
                 <h2 class="login-title">LOGIN</h2>
                 <form class="login-input" @submit.prevent="login">
                     <div class="input-label">
-                        <input v-model="loginData.username" id="login-user-name" type="text" required="true"/>
+                        <input v-model="loginData.username" id="login-user-name" type="text" required/>
                         <span class="input-text" id="login-input-text-username">USERNAME</span>
                     </div>
                     <div class="input-label">
                         <input v-model="loginData.password" id="login-pass-word" type="password"
-                               required="true"/>
+                               required/>
                         <span class="input-text" id="login-input-text-password">PASSWORD</span>
                     </div>
                     <div class="code-container">
                         <div class="input-label">
-                            <input v-model="loginData.code" id="login-code" type="text" required="true"
+                            <input v-model="loginData.code" id="login-code" type="text" required
                                    autocomplete="off"/>
                             <span class="input-text" id="login-input-text-code">CODE</span>
                         </div>
@@ -38,20 +38,26 @@
                     <h2 class="login-title">SIGNUP</h2>
                     <form class="login-input" @submit.prevent="signup">
                         <label class="input-label">
-                            <input v-model="registerData.username" id="register-user-name" type="text"
-                                   required="true"/>
+                            <input v-model="registerData.username"
+                                   id="register-user-name"
+                                   type="text"
+                                   required/>
                             <span class="input-text" id="register-input-text-username">USERNAME</span>
                         </label>
                         <label class="input-label">
-                            <input v-model="registerData.password" id="register-pass-word" type="password"
-                                   required="true"/>
+                            <input v-model="registerData.password"
+                                   id="register-pass-word"
+                                   type="password"
+                                   required/>
                             <span class="input-text" id="register-input-text-password">PASSWORD</span>
                         </label>
                         <label class="input-label">
-                            <input v-model="registerData.email" id="register-emali" type="text"
-                                   required="true"
+                            <input v-model="registerData.email"
+                                   id="register-email"
+                                   type="text"
+                                   required
                                    autocomplete="off"/>
-                            <span class="input-text" id="register-input-text-emali">EMAIL</span>
+                            <span class="input-text" id="register-input-text-email">EMAIL</span>
                         </label>
                         <div class="login-btn-container">
                             <button type="submit" class="login-btn" @click="signup">SIGNUP</button>
@@ -98,17 +104,13 @@ const uploadCode = () => {
 }
 
 const login = () => {
-    let flag: boolean = regular.username.test(loginData.username);
-    flag || showTips("用户名必须4~16位英文+数字！", 3000);
-    if (!flag) return;
-    flag = regular.password.test(loginData.password);
-    flag || showTips("密码必须8~16位英文+数字！", 3000);
-    if (!flag) return;
-    flag = regular.code.test(loginData.code);
-    flag || showTips("验证码输入错误！", 3000);
-    if (!flag) return;
-
-    api.loginApi(loginData).then((res) => {
+    if (regular.username.test(loginData.username)) {
+        showTips("用户名必须4~16位英文+数字！", 3000);
+    } else if (regular.password.test(loginData.password)) {
+        showTips("密码必须8~16位英文+数字！", 3000);
+    } else if (regular.code.test(loginData.code)) {
+        showTips("验证码输入错误！", 3000);
+    } else api.loginApi(loginData).then((res) => {
         if (res.code === 200) {
             route.query.redirect || router.push("/");
             route.query.redirect && router.push(route.query.redirect.toString());
@@ -119,16 +121,13 @@ const login = () => {
 }
 
 const signup = () => {
-    let flag: boolean = regular.username.test(registerData.username);
-    flag || showTips("用户名必须4~16位英文+数字！", 3000);
-    if (!flag) return;
-    flag = regular.password.test(registerData.password);
-    flag || showTips("密码必须8~16位英文+数字！", 3000);
-    if (!flag) return;
-    flag = regular.email.test(registerData.email);
-    flag || showTips("邮箱格式错误！", 3000);
-    if (!flag) return;
-    api.registerApi(registerData).then((res) => {
+    if (regular.username.test(registerData.username)) {
+        showTips("用户名必须4~16位英文+数字！", 3000);
+    } else if (regular.password.test(registerData.password)) {
+        showTips("密码必须8~16位英文+数字！", 3000);
+    } else if (regular.email.test(registerData.email)) {
+        showTips("邮箱格式错误！", 3000);
+    } else api.registerApi(registerData).then((res) => {
         showTips(res.msg, 5000);
     });
 }
@@ -310,7 +309,7 @@ input {
 }
 
 
-#register-pass-word, #register-user-name, #register-emali {
+#register-pass-word, #register-user-name, #register-email {
     width: 300px;
 }
 
@@ -330,8 +329,8 @@ input {
     color: orangered;
 }
 
-#register-emali:focus + #register-input-text-emali,
-#register-emali:valid + #register-input-text-emali {
+#register-email:focus + #register-input-text-email,
+#register-email:valid + #register-input-text-email {
     top: -20px;
     color: orangered;
 }

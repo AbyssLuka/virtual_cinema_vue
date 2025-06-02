@@ -19,25 +19,24 @@ import {
     BufferGeometry,
     FogExp2,
     SpriteMaterial,
-    Sprite, AdditiveBlending, Light
+    Sprite, AdditiveBlending, Light, Object3D, Box3
 } from "three";
 import {Octree} from "three/examples/jsm/math/Octree";
 import * as CANNON from "cannon-es";
-import {GLTFAndCANNONLoader} from "@/components/ThreeJs/ts/GLTFAndCANNONLoader";
+import {ModelLoader} from "@/components/ThreeJs/ts/ModelLoader";
 import {TVControl} from "@/components/ThreeJs/ts/TVControl";
 import {watch} from "vue";
 import {Display} from "@/components/ThreeJs/ts/Display";
 import {DVD_Box} from "@/components/ThreeJs/ts/DVD_Box";
 import api from "@/request/api";
 import {I_File} from "@/global/interface";
-import {fileTypeList} from "@/global/global";
 import {createNoise2D} from "simplex-noise";
 import grassShader from "@/components/ThreeJs/shaders/GrassShader";
 import {Lensflare, LensflareElement} from "three/examples/jsm/objects/Lensflare";
 import {cameraClass, controlsClass, inventoryState} from "@/components/ThreeJs/ts/Global";
 import {worldRayObjects, physicalObjects} from "@/components/ThreeJs/ts/Global";
-import {Grass} from "@/components/ThreeJs/ts/Grass";
-
+import {fileTypes} from "@/global/global";
+import {listener} from "@/components/ThreeJs/ts/EventListener";
 export class InitScene {
 
     private noise2D = createNoise2D(() => 0.4389958785683823);
@@ -46,92 +45,11 @@ export class InitScene {
         private readonly scene: Scene,
         private readonly octree: Octree,
         private readonly world: CANNON.World,
-    ) {}
-
-    public loadGLTFModel(active: () => void) {
-
-        new GLTFAndCANNONLoader({
-            url: "/3d/room/model/cola.glb",
-            active: active,
-            name: "CocaCola",
-            type: "COLA",
-            position: new Vector3(5.5, -2.1, 5),
-        }).createBody({
-            type: "Cylinder",
-            radiusTop: 1 / 3,
-            radiusBottom: 1 / 3,
-            height: 1,
-            numSegments: 20,
-            mass: 1
-        }, (body, mesh) => {
-            this.scene.add(mesh);
-            this.world.addBody(body);
-            physicalObjects.push({body, mesh});
-            worldRayObjects.push(mesh);
-        });
-
-        new GLTFAndCANNONLoader({
-            url: "/3d/room/model/teapoy.glb",
-            name: "teapoy",
-            position: new Vector3(5, -3.8, 5),
-        }).createHitBox("AABB", (hitBox, mesh) => {
-            this.scene.add(mesh);
-            this.octree.fromGraphNode(hitBox);
-        }).createBody({
-            type: "AABB",
-            mass: 0,
-        }, (body, mesh) => {
-            this.world.addBody(body);
-            physicalObjects.push({body, mesh});
-        });
-
-        new GLTFAndCANNONLoader({
-            url: "/3d/room/model/bookshelf.glb",
-            name: "bookshelf",
-            position: new Vector3(24.1, 1.4, 3.6),
-            rotation: new Euler(Math.PI / 2, 0, Math.PI / 2)
-        }).createHitBox("convex", (hitBox, mesh) => {
-            this.scene.add(mesh);
-            this.octree.fromGraphNode(hitBox);
-        });
-
-        new GLTFAndCANNONLoader({
-            url: "/3d/room/model/soundbar.glb",
-            name: "soundbar",
-            position: new Vector3(0, -2, -24),
-            rotation: new Euler(0, 0, 0)
-        }).createMesh((mesh) => {
-            this.scene.add(mesh);
-        });
-
-        new GLTFAndCANNONLoader({
-            url: "/3d/room/model/tv_cabinet.glb",
-            name: "tv_cabinet",
-            position: new Vector3(0, -3.7, -23),
-            rotation: new Euler(0, 0, 0)
-        }).createHitBox("AABB", (hitBox, mesh) => {
-            this.scene.add(mesh);
-            this.octree.fromGraphNode(hitBox);
-        });
-
-        new GLTFAndCANNONLoader({
-            url: "/3d/room/model/teapoy2.glb",
-            name: "teapoy2",
-            position: new Vector3(24, -5, 11),
-            rotation: new Euler(0, Math.PI * (3 / 2), 0)
-        }).createHitBox("AABB", (hitBox, mesh) => {
-            this.scene.add(mesh);
-            this.octree.fromGraphNode(hitBox);
-            // gui.add(mesh.position,"x",-25,25)
-            // gui.add(mesh.position,"y",-25,25)
-            // gui.add(mesh.position,"z",-25,25)
-        });
+    ) {
     }
 
     public loadTVControl(
         videoDom: HTMLVideoElement,
-        pickUp: () => void,
-        send: (data) => void,
     ) {
         const openGUI = (visible: boolean) => {
             watch(() => inventoryState.current, () => {
@@ -147,11 +65,12 @@ export class InitScene {
             position: new Vector3(),
             name: "TVControl",
             type: "TVC",
-            active: pickUp,
+            active: ()=>{},
             openGUI,
+            pickup: true,
             tvVideoDom: videoDom,
             onupdate: (progress, audio, pause) => {
-                send({type: "updateVideo", progress, audio, pause});
+                listener.emit("ws:send", {type: "updateVideo", progress, audio, pause});
             },
             infoList: ["右击鼠标打开/关闭面板"]
         });
@@ -183,19 +102,20 @@ export class InitScene {
     }
 
     public async requestDVDBox(uuid: string) {
-        const resData = await api.animePostApi(uuid);
+        const res = await api.animePostApi(uuid);
         let videoFileList: I_File[] = [];
-        if (resData.data) videoFileList = resData.data?.detail.fileList.filter(
-            (fileItem: I_File) => fileTypeList.video.includes(fileItem.fileType)
+        videoFileList = res.data?.detail.fileList.filter(
+            (fileItem: I_File) => fileTypes[fileItem.fileType] === "video"
         );
-        return (pickUp: () => void) => {
+        return () => {
             let timeout = -1000;
             videoFileList.forEach((videoFile) => {
                 setTimeout(() => {
                     new DVD_Box({
                         position: new CANNON.Vec3(0, 10, 0),
                         type: "DVD",
-                        active: pickUp,
+                        active: ()=>{},
+                        pickup: true,
                         videoUuid: videoFile.fileUuid,
                         infoList: ["对显示器按「E」加载视频"]
                     }).create((mesh, body) => {
@@ -212,7 +132,7 @@ export class InitScene {
     public loadRoom() {
         const group = new Group();
         //纹理 //地板
-        const floorTexture = new TextureLoader().load("/3d/room/texture/floor_texture.png");
+        const floorTexture = new TextureLoader().load("/3d/texture/floor_texture.png");
         //重复平铺
         floorTexture.wrapS = floorTexture.wrapT = RepeatWrapping;
         floorTexture.repeat.x = 10;
@@ -298,7 +218,7 @@ export class InitScene {
 
     private createBox(width: number, height: number, depth: number, position: Vector3, rotation: Euler) {
         const boxGeometry = new BoxGeometry(width, height, depth);
-        const map = new TextureLoader().load("/3d/room/texture/Brick_142S.jpg");
+        const map = new TextureLoader().load("/3d/texture/Brick_142S.jpg");
         map.wrapS = map.wrapT = RepeatWrapping;
         map.repeat.x = 4;
         map.repeat.y = 2;
@@ -314,7 +234,7 @@ export class InitScene {
         return boxMesh;
     }
 
-    private createWallpaper(): Mesh {
+    private createWallpaper() {
         const wallpaperGeometry = new BoxGeometry(3, 5, 0.1);
         const wallpaperMaterials = [
             new MeshStandardMaterial({color: 0x000000, fog: true}),
@@ -323,7 +243,7 @@ export class InitScene {
             new MeshStandardMaterial({color: 0x000000, fog: true}),
             new MeshStandardMaterial({
                 map: new TextureLoader().load(
-                    "/3d/room/texture/wallpaper-marisa.jpg"
+                    "/3d/texture/wallpaper-marisa.jpg"
                 ),
                 fog: true
             }),

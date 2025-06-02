@@ -5,7 +5,7 @@ import gsap from "gsap";
 export class Camera {
     private readonly camera_: PerspectiveCamera;
     private readonly itemCamera_: PerspectiveCamera;
-    private gui = new dat.GUI();//调试
+    // private gui = new dat.GUI();//调试
 
     constructor(position: Vector3) {
         this.camera_ = new PerspectiveCamera(
@@ -25,13 +25,13 @@ export class Camera {
         // this.gui.add(this.camera_, "fov", 60, 120, 1);
     }
 
-    public resizeCamera(renderContainerDom: HTMLElement, render: WebGLRenderer) {
+    public resizeCamera(renderContainerDom: HTMLElement, renderer: WebGLRenderer) {
         if (renderContainerDom != null) {
             // 更新渲染器比例
-            render.setSize(renderContainerDom.clientWidth, renderContainerDom.clientHeight);
+            renderer.setSize(renderContainerDom.clientWidth, renderContainerDom.clientHeight);
             //更新渲染器和设备的像素比
-            render.setPixelRatio(window.devicePixelRatio);
-            const canvas = render.domElement;
+            renderer.setPixelRatio(window.devicePixelRatio);
+            const canvas = renderer.domElement;
             //更新宽高比
             this.camera_.aspect = canvas.clientWidth / canvas.clientHeight;
             this.itemCamera_.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -64,9 +64,9 @@ export class Camera {
         // 替换手中的物品
         this.tempObject3D = cameraItem;
         this.tempObject3D.layers.set(1);
-        cameraItem.position.set(2.8, (-1.2 - 1.5), -3);
+        cameraItem.position.set(1.2, -2.2, -1.4);
         cameraItem.rotation.set(3, 1.8, 2.9);
-        cameraItem.scale.set(cameraItem.scale.x * 1.5, cameraItem.scale.y * 1.5, cameraItem.scale.z * 1.5);
+        cameraItem.scale.set(cameraItem.scale.x * .5, cameraItem.scale.y * .5, cameraItem.scale.z * .5);
         // 添加到相机中
         // this.camera_.add(cameraItem);
         // this.camera_.layers.enable(1);

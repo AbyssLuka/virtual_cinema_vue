@@ -8,6 +8,7 @@ interface I_Option {
     name?: string,
     type?: string,
     active: () => void,
+    pickup: boolean,
     infoList?: string[],
 }
 
@@ -36,6 +37,7 @@ export class DVD_Box {
         DVDCubeMesh.userData.infoList = this.option.infoList;
         DVDCubeMesh.userData.active = this.option.active;
         DVDCubeMesh.userData.videoUuid = videoInfo.data.videoUuid;
+        DVDCubeMesh.userData.pickup = this.option.pickup;
         callback(DVDCubeMesh, DVDCubeBody);
     }
 
@@ -44,23 +46,24 @@ export class DVD_Box {
         const cubeGeometry = new BoxGeometry(1, 1.5, 0.1);
         if (imageUuid) {
             //材质图片
-            const url: string = await api.imageObjUrl(imageUuid) as string;
+            const url = await api.imageObjUrl(imageUuid);
             //创建纹理
-            const cubeCoverTexture = new TextureLoader().load(
+            const textureLoader = new TextureLoader();
+            const cubeCoverTexture = textureLoader.load(
                 url, (texture) => {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.47, 1);
                     texture.offset.set(0.265, 0);
                 }
             );
-            const cubeBackCoverTexture = new TextureLoader().load(
+            const cubeBackCoverTexture = textureLoader.load(
                 url, (texture) => {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.47, 1);
                     texture.offset.set(-0.265, 0);
                 }
             );
-            const cubeLeftCoverTexture = new TextureLoader().load(
+            const cubeLeftCoverTexture = textureLoader.load(
                 url, (texture) => {
                     texture.center.set(0.5, 0.5);
                     texture.repeat.set(0.06, 1);

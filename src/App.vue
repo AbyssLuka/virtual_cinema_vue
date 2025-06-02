@@ -11,7 +11,7 @@
 
 
 <script setup lang="ts">
-import {onBeforeMount, onMounted, ref, useTemplateRef} from "vue";
+import {onBeforeMount, ref} from "vue";
 import CursorOsu from "@/components/module/CursorOsu.vue";
 import wallpaperPath from "@/assets/image/wallhaven-8586my.png"
 import Loading from "@/components/module/Loading.vue";

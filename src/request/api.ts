@@ -2,6 +2,7 @@ import request from "./request";
 import axios, {AxiosError, type AxiosRequestConfig, type AxiosResponse} from "axios";
 import {baseUrl} from "@/global/global";
 import {
+    I_Collection,
     I_Detail_,
     I_DetailAndTag,
     I_File,
@@ -13,9 +14,9 @@ import {
 
 //登录
 type LoginParamsType = { username: string, password: string, code: string }
-const loginApi = (params: LoginParamsType):Promise<I_ResData<string>> => {
+const loginApi = (params: LoginParamsType): Promise<I_ResData<string>> => {
     return new Promise((resolve) => {
-        request.post("/user/login",params).then((res:AxiosResponse<I_ResData<string>>)=>{
+        request.post("/user/login", params).then((res: AxiosResponse<I_ResData<string>>) => {
             localStorage.setItem("token", res.headers.token);
             resolve(res.data);
         })
@@ -24,48 +25,40 @@ const loginApi = (params: LoginParamsType):Promise<I_ResData<string>> => {
 
 //注册
 type RegisterParamsType = { username: string, password: string, email: string }
-const registerApi = (params: RegisterParamsType):Promise<I_ResData<string>> => {
-    return new Promise((resolve,reject) => {
-        request.post("/user/signup",params).then((res:AxiosResponse<I_ResData<string>>)=>{
+const registerApi = (params: RegisterParamsType): Promise<I_ResData<string>> => {
+    return new Promise((resolve, reject) => {
+        request.post("/user/signup", params).then((res: AxiosResponse<I_ResData<string>>) => {
             resolve(res.data)
-        }).catch(err=>{
+        }).catch(err => {
             reject(err)
         });
     })
 };
+
 //主页
 type AnimePostParamsType = { keyword: string, page: number, size: number }
-const animePostLimitApi = async (params: { keyword: string, page: number, size: number }) => {
-    const resPromise = ajaxRequest<AnimePostParamsType, I_ResData<I_Pageable>>("POST", "/anime/list", params);
-    let resData_: I_ResData<I_Pageable | null> = {code: -1, msg: "", data: null};
-    await resPromise.then((res) => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
-    });
-    return resData_;
+const animePostLimitApi = (params: AnimePostParamsType): Promise<I_ResData<I_Pageable<I_Detail_>>> => {
+    return new Promise((resolve) => {
+        request.post("/anime/list", params).then((res) => {
+            resolve(res.data)
+        })
+    })
 };
 //获取视频信息
-const videoApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<{ uuid: string }, I_ResData<I_Video>>("GET", "/file/video", {uuid});
-    let resData_: I_ResData<I_Video | null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
-    });
-    return resData_;
+const videoApi = (uuid: string): Promise<I_ResData<I_Video>> => {
+    return new Promise((resolve) => {
+        request.get("/file/video", {params: {uuid}}).then((res) => {
+            resolve(res.data)
+        })
+    })
 };
 
-const animePostApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<{ uuid: string }, I_ResData<I_DetailAndTag>>("GET", "/anime/get", {uuid});
-    let resData_: I_ResData<I_DetailAndTag | null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+const animePostApi = async (uuid: string):Promise<I_ResData<I_DetailAndTag>> => {
+    return new Promise((resolve) => {
+        request.get("/anime/get", {params: {uuid}}).then((res) => {
+            resolve(res.data)
+        })
     });
-    return resData_;
 };
 
 //缩略图
@@ -81,166 +74,122 @@ const fileUrl = (uuid: string): string => {
     return baseUrl + "/file/" + uuid;
 };
 //头像
-const profileUrl = async (): Promise<string> => {
-    let url = "";
-    await request.get("/user/profile_photo", {responseType: "blob"}).then(res => {
-        url = URL.createObjectURL(res.data);
-    }).catch((err) => {
-        url = err;
-    });
-    return url;
+const profileUrl = (): Promise<string> => {
+    return new Promise((resolve) => {
+        request.get("/user/profile_photo", {responseType: "blob"}).then(res => {
+            resolve(URL.createObjectURL(res.data));
+        })
+    })
+
 };
 
 //用户信息
-const userInfoApi = async () => {
-    const resPromise = ajaxRequest<null, I_ResData<I_UserInfo>>("GET", "/user/info", null);
-    let resData_: I_ResData<I_UserInfo | null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+const userInfoApi = (): Promise<I_ResData<I_UserInfo>> => {
+    return new Promise((resolve) => {
+        request.get("/user/info").then((res) => {
+            resolve(res.data)
+        });
     });
-    return resData_;
 };
 
 //更新密码
 type UpdatePswParamsType = { oldPassword: string, newPassword: string };
 const updatePasswordApi = async (param: UpdatePswParamsType) => {
-    const resPromise = ajaxRequest<UpdatePswParamsType, I_ResData<null>>("POST", "/user/update_password", param);
-    let resData_: I_ResData<null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        if (res.data.code === 200) {
-            localStorage.setItem("token", res.headers.token);
-        }
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+    return new Promise<I_ResData<null>>((resolve) => {
+        request.post("/user/update_password", param).then((res) => {
+            resolve(res.data)
+        });
     });
-    return resData_;
-};
+}
+
 //收藏
-const addCollectApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<null, I_ResData<null>>("GET", "/collect/add/".concat(uuid), null);
-    let resData_: I_ResData<null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
-    });
-    return resData_;
+const addCollectApi = async (uuid: string):Promise<I_ResData<null>> => {
+    return new Promise((resolve) => {
+        request.get(`/collect/add/${uuid}`).then((res) => {
+            resolve(res.data)
+        })
+    })
 };
 
 //取消收藏
 const unCollectApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<{ uuid: string }, I_ResData<null>>("GET", "/collect/remove", {uuid});
-    let resData_: I_ResData<null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
-    });
-    return resData_;
+    return new Promise<I_ResData<null>>((resolve) => {
+        request.get(`/collect/remove/${uuid}`).then((res) => {
+            resolve(res.data)
+        })
+    })
 };
 //收藏列表
-const collectListApi = async (page: number, size: number) => {
-    const resPromise = ajaxRequest<{
-        page: number,
-        size: number
-    }, I_ResData<null | I_Pageable>>("POST", "/collect/list", {
-        page,
-        size
+const collectListApi = (page: number, size: number): Promise<I_ResData<I_Pageable<I_Collection>>> => {
+    return new Promise((resolve) => {
+        request.post("/collect/list", {page, size}).then((res) => {
+            resolve(res.data)
+            console.log(res.data)
+        });
     });
-    let resData_: I_ResData<null | I_Pageable> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
-    });
-    return resData_;
 };
 
-//收藏列表
-const kaptchaUrl = (): string => {
-    return baseUrl.concat("/user/kaptcha?k=").concat(Math.random().toString());
+//验证码
+const kaptchaUrl = () => {
+    return `${baseUrl}"/user/kaptcha?k="${Math.random()}`;
 };
 
 //收藏状态
-const collectIsHaveApi = async (videoUuid: string) => {
-    const resPromise = ajaxRequest<null, I_ResData<boolean>>("GET", "/collect/ishave/".concat(videoUuid), null);
-    let resData_: I_ResData<boolean> = {code: -1, msg: "", data: false};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_ = {code: -1, msg: err.toString(), data: false};
+const collectIsHaveApi = async (videoUuid: string): Promise<I_ResData<boolean>> => {
+    return new Promise((resolve) => {
+        request.get(`/collect/ishave/${videoUuid}`).then((res) => {
+            resolve(res.data)
+        });
     });
-    return resData_;
 };
 
 const subtitleApi = async (videoUuid: string): Promise<string> => {
-    let url: string | null = "";
-    await request.get("/file/subtitle/".concat(videoUuid), {responseType: "blob"}).then(res => {
-        url = URL.createObjectURL(res.data);
-    }).catch(() => {
-        url = null;
+    return new Promise((resolve) => {
+        request.get("/file/subtitle/".concat(videoUuid), {responseType: "blob"}).then(res => {
+            resolve(URL.createObjectURL(res.data))
+        });
     });
-    return url;
 };
 
-type ComicListType = { page: number, size: number };
+type ComicListType = { page: number, size: number, keyword: string };
 const comicListApi = async (params: ComicListType) => {
-    const resPromise = ajaxRequest<ComicListType, I_ResData<I_Pageable | null>>("POST", "/comic/list", params);
-    let resData_: I_ResData<I_Pageable | null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+    return new Promise<I_ResData<I_Pageable>>((resolve) => {
+        request.post("/comic/list", params).then((res) => {
+            resolve(res.data)
+        });
     });
-    return resData_;
 };
 
 const comicApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<null, I_ResData<I_Detail_ | null>>("GET", "/comic/".concat(uuid), null);
-    let resData_: I_ResData<I_Detail_ | null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+    return new Promise<I_ResData<I_Detail_>>((resolve) => {
+        request.get(`/comic/${uuid}`).then((res) => {
+            resolve(res.data)
+        });
     });
-    return resData_;
 };
 
 const searchFileApi = async (keyword: string) => {
-    const resPromise = ajaxRequest<{ q: string }, I_ResData<I_File[] | null>>("GET", "/file/searchFile", {q: keyword});
-    let resData_: I_ResData<I_File[] | null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+    return new Promise<I_ResData<I_File[]>>((resolve) => {
+        request.get("/file/searchFile", {params: {q: keyword}}).then((res) => {
+            resolve(res.data)
+        });
     });
-    return resData_;
 };
 
 const subdirectoryApi = async (uuid: string) => {
-    const resPromise = ajaxRequest<
-        { uuid: string }, I_ResData<I_File[] | null>
-    >("GET", "/file/subdirectory", {uuid: uuid});
-    let resData_: I_ResData<I_File[] | null> = {code: -1, msg: "", data: null};
-    await resPromise.then(res => {
-        resData_ = res.data;
-    }).catch((err) => {
-        resData_.msg = err.toString();
+    return new Promise<I_ResData<I_File[]>>((resolve) => {
+        request.get("/file/subdirectory", {params: {uuid: uuid}}).then((res) => {
+            resolve(res.data)
+        });
     });
-    return resData_;
 };
 
-const imageObjUrl = async (uuid: string): Promise<string> => {
-    let url: string | null = "";
-    await request.get("/file/thumbnail/".concat(uuid), {responseType: "blob"}).then(res => {
-        url = URL.createObjectURL(res.data);
-    }).catch(() => {
-        url = "";
-    });
-    return url;
+const imageObjUrl = (uuid: string): Promise<string> => {
+    return new Promise((resolve => {
+        request.get("/file/thumbnail/".concat(uuid), {responseType: "blob"}).then(res => {
+            resolve(URL.createObjectURL(res.data));
+        });
+    }));
 };
 
 type methodType = "POST" | "GET" | "PUT" | "DELETE";

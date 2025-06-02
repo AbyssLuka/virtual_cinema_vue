@@ -10,6 +10,7 @@ interface I_Option {
     position: Vector3,
     name: string,
     active: () => void,
+    pickup: boolean,
     openGUI: (show: boolean) => void,
     type: string,
     tvVideoDom: HTMLVideoElement,
@@ -28,7 +29,6 @@ export class TVControl {
         const tvControlGeometry = new BoxGeometry(0.5, 1, 0.1);
         const tvControlMaterial = new MeshStandardMaterial({color: 0xff0000});
         this.tvControlMesh = new Mesh(tvControlGeometry, tvControlMaterial);
-        this.option = option;
         this.tvVideoDom = option.tvVideoDom;
         this.uiContainer = document.createElement("div");
         this.uiContainer.style.width = "30vw";
@@ -57,6 +57,7 @@ export class TVControl {
         this.tvControlMesh.userData.openGUI = this.option.openGUI;
         this.tvControlMesh.userData.type = this.option.type;
         this.tvControlMesh.userData.infoList = this.option.infoList;
+        this.tvControlMesh.userData.pickup = this.option.pickup;
         const cubeShape = new CANNON.Box(new CANNON.Vec3(1 / 2, 1.5 / 2, 0.2 / 2));
         const body = new CANNON.Body({
             mass: 1,

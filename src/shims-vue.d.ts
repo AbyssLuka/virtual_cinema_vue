@@ -10,6 +10,8 @@ declare module "*.glsl";
 //     export default ComponentOptions
 // }
 
+// declare module '*?worker';
+
 interface Window {
     dropWindow?: (id: string) => void;
     setBackgroundImage?: (url: string) => void;

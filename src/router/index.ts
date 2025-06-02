@@ -76,6 +76,11 @@ const routes = [
         name: "LoginViewPlus",
         component: () => import("@/views/LoginViewPlus.vue")
     },
+    {
+        path: "/scene-editor",
+        name: "SceneEditor",
+        component: () => import("@/views/SceneEditorView.vue")
+    },
 ];
 
 const index = createRouter({
