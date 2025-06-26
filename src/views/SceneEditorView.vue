@@ -1,28 +1,56 @@
 <template>
     <div class="container">
         <div class="object-list">
+            <object-tree :cb="detectMesh"></object-tree>
         </div>
         <div class="object-property">
-            <object-property :controls="transformControls"></object-property>
+            <div style="width: 100%;height: 100%;">
+                <div style="display: flex;">
+                    <div @click="properShow = 1"
+                         class="properties-tab"
+                         :class="[properShow===1?'properties-tab-selected':'']">属性
+                    </div>
+                    <div @click="properShow = 2"
+                         class="properties-tab"
+                         :class="[properShow===2?'properties-tab-selected':'']">材质
+                    </div>
+                    <div @click="properShow = 3"
+                         class="properties-tab"
+                         :class="[properShow===3?'properties-tab-selected':'']">纹理
+                    </div>
+                </div>
+
+                <div v-if="properShow === 1" style="overflow: auto; height: calc(100% - 2rem);">
+                    <object-property :controls="transformControls"></object-property>
+                </div>
+                <div v-if="properShow === 2" style="overflow: auto; height: calc(100% - 2rem);">
+                    <material-component :controls="transformControls"></material-component>
+                </div>
+                <div v-if="properShow === 3" style="overflow: auto; height: calc(100% - 2rem);">
+                    <texture-component></texture-component>
+                </div>
+            </div>
         </div>
         <div class="scene-content">
             <div class="operation-container">
                 <div class="operation-item ri-2x"
-                     @click="changeTransform"
+                     @click="[transformStatus = editor.changeTransform()]"
                      :class="{
                                 'ri-drag-move-line': transformStatus === 'translate',
                                 'ri-loop-right-line': transformStatus === 'rotate',
                                 'ri-expand-diagonal-line': transformStatus === 'scale'
                             }"
                 ></div>
-                <div class="operation-item ri-2x"></div>
+                <div class="operation-item ri-2x ri-arrow-left-up-box-line"></div>
                 <div class="operation-item ri-2x"></div>
                 <div class="operation-item ri-2x"></div>
                 <div class="operation-item ri-2x"></div>
             </div>
             <div class="editor-canvas-container" ref="canvas-container">
             </div>
+            <div class="view-helper" ref="view-helper-container">
 
+            </div>
         </div>
         <div class="title-util">
             <header-menu></header-menu>
@@ -31,130 +59,115 @@
 </template>
 
 <script setup lang="ts">
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {
-    AmbientLight,
-    AxesHelper, BoxGeometry,
-    Clock, Color, EquirectangularReflectionMapping,
-    GridHelper,
-    LinearSRGBColorSpace, Mesh, MeshStandardMaterial, Object3D,
-    PCFSoftShadowMap,
-    PerspectiveCamera,
-    WebGLRenderer
+    Clock,
+    Object3D,
 } from "three";
 import {onMounted, onUnmounted, ref, useTemplateRef,} from "vue";
-import {RGBELoader} from "three/examples/jsm/loaders/RGBELoader";
+import {detectInit} from "@/components/SceneEditor/ts/DetectModel";
+import {CustomViewHelper} from "@/components/SceneEditor/ts/CustomViewHelper";
+import ObjectProperty from "@/components/SceneEditor/ObjectProperty.vue";
+import HeaderMenu from "@/components/SceneEditor/HeaderMenu.vue";
+import ObjectTree from "@/components/SceneEditor/ObjectTree.vue";
+import MaterialComponent from "@/components/SceneEditor/MaterialComponent.vue";
+import TextureComponent from "@/components/SceneEditor/TextureComponent.vue";
+import {saveScene} from "@/components/SceneEditor/ts/AutoSave";
+import {editor} from "@/components/SceneEditor/ts/Editor";
+import {initKeyBind} from "@/components/SceneEditor/ts/BindKey";
 
-const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new WebGLRenderer({antialias: true, alpha: true});
-const orbitControls = new OrbitControls(camera, renderer.domElement);
-// const transformControls = new TransformControls(camera, renderer.domElement);
-const transformControlsClass = new CustomTransformControls(camera, renderer.domElement);
-const transformControls = transformControlsClass.controls;
-editorScene.add(transformControls.getHelper());
-renderer.shadowMap.type = PCFSoftShadowMap;
-// render.outputEncoding = LinearEncoding;
-renderer.outputColorSpace = LinearSRGBColorSpace;
-renderer.shadowMap.enabled = true;
-new RGBELoader().loadAsync("/3d/skybox/skydome_hdri-starlight_sky_fullview.hdr",)
-    .then((texture) => {
-        texture.mapping = EquirectangularReflectionMapping;
-        // editorScene.background = texture;
-        editorScene.background = new Color(0x575757);
-        // editorScene.environment = texture;
-    })
+const properShow = ref(1);
 const clock = new Clock();
-camera.position.set(-5, 5, -5);
-transformControls.addEventListener('dragging-changed', (event) => {
-    orbitControls.enabled = !event.value;
-});
+
+const transformControls = editor.transformControls;
 
 transformControls.addEventListener('object-changed', () => {
     targetObject.value = transformControls.object!;
 });
 
 const targetObject = ref<Object3D>(new Object3D());
-import ObjectProperty from "@/components/SceneEditor/ObjectProperty.vue";
-import {CustomTransformControls} from "@/components/SceneEditor/ts/CustomTransformControls";
-import {editorScene, gui, MODEL_LIST} from "@/components/SceneEditor/ts/Global";
-import HeaderMenu from "@/components/SceneEditor/HeaderMenu.vue";
-import {detectInit} from "@/components/SceneEditor/ts/DetectModel";
+
+const detectMesh = (mesh: Object3D) => {
+    transformControls.attach(mesh)
+}
 
 const canvasContainer = useTemplateRef<HTMLDivElement>("canvas-container");
 onMounted(() => {
-    canvasContainer.value!.appendChild(renderer.domElement);
-    renderer.setSize(canvasContainer.value!.clientWidth, canvasContainer.value!.clientHeight);
+    canvasContainer.value!.appendChild(editor.renderer.domElement);
+    editor.renderer.setSize(canvasContainer.value!.clientWidth, canvasContainer.value!.clientHeight);
     sceneInit();
-    initGui();
-    renderer.setAnimationLoop(animate);
+    editor.renderer.setAnimationLoop(animate);
     windowResizeFn();
+    initKeyBind()
 });
-const {dispose: detectDispose,updateBoxHelperColor} = detectInit(camera, orbitControls, transformControls, renderer);
+const {dispose: detectDispose, updateBoxHelperColor} = detectInit(editor);
 updateBoxHelperColor(0xffffff);
 const sceneInit = () => {
-    editorScene.add(new AxesHelper(5));
-    const gridHelper = new GridHelper(10, 10);
-    editorScene.add(gridHelper);
-    const box = new Mesh(new BoxGeometry(1, 1, 1),
-        new MeshStandardMaterial({color: 0x00ff00})
+    saveScene.load();
+    customViewHelper = new CustomViewHelper(
+        editor.renderer.domElement,
+        viewHelperContainer.value!,
     );
-    box.castShadow = true;
-    box.receiveShadow = true;
-    MODEL_LIST.push(box);
-    editorScene.add(box);
-    transformControls.attach(box);
-    const ambientLight = new AmbientLight(0xffffff, 5);
-    editorScene.add(ambientLight)
-    gui.add(ambientLight, 'intensity', 0, 10, 0.1).name('Ambient Light Intensity');
+    customViewHelper.syncCamera(editor.camera, editor.orbitControls);
 }
 
-const initGui = () => {
-    // gui.add(transformControls, 'mode', ['translate', 'rotate', 'scale']).name('Transform Mode');
-    // property.value!.appendChild(gui.domElement);
-}
+const viewHelperContainer = useTemplateRef<HTMLDivElement>("view-helper-container");
+let customViewHelper: CustomViewHelper | null = null;
 
 const windowResizeFn = () => {
     // 更新渲染器比例
-    renderer.setSize(canvasContainer.value!.clientWidth, canvasContainer.value!.clientHeight);
+    editor.renderer.setSize(canvasContainer.value!.clientWidth, canvasContainer.value!.clientHeight);
     //更新渲染器和设备的像素比
-    renderer.setPixelRatio(window.devicePixelRatio);
-    const canvas = renderer.domElement;
+    editor.renderer.setPixelRatio(window.devicePixelRatio);
+    const canvas = editor.renderer.domElement;
     //更新宽高比
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    editor.camera.aspect = canvas.clientWidth / canvas.clientHeight;
     //更新摄像机的投影矩阵
-    camera.updateProjectionMatrix();
+    editor.camera.updateProjectionMatrix();
 }
-window.addEventListener('resize', windowResizeFn);
 
+window.addEventListener('resize', windowResizeFn);
+editor.renderer.autoClear = false;
 const animate = () => {
     const detail = clock.getDelta();
-    renderer.render(editorScene, camera);
-    orbitControls.update(detail);
+    editor.renderer.clear();
+    editor.renderer.render(editor.scene, editor.camera);
+    customViewHelper?.update(detail, editor.renderer);
     transformControls.update(detail);
-    camera.updateProjectionMatrix();
+    editor.camera.updateProjectionMatrix();
 };
 
-const changeTransform = () => {
-    const map = {
-        translate: 'rotate',
-        rotate: 'scale',
-        scale: 'translate'
-    } as const;
-    transformStatus.value = map[transformControls.getMode()];
-    transformControls.setMode(map[transformControls.getMode()]);
-}
 const transformStatus = ref(transformControls.getMode());
 onUnmounted(() => {
-    transformControls.dispose();
-    orbitControls.dispose();
-    renderer.dispose();
-    editorScene.clear();
+editor.dispose();
     window.removeEventListener('resize', windowResizeFn);
     detectDispose();
 })
+
 </script>
 
 <style scoped>
+
+.view-helper {
+    width: 6rem;
+    aspect-ratio: 1/1;
+    background: rgba(224, 224, 224, 0.1);
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+}
+
+.properties-tab {
+    padding: 0 0 0 .5rem;
+    width: 3rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.properties-tab-selected {
+    color: orangered;
+    background: #dedede;
+}
 
 .operation-item {
     width: 3rem;
@@ -185,11 +198,11 @@ onUnmounted(() => {
     height: 100%;
     display: grid;
     grid-template-columns:
-        0.4fr 1.1fr 0.3fr;
+        6fr 6fr 4fr;
     grid-template-rows:
-        0.2fr
         1fr
-        2.6fr;
+        6fr
+        14fr;
     grid-auto-flow: row;
     grid-template-areas:
     "title-util title-util title-util"
@@ -210,16 +223,20 @@ onUnmounted(() => {
 .object-property {
     grid-area: object-property;
     background: #ffffff;
+    overflow: hidden;
 }
 
 .scene-content {
     grid-area: scene-content;
     position: relative;
+    overflow: hidden;
 }
 
 .object-list {
     grid-area: object-list;
-    background: #a182ff;
+    overflow-x: auto;
+    overflow-y: auto;
+    background: #ffffff;
 }
 
 </style>

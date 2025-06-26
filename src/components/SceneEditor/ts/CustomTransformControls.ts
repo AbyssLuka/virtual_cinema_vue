@@ -60,4 +60,15 @@ export class CustomTransformControls {
     get controls() {
         return this.transformControls;
     }
+
+    changeTransform = () => {
+        const map = {
+            translate: 'rotate',
+            rotate: 'scale',
+            scale: 'translate'
+        } as const;
+        const curMode = map[ this.controls.getMode()];
+        this.transformControls.setMode(map[this.controls.getMode()]);
+        return curMode;
+    }
 }

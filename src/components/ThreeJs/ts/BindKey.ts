@@ -9,7 +9,7 @@ const keyQ = (activeInfo: Ref<string>) => {
             // 丢弃当前物品
             inventoryState.inventory[inventoryState.current - 1] = inventoryState.emptyObject3D;
             activeInfo.value = "";
-            cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone()).then();
+            cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone());
         }
     });
 }
@@ -33,7 +33,7 @@ const keyE = () => {
                     inventoryState.current = insertIndex + 1;
                 }
                 // 把模型加载到手中
-                cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone()).then()
+                cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone());
             }else {
                 // 执行模型自定义行为
                 intersectObject.userData.active();
@@ -54,7 +54,7 @@ const keyNumber = () => {
         controlsClass.addKeydownEventListener(key, (event) => {
             if (!controlsClass.isLocked || event.ctrlKey) return;
             inventoryState.current = (+event.key + 9) % 10 + 1;
-            cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone()).then()
+            cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone());
         });
     })
 
@@ -69,13 +69,14 @@ const keyMouse2 = () => {
     });
 }
 
-const keyLoopNumber = (activeInfo: Ref<string>,) => {
+const keyLoopNumber = (activeInfo: Ref<string>) => {
     // 物品切换
     controlsClass.loopNumber(10, inventoryState.current, (index) => {
         inventoryState.current = index;
         activeInfo.value = inventoryState.inventory[inventoryState.current - 1].name;
-        cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone()).then()
+        cameraClass.loadItem(inventoryState.inventory[inventoryState.current - 1].clone());
     });
+
 }
 
 export default {

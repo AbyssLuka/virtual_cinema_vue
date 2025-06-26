@@ -43,11 +43,12 @@ export interface I_File {
 
 export interface I_TreeNode {
     title: string,
-    subDir: I_TreeNode[],
-    show: boolean,
-    type: string,
     uuid: string,
-    absPath: string,
+    subDir: I_TreeNode[],
+    type: string,
+    show?: boolean,
+    data?: any,
+    icon?: string,
 }
 
 export interface I_Video {

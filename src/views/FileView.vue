@@ -80,11 +80,13 @@ onMounted(() => {
         res.data.forEach((item) => {
             treeObject.value.push({
                 show: false,
-                title: item.fileName,
                 uuid: item.fileUuid,
+                title: item.fileName,
                 type: item.fileType,
-                absPath: item.absolutePath!,
-                subDir: []
+                subDir: [],
+                data: {
+                    absPath: item.absolutePath!,
+                },
             });
         });
     });
@@ -112,17 +114,18 @@ const pathClick = (index: number) => {
 
 const treeClick = (treeNode: I_TreeNode, pathList: number[]) => {
     const sunDirUuid = !treeNode ? "" : treeNode.uuid;
-    pathMap.set(treeNode.absPath, sunDirUuid);
+    pathMap.set(treeNode.data.absPath, sunDirUuid);
     api.subdirectoryApi(sunDirUuid).then((res) => {
         const newList: I_TreeNode[] = [];
         res.data.forEach((item) => {
             newList.push({
-                show: false,
-                title: item.fileName,
                 uuid: item.fileUuid,
+                title: item.fileName,
                 type: item.fileType,
-                absPath: item.absolutePath!,
-                subDir: []
+                subDir: [],
+                data: {
+                    absPath: item.absolutePath!,
+                },
             });
         });
         const updateTree = (sub: I_TreeNode[], newList: I_TreeNode[], path: number[]) => {
@@ -135,7 +138,7 @@ const treeClick = (treeNode: I_TreeNode, pathList: number[]) => {
             updateTree(sub[pop].subDir, newList, path);
         }
         updateTree(treeObject.value, newList, pathList);
-        const {uuid: fileUuid, type: fileType, title: fileName} = treeNode;
+        const {uuid:fileUuid, type: fileType, title: fileName} = treeNode;
         nextFile({fileUuid, fileType, fileName});
     });
 }

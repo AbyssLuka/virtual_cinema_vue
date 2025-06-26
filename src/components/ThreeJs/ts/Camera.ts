@@ -52,32 +52,37 @@ export class Camera {
 
     private tempObject3D: Object3D = new Object3D();
 
-    public async loadItem(cameraItem: Object3D | null | undefined) {
-        !cameraItem && (cameraItem = new Object3D())
+    public loadItem(cameraItem: Object3D | null) {
+        const load = () => {
+            if (cameraItem === null) {
+                cameraItem = new Object3D()
+            }
+            // 清除当前手中的物品
+            this.itemCamera.remove(this.tempObject3D);
+            // 替换手中的物品
+            this.tempObject3D = cameraItem;
+            this.tempObject3D.layers.set(1);
+            cameraItem.position.set(1.2, -2.2, -1.4);
+            cameraItem.rotation.set(3, 1.8, 2.9);
+            const {x, y, z} = cameraItem.scale;
+            cameraItem.scale.set(x * .5, y * .5, z * .5);
+            // 添加到相机中
+            // this.camera_.add(cameraItem);
+            // this.camera_.layers.enable(1);
+
+            this.itemCamera.add(cameraItem);
+            this.itemCamera.layers.enable(1);
+        }
         // 物品切换动画
-        await gsap.to(this.tempObject3D.position, {
+        gsap.to(this.tempObject3D.position, {
             y: (this.tempObject3D.position.y - 1.5),
             duration: 0.1,
-        });
-        // 清除当前手中的物品
-        this.itemCamera.remove(this.tempObject3D);
-        // 替换手中的物品
-        this.tempObject3D = cameraItem;
-        this.tempObject3D.layers.set(1);
-        cameraItem.position.set(1.2, -2.2, -1.4);
-        cameraItem.rotation.set(3, 1.8, 2.9);
-        cameraItem.scale.set(cameraItem.scale.x * .5, cameraItem.scale.y * .5, cameraItem.scale.z * .5);
-        // 添加到相机中
-        // this.camera_.add(cameraItem);
-        // this.camera_.layers.enable(1);
-
-        this.itemCamera.add(cameraItem);
-        this.itemCamera.layers.enable(1);
-
-        // 物品切换动画
-        await gsap.to(this.tempObject3D.position, {
-            y: this.tempObject3D.position.y + 1.5,
-            duration: 0.1,
+        }).then(() => {
+            load();
+            gsap.to(this.tempObject3D.position, {
+                y: this.tempObject3D.position.y + 1.5,
+                duration: 0.1,
+            });
         });
         // this.gui.add(cameraGoods.position, "x", -3, 6);
         // this.gui.add(cameraGoods.position, "y", -3, 6);

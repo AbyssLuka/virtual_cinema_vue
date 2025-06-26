@@ -12,7 +12,7 @@ import {defineProps, defineModel, computed} from "vue";
 
 const model = defineModel<number>();
 const value = computed({
-    get: () => model.value,
+    get: () => +(model.value?.toFixed(2) || "0.00"),
     set: (val) => {
         if (!val) val = 0;
         model.value = val;
@@ -34,7 +34,7 @@ const {
 }
 
 .input-title {
-    margin: 0 1rem;
+    margin: 0 .2rem;
 }
 
 input {
@@ -44,6 +44,8 @@ input {
     align-items: center;
     justify-content: center;
     outline: none;
-    border-bottom: black solid 2px;
+    width: 4rem;
+    padding: 0 .1rem;
+    color: orangered;
 }
 </style>

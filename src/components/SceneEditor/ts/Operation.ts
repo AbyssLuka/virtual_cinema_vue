@@ -1,6 +1,5 @@
-import {Object3D, Scene} from "three";
-import {editorScene} from "@/components/SceneEditor/ts/Global";
 import {operationListener} from "@/components/SceneEditor/ts/OperationListener";
+import {editor} from "@/components/SceneEditor/ts/Editor";
 
 type OperationType =
     "translate" | "rotate" | "scale" |
@@ -13,14 +12,14 @@ const operations: {
 }[] = [];
 
 let index = 0;
-export const undo = (scene: Scene) => {
+export const undo = () => {
     if (index < 0) return;
     const operation = operations[index];
     if (!operation) return;
     if (operation.type === "translate") {
         const modelUuid = operation.uuid;
         const {x, y, z} = operation.data;
-        scene.traverse(object => {
+        editor.scene.traverse(object => {
             if (object.uuid === modelUuid) {
                 object.position.set(x, y, z);
                 return;
@@ -30,7 +29,7 @@ export const undo = (scene: Scene) => {
     if (operation.type === "scale") {
         const modelUuid = operation.uuid;
         const {x, y, z} = operation.data;
-        scene.traverse(object => {
+        editor.scene.traverse(object => {
             if (object.uuid === modelUuid) {
                 object.scale.set(x, y, z);
                 return;
@@ -40,7 +39,7 @@ export const undo = (scene: Scene) => {
     if (operation.type === "rotate") {
         const modelUuid = operation.uuid;
         const {x, y, z} = operation.data;
-        scene.traverse(object => {
+        editor.scene.traverse(object => {
             if (object.uuid === modelUuid) {
                 object.rotation.set(x, y, z);
                 return;
@@ -50,12 +49,13 @@ export const undo = (scene: Scene) => {
     index--;
     operationListener.emit("operation:undo", operation);
 }
-export const redo = (scene: Scene) => {
+export const redo = () => {
     if (index + 1 >= operations.length) return;
     index++;
-    undo(scene);
+    undo();
     operationListener.emit("operation:redo");
 }
+
 export const addOperation = (type: OperationType, uuid: string, data: any) => {
     operations.splice(index + 1);
     operations.push({type, uuid, data});
@@ -63,9 +63,3 @@ export const addOperation = (type: OperationType, uuid: string, data: any) => {
     console.log(operations, index);
     operationListener.emit("operation:add");
 }
-
-window.addEventListener("keydown", (event) => {
-    if (event.ctrlKey && event.key.toLowerCase() === "z") {
-        undo(editorScene);
-    }
-})

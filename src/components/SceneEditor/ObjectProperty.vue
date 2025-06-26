@@ -1,22 +1,22 @@
 <template>
-    <div class="object-property">
-        <div class="object-property-title">position</div>
-        <div class="object-property-content">
-            <number-input class="number-input" v-model="position.x" title="x"></number-input>
-            <number-input class="number-input" v-model="position.y" title="y"></number-input>
-            <number-input class="number-input" v-model="position.z" title="z"></number-input>
-        </div>
-        <div class="object-property-title">rotation</div>
-        <div class="object-property-content">
-            <number-input class="number-input" v-model="rotation.x" title="x"></number-input>
-            <number-input class="number-input" v-model="rotation.y" title="y"></number-input>
-            <number-input class="number-input" v-model="rotation.z" title="z"></number-input>
-        </div>
-        <div class="object-property-title">scale</div>
-        <div class="object-property-content">
-            <number-input class="number-input" v-model="scale.x" title="x"></number-input>
-            <number-input class="number-input" v-model="scale.y" title="y"></number-input>
-            <number-input class="number-input" v-model="scale.z" title="z"></number-input>
+    <div class="object-property-container">
+        <div v-for="(value, key) in object3DProps"
+             :key="key"
+             class="object-property-content">
+            <div class="object-property-title">{{ key }}</div>
+            <div class="object-property-content">
+                <div v-if="value.readonly">{{ value.data }}</div>
+                <input v-else-if="value.type === Object3DPropertyType.String" type="text" v-model="value.data"/>
+                <input v-else-if="value.type === Object3DPropertyType.Number" type="number" v-model.number="value.data"
+                       step="0.01"/>
+                <input v-else-if="value.type === Object3DPropertyType.Boolean" type="checkbox" v-model="value.data"/>
+                <div class="object-property-content"
+                     v-else-if="(value.type === Object3DPropertyType.Vector3||value.type ===Object3DPropertyType.Euler)">
+                    <number-input class="number-input" v-model="(<Vector3>value.data).x" title="x"></number-input>
+                    <number-input class="number-input" v-model="(<Vector3>value.data).y" title="y"></number-input>
+                    <number-input class="number-input" v-model="(<Vector3>value.data).z" title="z"></number-input>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -24,42 +24,72 @@
 <script setup lang="ts">
 
 import NumberInput from "@/components/SceneEditor/NumberInput.vue";
-import {Object3D} from "three";
-import {computed, defineProps, ref, watch} from "vue";
+import {defineProps, onMounted, reactive, ref, watch} from "vue";
 import {TransformControls} from "three/examples/jsm/controls/TransformControls";
+import {I_Object3D, Object3DProperty, Object3DPropertyType} from "@/components/SceneEditor/ts/interface/MeshInterface";
+import {createObject3D} from "@/components/SceneEditor/ts/interface/MeshImpl";
+import {Object3D, Vector3} from "three";
 
 const {controls} = defineProps<{
     controls: TransformControls
 }>()
 
+const object3DProps = ref<I_Object3D|undefined>()
 
-const {x: px, y: py, z: pz} = {x: 0, y: 0, z: 0};
-const {x: rx, y: ry, z: rz} = {x: 0, y: 0, z: 0};
-const {x: sx, y: sy, z: sz} = {x: 0, y: 0, z: 0};
+const loadObjectProperty = (object: Object3D) => {
+    if (!controls.object) return;
+    object3DProps.value = createObject3D(object);
+}
 
-const position = ref({x: px, y: py, z: pz});
-const rotation = ref({x: rx, y: ry, z: rz});
-const scale = ref({x: sx, y: sy, z: sz});
-watch(position, (newVal) => {
-    controls.object.position.set(newVal.x, newVal.y, newVal.z);
-}, {deep: true});
-watch(rotation, (newVal) => {
-    controls.object.rotation.set(newVal.x, newVal.y, newVal.z);
-}, {deep: true});
-watch(scale, (newVal) => {
-    controls.object.scale.set(newVal.x, newVal.y, newVal.z);
-}, {deep: true});
+onMounted(() => {
+    loadObjectProperty(controls.object);
+});
+controls.addEventListener("object-changed", (event) => {
+    const object = event.target.object;
+    loadObjectProperty(object);
+});
+
+const updateObject3DProps = () => {
+    if (!controls.object) return;
+    object3DProps.value = createObject3D(controls.object);
+}
+
 controls.addEventListener("change", (event) => {
     const object = event.target.object;
-    if (!object) return;
-    position.value = {x: object.position.x, y: object.position.y, z: object.position.z};
-    rotation.value = {x: object.rotation.x, y: object.rotation.y, z: object.rotation.z};
-    scale.value = {x: object.scale.x, y: object.scale.y, z: object.scale.z};
+    if (!object) {
+        object3DProps.value = undefined;
+        return;
+    }
+    updateObject3DProps()
 })
 </script>
 
 <style scoped>
-.number-input{
-    margin: 10px 0;
+.number-input {
+    margin: .2rem 0;
+}
+
+.object-property-content {
+    display: flex;
+    width: calc(100% - 4rem);
+}
+
+.object-property-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.object-property-title {
+    width: 10rem;
+    margin: .2rem;
+    text-overflow:ellipsis;
+    overflow:hidden;
+}
+
+.object-property-container > div {
+    display: flex;
 }
 </style>
