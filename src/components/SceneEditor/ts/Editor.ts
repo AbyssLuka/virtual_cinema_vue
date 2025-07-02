@@ -4,7 +4,7 @@ import {
     GridHelper,
     Object3D,
     PerspectiveCamera,
-    Scene,
+    Scene, Vector3,
     WebGLRenderer
 } from "three";
 // import {editorCamera, editorRenderer} from "@/components/SceneEditor/ts/Global";
@@ -21,6 +21,7 @@ class Editor {
     private editorOrbitControls = new OrbitControls(this.camera, this.editorRenderer.domElement);
     private MODEL_LIST: Object3D[] = [];
     private editorTransformControls = new CustomTransformControls(this.camera, this.editorRenderer.domElement);
+    private boxHelper_ = new BoxHelper(new Object3D(), 0xff0000);
 
     constructor() {
         this.camera.up.set(0, 1, 0);
@@ -91,8 +92,6 @@ class Editor {
         this.MODEL_LIST = [];
     }
 
-    private boxHelper_ = new BoxHelper(new Object3D(), 0xff0000);
-
     get boxHelper() {
         return this.boxHelper_;
     }
@@ -144,6 +143,17 @@ class Editor {
         this.boxHelper.update();
     }
 
+    canvasResize = (w: number, h: number) => {
+        // 更新渲染器比例
+        editor.renderer.setSize(w, h);
+        //更新渲染器和设备的像素比
+        editor.renderer.setPixelRatio(window.devicePixelRatio);
+        const canvas = editor.renderer.domElement;
+        //更新宽高比
+        editor.camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        //更新摄像机的投影矩阵
+        editor.camera.updateProjectionMatrix();
+    }
 }
 
 const editor = new Editor();

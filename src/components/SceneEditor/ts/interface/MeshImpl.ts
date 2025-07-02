@@ -13,7 +13,7 @@ export function createObject3D(object3D: Object3D): I_Mesh | I_Object3D {
         id: createObject3DProperty(object3D, "id", Object3DPropertyType.Number, true),
         name: createObject3DProperty(object3D, "name", Object3DPropertyType.String, false),
         type: createObject3DProperty(object3D, "type", Object3DPropertyType.String, true),
-        userData: createObject3DProperty(object3D, "userData", Object3DPropertyType.String, false),
+        userData: createObject3DProperty(object3D, "userData", Object3DPropertyType.Object, false),
         visible: createObject3DProperty(object3D, "visible", Object3DPropertyType.Boolean, false),
         isObject3D: createObject3DProperty(object3D, "isObject3D", Object3DPropertyType.Boolean, true),
         castShadow: createObject3DProperty(object3D, "castShadow", Object3DPropertyType.Boolean, false),

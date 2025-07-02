@@ -1,5 +1,5 @@
 // import {editorScene, MODEL_LIST} from "@/components/SceneEditor/ts/Global";
-import {Object3D, Object3DJSON, ObjectLoader, Scene} from "three";
+import {Object3D, Object3DJSON, ObjectLoader, PerspectiveCamera, Scene} from "three";
 import {editor} from "@/components/SceneEditor/ts/Editor";
 
 class AutoSave {
@@ -35,6 +35,7 @@ class AutoSave {
                     idbObjectStore.put({
                         id: "autosave",
                         scene: editor.scene.toJSON(),
+                        camera: editor.camera.toJSON(),
                         timestamp: Date.now()
                     });
                     // 恢复 helper
@@ -57,7 +58,7 @@ class AutoSave {
         editor.sceneReload();
         getRequest.onsuccess = (event) => {
             const data = (<IDBRequest>event.target).result;
-            if (data && data.scene) {
+            if (data && data.scene && data.scene) {
                 editor.modelList.splice(0, editor.modelList.length);
                 const loader = new ObjectLoader();
                 const loadedScene = <Scene>loader.parse(data.scene);
@@ -69,6 +70,8 @@ class AutoSave {
                     const object = loadedScene.children[0];
                     editor.addModel(object);
                 }
+                const camera = <PerspectiveCamera>loader.parse(data.camera);
+                editor.camera.copy(camera);
             }
         }
     }

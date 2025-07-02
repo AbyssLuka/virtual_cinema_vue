@@ -115,14 +115,8 @@ let customViewHelper: CustomViewHelper | null = null;
 
 const windowResizeFn = () => {
     // 更新渲染器比例
-    editor.renderer.setSize(canvasContainer.value!.clientWidth, canvasContainer.value!.clientHeight);
-    //更新渲染器和设备的像素比
-    editor.renderer.setPixelRatio(window.devicePixelRatio);
-    const canvas = editor.renderer.domElement;
-    //更新宽高比
-    editor.camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    //更新摄像机的投影矩阵
-    editor.camera.updateProjectionMatrix();
+    const {clientWidth:w,clientHeight:h} = canvasContainer.value!
+    editor.canvasResize(w,h)
 }
 
 window.addEventListener('resize', windowResizeFn);

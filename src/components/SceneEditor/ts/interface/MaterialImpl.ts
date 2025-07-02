@@ -18,7 +18,7 @@ export function createMaterial(material: Material): I_Material | I_MeshBasicMate
         alphaTest: createMaterialProperty(material, "alphaTest", MaterialPropertyType.Number),
         opacity: createMaterialProperty(material, "opacity", MaterialPropertyType.Number),
         visible: createMaterialProperty(material, "visible", MaterialPropertyType.Boolean),
-        userData: createMaterialProperty(material, "userData", MaterialPropertyType.String),
+        userData: createMaterialProperty(material, "userData", MaterialPropertyType.Json),
     }
 
     if (material.type === "MeshBasicMaterial") {

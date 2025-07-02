@@ -1,12 +1,12 @@
-import {saveScene} from "@/components/SceneEditor/ts/AutoSave";
+import * as SceneSave from "@/components/SceneEditor/ts/AutoSave";
 import {editor} from "@/components/SceneEditor/ts/Editor";
 import {undo} from "@/components/SceneEditor/ts/Operation";
 
-const SaveScene = () => {
-    saveScene.save();
+const saveScene = () => {
+    SceneSave.saveScene.save();
 }
 
-const DeleteModel = () => {
+const deleteModel = () => {
     editor.removeFocusObject();
 }
 
@@ -21,13 +21,13 @@ const key2 = [
     "ctrl", "shift", "alt"
 ] as const;
 
-// 1. 构建数组工具类型
+//构建数组工具类型
 type BuildArray<
     L extends number,
     E = any,
     A extends any[] = []
 > = A['length'] extends L ? A : BuildArray<L, E, [...A, E]>;
-
+//构建AB两个数组合并，取长度，实现相加
 type Add<A extends number, B extends number> =
     A extends 0 ? B :
         B extends 0 ? A :
@@ -41,11 +41,9 @@ type KeyUnion<
     J extends T['length'] ? KeyUnion<T, Add<I, 1>, Add<I, 1>> :
         T[I] extends T[J] ? KeyUnion<T, I, Add<J, 1>> :
             `${T[I]}+${T[J]}` | KeyUnion<T, I, Add<J, 1>>;
-export type keyType =
-    `${
-        KeyUnion<typeof key2> |
-        typeof key2[number]
-    }+${typeof key1[number]}` | typeof key1[number];
+
+type ControlsKey = KeyUnion<typeof key2> | typeof key2[number];
+export type KeyType = `${ControlsKey}+${typeof key1[number]}` | typeof key1[number];
 
 
 type Minus<A extends number, B extends number> =
@@ -76,24 +74,24 @@ type Div<
     Div<Minus<A, B>, B, Add<C, 1>>;
 
 const fnMap: {
-    [key in keyType]?: Set<Function>
+    [key in KeyType]?: Set<Function>
 } = {}
 
-const on = (key: keyType, cb: Function) => {
+const on = (key: KeyType, cb: Function) => {
     if (!fnMap[key]) {
         fnMap[key] = new Set<Function>();
     }
     fnMap[key]?.add(cb);
 }
 
-const emit = (key: keyType, ...args: any[]) => {
+const emit = (key: KeyType, ...args: any[]) => {
     if (!fnMap[key]) {
         return;
     }
     fnMap[key]?.forEach(fn => fn(...args))
 }
 
-const generateKey = (event: KeyboardEvent): keyType | undefined => {
+const generateKey = (event: KeyboardEvent): KeyType | undefined => {
     const key = <typeof key1[number]>event.key;
     if (!key) return void 0;
     const keyList: (typeof key1[number] | typeof key2[number])[] = [];
@@ -101,17 +99,18 @@ const generateKey = (event: KeyboardEvent): keyType | undefined => {
     if (event.shiftKey) keyList.push("shift");
     if (event.altKey) keyList.push("alt");
     keyList.push(key);
-    return <keyType>keyList.join("+")
+    return <KeyType>keyList.join("+").toLowerCase();
 }
 
 export const initKeyBind = () => {
-    on("ctrl+s", SaveScene);
-    on("Delete", DeleteModel);
+    on("ctrl+s", saveScene);
+    on("Delete", deleteModel);
     on("ctrl+z", undo);
-
+    const keys = Object.keys(fnMap)
     document.addEventListener("keydown", (event) => {
         const unionKey = generateKey(event);
-        if (unionKey === "ctrl+s") event.preventDefault();
+        if (keys.includes(<string>unionKey))
+            event.preventDefault();
         console.log(unionKey)
         if (unionKey) emit(unionKey);
     });

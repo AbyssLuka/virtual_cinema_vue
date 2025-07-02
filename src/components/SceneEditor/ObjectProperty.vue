@@ -10,6 +10,9 @@
                 <input v-else-if="value.type === Object3DPropertyType.Number" type="number" v-model.number="value.data"
                        step="0.01"/>
                 <input v-else-if="value.type === Object3DPropertyType.Boolean" type="checkbox" v-model="value.data"/>
+                <button v-else-if="value.type === Object3DPropertyType.Object" @click="openJsonPopups(value.data)">
+                    Edit
+                </button>
                 <div class="object-property-content"
                      v-else-if="(value.type === Object3DPropertyType.Vector3||value.type ===Object3DPropertyType.Euler)">
                     <number-input class="number-input" v-model="(<Vector3>value.data).x" title="x"></number-input>
@@ -29,6 +32,8 @@ import {TransformControls} from "three/examples/jsm/controls/TransformControls";
 import {I_Object3D, Object3DProperty, Object3DPropertyType} from "@/components/SceneEditor/ts/interface/MeshInterface";
 import {createObject3D} from "@/components/SceneEditor/ts/interface/MeshImpl";
 import {Object3D, Vector3} from "three";
+import {MaterialPropertyType} from "@/components/SceneEditor/ts/interface/MaterialInterface";
+import createPopUps from "@/util/createPopUps";
 
 const {controls} = defineProps<{
     controls: TransformControls
@@ -39,6 +44,15 @@ const object3DProps = ref<I_Object3D|undefined>()
 const loadObjectProperty = (object: Object3D) => {
     if (!controls.object) return;
     object3DProps.value = createObject3D(object);
+}
+import JsonEditorPopups from "@/components/SceneEditor/popups/JsonEditorPopups.vue";
+const openJsonPopups = (value:Object) =>{
+    createPopUps(JsonEditorPopups,{
+        title:"Json",
+        data:{
+            jsonStr:JSON.stringify(value,null, 2)
+        }
+    })
 }
 
 onMounted(() => {

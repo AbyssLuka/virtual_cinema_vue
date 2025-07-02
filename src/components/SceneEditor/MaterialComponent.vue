@@ -1,4 +1,4 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
     <div class="object-property-container">
         <div style="width: 100%;flex-direction: column">
             <div class="object-property-title" @click="addMaterial">新建材质</div>
@@ -17,6 +17,10 @@
                 </div>
             </div>
         </div>
+        <div style="width: 16rem;display: flex;flex-direction: column">
+            <div class="object-property-title">材质预览</div>
+            <material-preview :material="preview" style="margin: 0 .5rem"></material-preview>
+        </div>
         <div v-for="(value, key) in object3DProps"
              :key="key"
              class="object-property-content">
@@ -27,6 +31,7 @@
                 <input v-else-if="value.type === MaterialPropertyType.Number" type="number" v-model.number="value.data" step="0.01"/>
                 <input v-else-if="value.type === MaterialPropertyType.Boolean" type="checkbox" v-model="value.data"/>
                 <input v-else-if="value.type === MaterialPropertyType.Color" type="color" v-model="value.data"/>
+                <button v-else-if="value.type === MaterialPropertyType.Object" @click="openJsonPopups(value.data)"></button>
                 <select v-else-if="value.type === MaterialPropertyType.Select" v-model="value.data">
                     <option v-for="option in value.options" :key="option.value" :value="option.value">
                         {{ option.label }}
@@ -38,12 +43,16 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
+import {markRaw, onMounted, onUnmounted, ref, useTemplateRef} from "vue";
 import {Material, Mesh, MeshStandardMaterial, Object3D} from "three";
 import {TransformControls} from "three/examples/jsm/controls/TransformControls";
 import {Event} from "three/src/core/EventDispatcher";
 import {createMaterial} from "@/components/SceneEditor/ts/interface/MaterialImpl";
 import {MaterialPropertyType} from "@/components/SceneEditor/ts/interface/MaterialInterface";
+import {PreviewMaterial} from "@/components/SceneEditor/ts/PreviewMaterial";
+import MaterialPreview from "@/components/SceneEditor/MaterialPreview.vue";
+import createPopUps from "@/util/createPopUps";
+import JsonEditorPopups from "@/components/SceneEditor/popups/JsonEditorPopups.vue";
 
 const props = defineProps<{
     controls: TransformControls
@@ -52,6 +61,15 @@ const props = defineProps<{
 const objectChanged = (event: Event<"object-changed", TransformControls>) => {
     const object = event.target.object;
     loadMaterial(object)
+}
+
+const openJsonPopups = (value:Object) =>{
+    createPopUps(JsonEditorPopups,{
+        title:"Json",
+        data:{
+            jsonStr:JSON.stringify(value,null, 2)
+        }
+    })
 }
 
 const updateObject3DProps = () => {
@@ -66,6 +84,8 @@ const selectMaterial = (index: number) => {
     currentMaterial.value = index;
     updateObject3DProps();
 }
+
+const preview = ref<Material|Material[]>(new Material())
 
 const loadMaterial = (object: Object3D | null) => {
     if (!object || !((object) instanceof Mesh)) {
@@ -85,7 +105,8 @@ const loadMaterial = (object: Object3D | null) => {
         materialList.value.push(materials);
     }
     currentMaterial.value = 0;
-    updateObject3DProps()
+    updateObject3DProps();
+    preview.value = materials;
 }
 
 let object3DProps = ref()
@@ -118,8 +139,8 @@ const addMaterial = () => {
 const removeMaterial = (index: number) => {
     const mesh = props.controls.object as Mesh;
     if (!mesh) return;
-    if (!Array.isArray(mesh.material)) return; // Cannot remove if not array
-    if (mesh.material.length <= 1) return; // Cannot remove last material
+    if (!Array.isArray(mesh.material)) return;
+    if (mesh.material.length <= 1) return;
 
     mesh.material.splice(index, 1);
 
@@ -134,6 +155,9 @@ const removeMaterial = (index: number) => {
     }
     selectMaterial(currentMaterial.value);
 }
+onUnmounted(()=>{
+    props.controls.removeEventListener('object-changed', objectChanged);
+})
 </script>
 
 <style scoped>

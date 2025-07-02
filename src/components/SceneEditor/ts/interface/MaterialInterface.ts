@@ -57,6 +57,7 @@ export enum MaterialPropertyType {
     Color,
     Select,
     Texture,
+    Object,
 }
 
 export interface MaterialProperty<T = any> {
@@ -84,7 +85,7 @@ export const createMaterialProperty = <T extends Material, K extends keyof T>(
             if (prop === 'data') {
                 if (type === MaterialPropertyType.Color) {
                     return `#${(<Color>material[key]).getHexString()}`;
-                } else {
+                }else {
                     return material[key];
                 }
             }
@@ -94,7 +95,7 @@ export const createMaterialProperty = <T extends Material, K extends keyof T>(
             if (prop === 'data') {
                 if (type === MaterialPropertyType.Color) {
                     (<Color>material[key]).set(value);
-                } else {
+                }else {
                     material[key] = value;
                 }
                 material.needsUpdate = true;

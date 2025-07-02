@@ -13,6 +13,15 @@ interface I_Props<T> {
     height?: string,
 }
 
+export type WindowProps<T> = {
+    data:T,
+    fullScreenStatus: boolean,
+    updateTitle:(title:string)=>void,
+    fullScreen:(status:boolean)=>void,
+    submitCallback:()=>void,
+    popUpsClick:()=>void,
+}
+
 const createPopUps = <
     T extends abstract new (...args: any[]) => any
 >(
